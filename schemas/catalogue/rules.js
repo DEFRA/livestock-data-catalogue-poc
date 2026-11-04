@@ -13,7 +13,7 @@ function exactly(value) {
   return value
 }
 
-function ignoringCase(value) {
+function lowerCased(value) {
   return value.toLowerCase()
 }
 
@@ -38,48 +38,48 @@ function uniqueKeyBreaches(collections) {
     [
       'data asset title',
       dataAssets.map((dataAsset) => dataAsset.titleName),
-      ignoringCase
+      lowerCased
     ],
     [
       'organisation name',
       collections.organisations.map((organisation) => organisation.name),
-      ignoringCase
+      lowerCased
     ],
     [
       'person',
       collections.people.map(
         (person) => `${person.name} <${person.emailAddressReference}>`
       ),
-      ignoringCase
+      lowerCased
     ],
     [
       'delivery group name',
       collections.deliveryGroups.map((deliveryGroup) => deliveryGroup.name),
-      ignoringCase
+      lowerCased
     ],
     [
       'distribution name',
       dataAssets.flatMap((dataAsset) =>
         (dataAsset.distributions ?? []).map((distribution) => distribution.name)
       ),
-      ignoringCase
+      lowerCased
     ],
     [
       'data service title',
       collections.dataServices.map((dataService) => dataService.titleName),
-      ignoringCase
+      lowerCased
     ],
     [
       'information asset name',
       collections.informationAssets.map(
         (informationAsset) => informationAsset.name
       ),
-      ignoringCase
+      lowerCased
     ],
     [
       'keyword name',
       collections.keywords.map((keyword) => keyword.name),
-      ignoringCase
+      lowerCased
     ]
   ]
   const referenceValues = [
@@ -95,7 +95,7 @@ function uniqueKeyBreaches(collections) {
     checks.push([
       `${listName} name`,
       values.map((value) => value.name),
-      ignoringCase
+      lowerCased
     ])
   }
   return checks.flatMap(([description, values, normalise]) =>
@@ -122,7 +122,8 @@ function isHttpsAddress(value) {
   return URL.canParse(value) && new URL(value).protocol === 'https:'
 }
 
-function foreignKeyBreaches(collections) {
+// Checks that names and codes refer to records that exist
+function referenceChecker(collections) {
   const breaches = []
   const codes = codeSets(collections)
   const known = {
@@ -151,30 +152,48 @@ function foreignKeyBreaches(collections) {
     )
   }
 
-  function checkName(owner, value, collectionName, description) {
-    if (value !== undefined && !known[collectionName].has(value)) {
-      breaches.push(`${owner} refers to an unknown ${description}: ${value}`)
+  const check = {
+    breaches,
+    name(owner, value, collectionName, description) {
+      if (value !== undefined && !known[collectionName].has(value)) {
+        breaches.push(`${owner} refers to an unknown ${description}: ${value}`)
+      }
+    },
+    code(owner, value, listName) {
+      if (value !== undefined && !codes.get(listName).has(value)) {
+        breaches.push(
+          `${owner} refers to an unknown ${listName} code: ${value}`
+        )
+      }
+    },
+    // A target inside the catalogue is held as its data asset identifier,
+    // and anything else as an https address (doc 15, question 9)
+    relationshipTarget(owner, target) {
+      if (isDataAssetIdentifier(target)) {
+        check.name(owner, target, 'dataAssets', 'related data asset')
+      } else if (!isHttpsAddress(target)) {
+        breaches.push(
+          `${owner} has a relationship target that is neither a data asset identifier nor an https address: ${target}`
+        )
+      }
     }
   }
+  return check
+}
 
-  function checkCode(owner, value, listName) {
-    if (value !== undefined && !codes.get(listName).has(value)) {
-      breaches.push(`${owner} refers to an unknown ${listName} code: ${value}`)
-    }
-  }
-
+function checkSupportingRecords(check, collections) {
   for (const organisation of collections.organisations) {
     const owner = `Organisation ${organisation.name}`
-    checkName(
+    check.name(
       owner,
       organisation.parentOrganisationName,
       'organisations',
       'parent organisation'
     )
-    checkCode(owner, organisation.organisationTypeCode, 'organisationTypes')
+    check.code(owner, organisation.organisationTypeCode, 'organisationTypes')
   }
   for (const person of collections.people) {
-    checkName(
+    check.name(
       `Person ${person.name}`,
       person.organisationName,
       'organisations',
@@ -182,7 +201,7 @@ function foreignKeyBreaches(collections) {
     )
   }
   for (const deliveryGroup of collections.deliveryGroups) {
-    checkName(
+    check.name(
       `Delivery group ${deliveryGroup.name}`,
       deliveryGroup.organisationName,
       'organisations',
@@ -190,119 +209,107 @@ function foreignKeyBreaches(collections) {
     )
   }
   for (const informationAsset of collections.informationAssets) {
-    checkCode(
+    check.code(
       `Information asset ${informationAsset.name}`,
       informationAsset.securityClassificationCode,
       'securityClassifications'
     )
   }
+}
+
+function checkDataAssetAttributes(check, owner, dataAsset) {
+  check.name(owner, dataAsset.organisationName, 'organisations', 'organisation')
+  check.name(
+    owner,
+    dataAsset.deliveryGroupName,
+    'deliveryGroups',
+    'delivery group'
+  )
+  check.name(
+    owner,
+    dataAsset.informationAssetName,
+    'informationAssets',
+    'information asset'
+  )
+  check.code(owner, dataAsset.publicationStateCode, 'publicationStates')
+  check.code(owner, dataAsset.dataAssetTypeCode, 'dataAssetTypes')
+  check.code(owner, dataAsset.domainCode, 'domains')
+  check.code(owner, dataAsset.lifecycleStateCode, 'dataAssetLifecycleStates')
+  check.code(owner, dataAsset.updateFrequencyCode, 'updateFrequencies')
+  dataAsset.categoryCodes?.forEach((value) =>
+    check.code(owner, value, 'categories')
+  )
+  dataAsset.jurisdictionCodes?.forEach((value) =>
+    check.code(owner, value, 'jurisdictions')
+  )
+  dataAsset.keywordNames?.forEach((value) =>
+    check.name(owner, value, 'keywords', 'keyword')
+  )
+}
+
+function checkDataAssetLinks(check, owner, dataAsset) {
+  for (const relationship of dataAsset.relationships ?? []) {
+    check.code(owner, relationship.relationshipTypeCode, 'relationshipTypes')
+    check.relationshipTarget(owner, relationship.targetResourceIdentifier)
+  }
+  for (const assignment of dataAsset.governanceAssignments ?? []) {
+    check.name(
+      owner,
+      personKey(assignment.personName, assignment.personEmailAddressReference),
+      'people',
+      'person'
+    )
+    check.code(owner, assignment.governanceRoleCode, 'dataAssetGovernanceRoles')
+  }
+  for (const custodian of dataAsset.custodians ?? []) {
+    check.name(
+      owner,
+      custodian.organisationName,
+      'organisations',
+      'custodian organisation'
+    )
+  }
+}
+
+function checkDistribution(check, owner, distribution) {
+  const distributionOwner = `${owner} distribution "${distribution.name}"`
+  check.code(
+    distributionOwner,
+    distribution.distributionTypeCode,
+    'distributionTypes'
+  )
+  check.code(distributionOwner, distribution.accessMethodCode, 'accessMethods')
+  check.code(
+    distributionOwner,
+    distribution.distributionFormatCode,
+    'distributionFormats'
+  )
+  check.code(
+    distributionOwner,
+    distribution.authenticationMethodCode,
+    'authenticationMethods'
+  )
+  check.code(distributionOwner, distribution.licenceCode, 'licences')
+  check.name(
+    distributionOwner,
+    distribution.dataServiceTitleName,
+    'dataServices',
+    'data service'
+  )
+}
+
+function foreignKeyBreaches(collections) {
+  const check = referenceChecker(collections)
+  checkSupportingRecords(check, collections)
   for (const dataAsset of collections.dataAssets) {
     const owner = `Data asset ${dataAsset.identifier}`
-    checkName(
-      owner,
-      dataAsset.organisationName,
-      'organisations',
-      'organisation'
-    )
-    checkName(
-      owner,
-      dataAsset.deliveryGroupName,
-      'deliveryGroups',
-      'delivery group'
-    )
-    checkName(
-      owner,
-      dataAsset.informationAssetName,
-      'informationAssets',
-      'information asset'
-    )
-    checkCode(owner, dataAsset.publicationStateCode, 'publicationStates')
-    checkCode(owner, dataAsset.dataAssetTypeCode, 'dataAssetTypes')
-    checkCode(owner, dataAsset.domainCode, 'domains')
-    checkCode(owner, dataAsset.lifecycleStateCode, 'dataAssetLifecycleStates')
-    checkCode(owner, dataAsset.updateFrequencyCode, 'updateFrequencies')
-    dataAsset.categoryCodes?.forEach((value) =>
-      checkCode(owner, value, 'categories')
-    )
-    dataAsset.jurisdictionCodes?.forEach((value) =>
-      checkCode(owner, value, 'jurisdictions')
-    )
-    dataAsset.keywordNames?.forEach((value) =>
-      checkName(owner, value, 'keywords', 'keyword')
-    )
-    for (const relationship of dataAsset.relationships ?? []) {
-      checkCode(owner, relationship.relationshipTypeCode, 'relationshipTypes')
-      checkRelationshipTarget(owner, relationship.targetResourceIdentifier)
-    }
-    for (const assignment of dataAsset.governanceAssignments ?? []) {
-      checkName(
-        owner,
-        personKey(
-          assignment.personName,
-          assignment.personEmailAddressReference
-        ),
-        'people',
-        'person'
-      )
-      checkCode(
-        owner,
-        assignment.governanceRoleCode,
-        'dataAssetGovernanceRoles'
-      )
-    }
-    for (const custodian of dataAsset.custodians ?? []) {
-      checkName(
-        owner,
-        custodian.organisationName,
-        'organisations',
-        'custodian organisation'
-      )
-    }
+    checkDataAssetAttributes(check, owner, dataAsset)
+    checkDataAssetLinks(check, owner, dataAsset)
     for (const distribution of dataAsset.distributions ?? []) {
-      const distributionOwner = `${owner} distribution "${distribution.name}"`
-      checkCode(
-        distributionOwner,
-        distribution.distributionTypeCode,
-        'distributionTypes'
-      )
-      checkCode(
-        distributionOwner,
-        distribution.accessMethodCode,
-        'accessMethods'
-      )
-      checkCode(
-        distributionOwner,
-        distribution.distributionFormatCode,
-        'distributionFormats'
-      )
-      checkCode(
-        distributionOwner,
-        distribution.authenticationMethodCode,
-        'authenticationMethods'
-      )
-      checkCode(distributionOwner, distribution.licenceCode, 'licences')
-      checkName(
-        distributionOwner,
-        distribution.dataServiceTitleName,
-        'dataServices',
-        'data service'
-      )
+      checkDistribution(check, owner, distribution)
     }
   }
-
-  // A target inside the catalogue is held as its data asset identifier,
-  // and anything else as an https address (doc 15, question 9)
-  function checkRelationshipTarget(owner, target) {
-    if (isDataAssetIdentifier(target)) {
-      checkName(owner, target, 'dataAssets', 'related data asset')
-    } else if (!isHttpsAddress(target)) {
-      breaches.push(
-        `${owner} has a relationship target that is neither a data asset identifier nor an https address: ${target}`
-      )
-    }
-  }
-
-  return breaches
+  return check.breaches
 }
 
 function hierarchyBreaches(collections) {
