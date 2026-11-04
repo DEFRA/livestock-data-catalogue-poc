@@ -17,6 +17,7 @@ export async function startApp() {
   const baseUrl = `http://127.0.0.1:${server.address().port}`
 
   return {
+    baseUrl,
     async getPage(path) {
       const response = await fetch(new URL(path, baseUrl), {
         redirect: 'manual'

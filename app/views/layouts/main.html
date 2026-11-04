@@ -1,6 +1,54 @@
 {#
-For guidance on how to use layouts see:
-https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
+  Every page's layout. The catalogue is for Defra staff and isn't on
+  GOV.UK, so it has the Generic header, no crown or GOV.UK logotype, and
+  its own footer.
 #}
 
 {% extends "govuk-prototype-kit/layouts/govuk-branded.njk" %}
+
+{% from "govuk/components/generic-header/macro.njk" import govukGenericHeader %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+
+{% block pageTitle -%}
+  {% if hasErrors %}Error: {% endif %}{% if pageName %}{{ pageName }} – {% endif %}{{ serviceName }}
+{%- endblock %}
+
+{% block headIcons %}
+  <link rel="icon" href="/plugin-assets/govuk-prototype-kit/lib/assets/images/unbranded.ico" type="image/x-icon">
+{% endblock %}
+
+{% block govukHeader %}
+  {{ govukGenericHeader({
+    logoText: "Defra",
+    url: "/"
+  }) }}
+{% endblock %}
+
+{% block govukServiceNavigation %}
+  {{ govukServiceNavigation({
+    serviceName: serviceName,
+    serviceUrl: "/",
+    navigation: [
+      {
+        href: "/data-assets",
+        text: "Data assets",
+        current: navigationItem == "data-assets",
+        active: navigationItem == "data-asset"
+      }
+    ]
+  }) }}
+{% endblock %}
+
+{% block headerEnd %}
+  {{ govukPhaseBanner({
+    tag: {
+      text: "Alpha"
+    },
+    html: 'This is a prototype with made-up data. Your <a class="govuk-link" href="/report-a-problem">feedback</a> will help us improve it.'
+  }) }}
+{% endblock %}
+
+{% block govukFooter %}
+  {% include "partials/app-footer.html" %}
+{% endblock %}

@@ -1,4 +1,5 @@
 {
-  "serviceName": "livestock-data-catalogue-poc",
-  "useServiceNavigation": true
+  "serviceName": "Livestock Data Catalogue",
+  "useServiceNavigation": true,
+  "useAutoStoreData": false
 }

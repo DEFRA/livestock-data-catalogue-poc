@@ -1,6 +1,23 @@
-//
-// For guidance on how to add CSS and SCSS see:
-// https://prototype-kit.service.gov.uk/docs/adding-css-javascript-and-images
-// 
+// The catalogue's own footer. Services that aren't on GOV.UK build their
+// own, because there's no generic footer component.
+.app-footer {
+  @include govuk-font($size: 16);
+  @include govuk-responsive-padding(7, "top");
+  @include govuk-responsive-padding(5, "bottom");
+  border-top: $govuk-border-width-wide solid govuk-functional-colour(brand);
+  color: govuk-functional-colour(surface-text);
+  background-color: govuk-functional-colour(template-background);
+}
 
-// Add extra styles here
+.app-footer__list {
+  margin-top: 0;
+  margin-bottom: govuk-spacing(4);
+  padding: 0;
+  list-style: none;
+}
+
+.app-footer__list-item {
+  display: inline-block;
+  margin-right: govuk-spacing(4);
+  margin-bottom: govuk-spacing(2);
+}

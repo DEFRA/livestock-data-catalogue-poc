@@ -1,0 +1,33 @@
+{% extends "layouts/main.html" %}
+
+{% set pageName = "Accessibility statement" %}
+{% set mainClasses = "govuk-main-wrapper--auto-spacing" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Accessibility statement for the Livestock Data Catalogue prototype</h1>
+      <p class="govuk-body">This prototype is run by the Department for Environment, Food and Rural Affairs (Defra). It is for research, and its data is made up.</p>
+      <p class="govuk-body">We want as many people as possible to be able to use it. For example, you should be able to:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>use it without JavaScript</li>
+        <li>zoom in up to 400% without the text spilling off the screen</li>
+        <li>move around it using just a keyboard</li>
+        <li>use it with a screen reader</li>
+      </ul>
+
+      <h2 class="govuk-heading-m">How accessible this prototype is</h2>
+      <p class="govuk-body">We build every page with the GOV.UK Design System, and aim to meet the Web Content Accessibility Guidelines (WCAG) version 2.2 at AA level.</p>
+      <p class="govuk-body">We check every page with automated tests. We have not yet finished checking it by hand or with assistive technologies, and it has not had an accessibility audit.</p>
+
+      <h2 class="govuk-heading-m">Reporting accessibility problems</h2>
+      <p class="govuk-body">If you find a problem, <a class="govuk-link" href="/report-a-problem">report it</a>.</p>
+
+      <h2 class="govuk-heading-m">Known issues</h2>
+      <p class="govuk-body">The automated tests have not found any problems. We will list any problems we find here.</p>
+
+      <h2 class="govuk-heading-m">Preparation of this statement</h2>
+      <p class="govuk-body">This statement was prepared on 4 November 2026.</p>
+    </div>
+  </div>
+{% endblock %}
