@@ -1,7 +1,9 @@
 {#
   Every page's layout. The catalogue is for Defra staff and isn't on
-  GOV.UK, so it has the Generic header, no crown or GOV.UK logotype, and
-  its own footer.
+  GOV.UK, so it follows Defra's branding guidance for services not on
+  GOV.UK (https://digital.defra.gov.uk/design/branding): the Defra header,
+  logo, footer and favicon, built from the GOV.UK Generic header, with no
+  crown or GOV.UK logotype.
 #}
 
 {% extends "govuk-prototype-kit/layouts/govuk-branded.njk" %}
@@ -15,20 +17,29 @@
 {%- endblock %}
 
 {% block headIcons %}
-  <link rel="icon" href="/plugin-assets/govuk-prototype-kit/lib/assets/images/unbranded.ico" type="image/x-icon">
+  <link rel="icon" href="/public/images/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/public/images/favicon.ico" type="image/x-icon">
 {% endblock %}
 
 {% block govukHeader %}
+  {# Screen readers skip the crest, as Defra's guidance says, and read the
+     service name followed by the department's name #}
+  {% set defraLogo %}
+    <span class="app-generic-header__brand">
+      <img class="app-generic-header__logo" src="/public/images/defra-logo.svg" alt="" width="115" height="60">
+      <span class="app-generic-header__service-name">{{ serviceName }}</span>
+    </span>
+    <span class="govuk-visually-hidden">(Department for Environment, Food and Rural Affairs)</span>
+  {% endset %}
   {{ govukGenericHeader({
-    logoText: "Defra",
+    classes: "app-generic-header--defra",
+    logoHtml: defraLogo,
     url: "/"
   }) }}
 {% endblock %}
 
 {% block govukServiceNavigation %}
   {{ govukServiceNavigation({
-    serviceName: serviceName,
-    serviceUrl: "/",
     navigation: [
       {
         href: "/data-assets",

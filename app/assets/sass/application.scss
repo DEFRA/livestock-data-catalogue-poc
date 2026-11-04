@@ -1,3 +1,45 @@
+// The Defra header, from Defra's branding guidance for services not on
+// GOV.UK: a white header with the Defra logo and the service name in Defra
+// green. GOV.UK's guidance on using GOV.UK Frontend without GOV.UK branding
+// allows changing the Generic header's colour with a class of our own.
+.app-generic-header--defra {
+  background-color: govuk-colour("white");
+}
+
+// The logo is taller than the header link's text, so the link's own focus
+// style would only cover part of it. This block gets the same focus style,
+// around the whole logo and service name.
+.app-generic-header__brand {
+  display: inline-block;
+
+  :focus > & {
+    @include govuk-focused-text;
+  }
+}
+
+.app-generic-header__logo {
+  margin-right: govuk-spacing(3);
+  vertical-align: middle;
+}
+
+.app-generic-header__service-name {
+  @include govuk-font($size: 24, $weight: bold);
+  display: inline-block;
+  color: govuk-functional-colour(brand);
+  vertical-align: middle;
+
+  :hover > .app-generic-header__brand > & {
+    text-decoration: underline;
+    @include govuk-link-hover-decoration;
+  }
+
+  // The link turns yellow when it has focus, so the text turns black
+  :focus > .app-generic-header__brand > & {
+    color: govuk-functional-colour(focus-text);
+    text-decoration: none;
+  }
+}
+
 // The catalogue's own footer. Services that aren't on GOV.UK build their
 // own, because there's no generic footer component.
 .app-footer {

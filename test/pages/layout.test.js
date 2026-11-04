@@ -43,12 +43,26 @@ describe('the layout of every page', () => {
         assert.equal(page.document.title, title)
       })
 
-      test('has the Generic header and no GOV.UK header, crown or logotype', () => {
+      test('has the Defra header: the Defra logo and the service name, with no GOV.UK header, crown or logotype', () => {
+        const header = page.document.querySelector('.govuk-generic-header')
+        const homepageLink = header.querySelector(
+          '.govuk-generic-header__homepage-link'
+        )
+        const logo = homepageLink.querySelector('img')
+
+        assert.ok(header.classList.contains('app-generic-header--defra'))
+        assert.equal(homepageLink.getAttribute('href'), '/')
+        assert.equal(logo.getAttribute('src'), '/public/images/defra-logo.svg')
+        assert.equal(logo.getAttribute('alt'), '')
         assert.equal(
-          page.document
-            .querySelector('.govuk-generic-header__homepage-link')
+          homepageLink.textContent.replace(/\s+/g, ' ').trim(),
+          'Livestock Data Catalogue (Department for Environment, Food and Rural Affairs)'
+        )
+        assert.equal(
+          homepageLink
+            .querySelector('.app-generic-header__service-name')
             .textContent.trim(),
-          'Defra'
+          'Livestock Data Catalogue'
         )
         assert.equal(page.document.querySelector('.govuk-header'), null)
         assert.doesNotMatch(page.document.title, /GOV\.UK/)
@@ -56,19 +70,32 @@ describe('the layout of every page', () => {
           page.document.querySelector('header').innerHTML,
           /GOV\.UK|govuk-logo|crown/i
         )
+        // Case matters: the licence links to nationalarchives.gov.uk
+        assert.doesNotMatch(
+          page.document.querySelector('footer').textContent,
+          /GOV\.UK/
+        )
         assert.doesNotMatch(
           page.document.querySelector('footer').innerHTML,
-          /GOV\.UK|crown|Open Government Licence/i
+          /crown|govuk-footer|govuk-logo/i
         )
       })
 
-      test('has the service name in the service navigation', () => {
-        const serviceName = page.document.querySelector(
-          '.govuk-service-navigation__service-name a'
+      test('has only the navigation in the service navigation, because the header has the service name', () => {
+        const navigation = page.document.querySelector(
+          '.govuk-service-navigation'
         )
 
-        assert.equal(serviceName.textContent.trim(), 'Livestock Data Catalogue')
-        assert.equal(serviceName.getAttribute('href'), '/')
+        assert.equal(
+          navigation.querySelector('.govuk-service-navigation__service-name'),
+          null
+        )
+        assert.deepEqual(
+          [
+            ...navigation.querySelectorAll('.govuk-service-navigation__link')
+          ].map((link) => [link.textContent.trim(), link.getAttribute('href')]),
+          [['Data assets', '/data-assets']]
+        )
       })
 
       test('has an Alpha phase banner that says the data is made up', () => {
@@ -88,21 +115,35 @@ describe('the layout of every page', () => {
         )
       })
 
-      test('has a footer that links to report a problem, accessibility, cookies and privacy', () => {
-        const links = [
-          ...page.document.querySelectorAll('footer .app-footer a')
-        ].map((link) => [link.textContent.trim(), link.getAttribute('href')])
+      test('has the Defra footer: support links and the Open Government Licence', () => {
+        const footer = page.document.querySelector('footer .app-footer')
+        const links = [...footer.querySelectorAll('a')].map((link) => [
+          link.textContent.trim(),
+          link.getAttribute('href')
+        ])
 
         assert.deepEqual(links, [
           ['Report a problem', '/report-a-problem'],
           ['Accessibility statement', '/accessibility-statement'],
           ['Cookies', '/cookies'],
-          ['Privacy', '/privacy']
+          ['Privacy', '/privacy'],
+          [
+            'Open Government Licence v3.0',
+            'https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/'
+          ]
         ])
+        assert.equal(
+          footer.querySelector('a[rel="license"]').textContent.trim(),
+          'Open Government Licence v3.0'
+        )
+        assert.match(
+          footer.textContent.replace(/\s+/g, ' '),
+          /All content is available under the Open Government Licence v3\.0, except where otherwise stated/
+        )
         assert.equal(page.document.querySelector('.govuk-footer'), null)
       })
 
-      test('uses the Defra brand colour as the theme colour and has no GOV.UK icons', () => {
+      test('uses the Defra brand colour as the theme colour, the Defra favicon and no GOV.UK icons', () => {
         assert.equal(
           page.document
             .querySelector('meta[name="theme-color"]')
@@ -110,10 +151,13 @@ describe('the layout of every page', () => {
           '#008531'
         )
         assert.deepEqual(
-          [...page.document.querySelectorAll('link[rel~="icon"]')].map((icon) =>
-            icon.getAttribute('href')
+          [...page.document.querySelectorAll('link[rel~="icon"]')].map(
+            (icon) => [icon.getAttribute('href'), icon.getAttribute('type')]
           ),
-          ['/plugin-assets/govuk-prototype-kit/lib/assets/images/unbranded.ico']
+          [
+            ['/public/images/favicon.svg', 'image/svg+xml'],
+            ['/public/images/favicon.ico', 'image/x-icon']
+          ]
         )
         assert.equal(
           page.document.querySelector(
@@ -130,6 +174,23 @@ describe('the layout of every page', () => {
       test('has exactly one main heading', () => {
         assert.equal(page.document.querySelectorAll('h1').length, 1)
       })
+    })
+  }
+
+  for (const [path, contentType] of [
+    ['/public/images/defra-logo.svg', 'image/svg+xml'],
+    ['/public/images/favicon.svg', 'image/svg+xml'],
+    ['/public/images/favicon.ico', 'image/vnd.microsoft.icon']
+  ]) {
+    test(`serves the Defra brand file ${path}`, async () => {
+      const response = await fetch(new URL(path, app.baseUrl))
+      await response.arrayBuffer()
+
+      assert.equal(response.status, 200)
+      assert.ok(
+        response.headers.get('content-type').startsWith(contentType),
+        response.headers.get('content-type')
+      )
     })
   }
 

@@ -64,6 +64,22 @@ describe('the stylesheet', () => {
     assert.match(css, /\.app-footer \{/)
   })
 
+  test('makes the Defra header white, with the service name in Defra green', () => {
+    const declarations = (selector) =>
+      [...css.matchAll(new RegExp(`(?:^|\\n)${selector} \\{([^}]*)\\}`, 'g'))]
+        .map((match) => match[1])
+        .join('')
+
+    assert.match(
+      declarations('\\.app-generic-header--defra'),
+      /background-color: #ffffff;/
+    )
+    assert.match(
+      declarations('\\.app-generic-header__service-name'),
+      new RegExp(`color: var\\(--govuk-brand-colour, ${DEFRA_COLOUR}\\);`)
+    )
+  })
+
   test('finds GOV.UK branding when our settings are left out', () => {
     const unbranded = compileStylesheet({ withSettings: false })
 

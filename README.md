@@ -157,11 +157,12 @@ template provides both tools in a wrapper that runs on the Core Delivery Platfor
 
 ## Branding
 
-The catalogue is for Defra staff and isn't on GOV.UK, so it doesn't use GOV.UK branding: no crown, GOV.UK logotype, GDS Transport font or GOV.UK brand colours, and no "GOV.UK" in page titles. Following [Using GOV.UK Frontend without GOV.UK branding](https://frontend.design-system.service.gov.uk/using-govuk-frontend-without-govuk-branding/):
+The catalogue is for Defra staff and isn't on GOV.UK, so it doesn't use GOV.UK branding: no crown, GOV.UK logotype, GDS Transport font, GOV.UK header or footer, or GOV.UK brand colours, and no "GOV.UK" in page titles. It follows [Defra's branding guidance for services not on GOV.UK](https://digital.defra.gov.uk/design/branding), which says they must use the Defra header, logo, footer and favicon, and Helvetica or Arial. It builds them with GOV.UK Frontend, following [Using GOV.UK Frontend without GOV.UK branding](https://frontend.design-system.service.gov.uk/using-govuk-frontend-without-govuk-branding/):
 
-- every page has the Generic header, the service name in service navigation and our own footer ([app/views/layouts/main.html](./app/views/layouts/main.html))
-- [app/assets/sass/settings.scss](./app/assets/sass/settings.scss) sets the font to Helvetica Neue, Helvetica or Arial, and the brand colour to Defra's organisation colour from GOV.UK Frontend
-- the browser theme colour is the same organisation colour, and the favicon is the Kit's unbranded one
+- **Header:** the Generic header with the class `app-generic-header--defra`, which makes it white, as on Defra's own digital service manual. It shows the Defra logo and the service name in Defra green ([app/views/layouts/main.html](./app/views/layouts/main.html)). Screen readers skip the logo and read the service name and the department's name. The service navigation has only the navigation, because the header has the service name.
+- **Footer:** our own footer, with Defra's green top border, the support links and the Open Government Licence statement ([app/views/partials/app-footer.html](./app/views/partials/app-footer.html)).
+- **Font and colour:** [app/assets/sass/settings.scss](./app/assets/sass/settings.scss) sets the font to Helvetica Neue, Helvetica or Arial, and the brand colour to Defra's contrast-safe organisation colour from GOV.UK Frontend. The browser theme colour is the same.
+- **Logo and favicon:** [app/assets/images](./app/assets/images) has the Defra logo and favicons, copied unchanged from Defra's [digital service manual](https://github.com/DEFRA/service-manual-ui/tree/main/src/client/images). The logo includes the Royal Arms, which are Crown copyright and not covered by the Open Government Licence: only Defra services may use it.
 
 ## Setting a password
 
