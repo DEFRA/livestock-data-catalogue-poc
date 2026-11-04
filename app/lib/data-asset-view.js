@@ -2,7 +2,7 @@ import { personKey } from './catalogue-data.js'
 import { formatDate } from './formatting.js'
 import { isDataAssetIdentifier } from './identifiers.js'
 import { isCurrentOn } from './periods.js'
-import { nameFor, referenceValue } from './reference-data.js'
+import { nameFor, referenceValue, referenceValues } from './reference-data.js'
 import { searchHref } from './search.js'
 import { dataAssetHref } from './summaries.js'
 import { findVisibleDataAsset } from './visibility.js'
@@ -10,14 +10,6 @@ import { findVisibleDataAsset } from './visibility.js'
 // The agreed open-ended value for Valid To Date (S06). Provisional until
 // the data architect confirms it.
 export const OPEN_ENDED_DATE = '9999-12-31'
-
-const RELATIONSHIP_ORDER = [
-  'DERIVED_FROM',
-  'RELATED_TO',
-  'REFERENCED_BY',
-  'REPLACES',
-  'REPLACED_BY'
-]
 
 const BYTE_UNITS = [
   [1e9, 'GB'],
@@ -334,13 +326,18 @@ function relatedLink(catalogue, relationship) {
 }
 
 function relatedGroups(catalogue, dataAsset) {
-  return RELATIONSHIP_ORDER.map((typeCode) => ({
-    heading: nameFor(catalogue, 'relationshipTypes', typeCode),
-    links: (dataAsset.relationships ?? [])
-      .filter((relationship) => relationship.relationshipTypeCode === typeCode)
-      .map((relationship) => relatedLink(catalogue, relationship))
-      .filter(Boolean)
-  })).filter((group) => group.links.length > 0)
+  return referenceValues(catalogue, 'relationshipTypes')
+    .map((relationshipType) => ({
+      heading: relationshipType.name,
+      links: (dataAsset.relationships ?? [])
+        .filter(
+          (relationship) =>
+            relationship.relationshipTypeCode === relationshipType.code
+        )
+        .map((relationship) => relatedLink(catalogue, relationship))
+        .filter(Boolean)
+    }))
+    .filter((group) => group.links.length > 0)
 }
 
 function replacementFor(catalogue, dataAsset) {

@@ -387,6 +387,26 @@ describe('the data asset page content', () => {
       )
     })
 
+    test('shows a relationship type that is new to the code list, in the list order', () => {
+      const collections = catalogueCopy()
+      collections.codeLists.relationshipTypes.push({
+        code: 'SUPPLEMENTS',
+        name: 'Supplements'
+      })
+      dataAssetIn(collections, 'DA11111').relationships.push({
+        relationshipTypeCode: 'SUPPLEMENTS',
+        targetResourceIdentifier: 'DA11113'
+      })
+      const groups = pageFor('DA11111', {
+        fromCatalogue: buildCatalogue(collections)
+      }).relatedGroups
+
+      assert.deepEqual(
+        groups.map((group) => group.heading),
+        ['Derived from', 'Related to', 'Supplements']
+      )
+    })
+
     test('shows the address when an external resource has no description', () => {
       const page = pageAfter('DA11111', (dataAsset) => {
         delete dataAsset.relationships[0].description

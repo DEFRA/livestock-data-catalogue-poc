@@ -8,7 +8,11 @@ import {
 } from '../../app/lib/catalogue-data.js'
 import { today } from '../../app/lib/clock.js'
 import { isDataAssetIdentifier } from '../../app/lib/identifiers.js'
-import { nameFor, referenceValue } from '../../app/lib/reference-data.js'
+import {
+  nameFor,
+  referenceValue,
+  referenceValues
+} from '../../app/lib/reference-data.js'
 import {
   findVisibleDataAsset,
   isVisible,
@@ -146,6 +150,21 @@ describe('reference data', () => {
   test('fails clearly when the list does not exist', () => {
     assert.throws(() => nameFor(catalogue, 'colours', 'RED'), {
       message: 'No colours value has the code RED'
+    })
+  })
+
+  test('lists every value of a code list, in the order of the list', () => {
+    assert.deepEqual(
+      referenceValues(catalogue, 'relationshipTypes').map(
+        (value) => value.code
+      ),
+      ['DERIVED_FROM', 'RELATED_TO', 'REFERENCED_BY', 'REPLACES', 'REPLACED_BY']
+    )
+  })
+
+  test('fails clearly when a list to read in full does not exist', () => {
+    assert.throws(() => referenceValues(catalogue, 'colours'), {
+      message: 'There is no colours list'
     })
   })
 })
