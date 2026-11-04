@@ -1,0 +1,15 @@
+# Findings accepted on 4 November 2026 until upstream fixes are released:
+# https://eaflood.atlassian.net/browse/LDAT-237
+# Each line expires, so the image scan fails again if a finding is still
+# here after that date. Remove a line as soon as its fix is in the image.
+
+# body-parser and follow-redirects, bundled inside GOV.UK Prototype Kit 14.0.2
+CVE-2026-111181 exp:2026-12-04
+CVE-2026-111755 exp:2026-12-04
+CVE-2026-111756 exp:2026-12-04
+CVE-2026-116689 exp:2026-12-04
+
+# undici, in the npm that comes with Defra base image 3.2.4-node24.22.1
+CVE-2026-109383 exp:2026-12-04
+CVE-2026-109869 exp:2026-12-04
+CVE-2026-87018 exp:2026-12-04

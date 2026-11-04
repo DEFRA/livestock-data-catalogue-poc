@@ -70,4 +70,5 @@ jobs:
           image-ref: livestock-data-catalogue-poc:ci
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          trivyignores: .trivyignore # accepted findings, each with an expiry date
           exit-code: '1'
