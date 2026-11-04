@@ -1,6 +1,6 @@
 {% extends "layouts/main.html" %}
 
-{% set pageName = "Accessibility statement" %}
+{% set pageName = "Accessibility statement for the Livestock Data Catalogue prototype" %}
 {% set mainClasses = "govuk-main-wrapper--auto-spacing" %}
 
 {% block content %}
@@ -24,7 +24,8 @@
       <p class="govuk-body">If you find a problem, <a class="govuk-link" href="/report-a-problem">report it</a>.</p>
 
       <h2 class="govuk-heading-m">Known issues</h2>
-      <p class="govuk-body">The automated tests have not found any problems. We will list any problems we find here.</p>
+      <p class="govuk-body">Keywords in Welsh, such as <span lang="cy">gwartheg</span>, are not marked as Welsh, so screen readers may read them as English. This fails WCAG 2.2 success criterion 3.1.2 (language of parts). The catalogue does not yet record which language a keyword is in, and we have asked for it to be added.</p>
+      <p class="govuk-body">We will list any other problems we find here.</p>
 
       <h2 class="govuk-heading-m">Preparation of this statement</h2>
       <p class="govuk-body">This statement was prepared on 4 November 2026.</p>

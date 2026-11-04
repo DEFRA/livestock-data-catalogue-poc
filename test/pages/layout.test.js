@@ -13,7 +13,7 @@ const PAGES = [
   ['/report-a-problem', 'Report a problem – Livestock Data Catalogue'],
   [
     '/accessibility-statement',
-    'Accessibility statement – Livestock Data Catalogue'
+    'Accessibility statement for the Livestock Data Catalogue prototype – Livestock Data Catalogue'
   ],
   ['/cookies', 'Cookies – Livestock Data Catalogue'],
   ['/privacy', 'Privacy – Livestock Data Catalogue'],

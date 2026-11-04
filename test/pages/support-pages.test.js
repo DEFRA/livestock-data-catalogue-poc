@@ -59,6 +59,19 @@ describe('the support and error pages', () => {
     )
   })
 
+  test('the accessibility statement lists the Welsh keywords that are not marked as Welsh', async () => {
+    const page = await app.getPage('/accessibility-statement')
+    const knownIssues = [...page.document.querySelectorAll('h2')].find(
+      (heading) => heading.textContent.trim() === 'Known issues'
+    ).nextElementSibling
+
+    assert.match(knownIssues.textContent, /WCAG 2\.2 success criterion 3\.1\.2/)
+    assert.equal(
+      knownIssues.querySelector('[lang="cy"]').textContent,
+      'gwartheg'
+    )
+  })
+
   test('the page for unexpected errors says what to do, with no details of the error', async () => {
     const page = await app.renderPage('problem-with-the-service')
 
