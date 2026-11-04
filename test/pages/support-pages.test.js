@@ -120,6 +120,25 @@ describe('the support and error pages', () => {
     )
   })
 
+  // Without the catch-all Page not found, the Kit renders any template whose
+  // path matches the address
+  for (const path of [
+    '/layouts/main',
+    '/partials/links',
+    '/page-not-found',
+    '/problem-with-the-service'
+  ]) {
+    test(`shows Page not found for ${path}, so the Kit does not render templates by address`, async () => {
+      const page = await app.getPage(path)
+
+      assert.equal(page.status, 404)
+      assert.equal(
+        page.document.querySelector('h1').textContent.trim(),
+        'Page not found'
+      )
+    })
+  }
+
   test('shows Page not found for an address with broken encoding', async () => {
     const page = await app.getPage('/data-assets/%E0%A4%A')
 
