@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
+import { createRequire } from 'node:module'
 import { after, before, describe, test } from 'node:test'
 
 import { startApp } from './helpers/app.js'
+
+const require = createRequire(import.meta.url)
 
 describe('the prototype app', () => {
   let app
@@ -25,5 +28,9 @@ describe('the prototype app', () => {
     const page = await app.getPage('/')
 
     assert.equal(page.headers.get('x-robots-tag'), 'noindex')
+  })
+
+  test('gives the Kit the session data defaults as a plain object, as it loads them with require()', () => {
+    assert.deepEqual(require('../app/data/session-data-defaults.js'), {})
   })
 })
