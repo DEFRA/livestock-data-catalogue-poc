@@ -140,6 +140,15 @@ function coverageSection(catalogue, dataAsset) {
   }
 }
 
+// Each part of the address is encoded, so nothing in it can add recipients
+// or text to the email
+function mailtoHref(emailAddress) {
+  const at = emailAddress.lastIndexOf('@')
+  const localPart = encodeURIComponent(emailAddress.slice(0, at))
+  const domain = encodeURIComponent(emailAddress.slice(at + 1))
+  return `mailto:${localPart}@${domain}`
+}
+
 function currentPeople(catalogue, dataAsset, roleCode, today) {
   return (dataAsset.governanceAssignments ?? [])
     .filter(
@@ -154,7 +163,8 @@ function currentPeople(catalogue, dataAsset, roleCode, today) {
       return {
         name: person.name,
         organisationName: person.organisationName,
-        emailAddress: person.emailAddressReference
+        emailAddress: person.emailAddressReference,
+        emailHref: mailtoHref(person.emailAddressReference)
       }
     })
 }

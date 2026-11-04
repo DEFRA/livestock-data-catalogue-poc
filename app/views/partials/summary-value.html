@@ -17,7 +17,7 @@
       {%- for person in row.people %}
         <li>
           {{ person.name }}, {{ person.organisationName }}<br>
-          <a class="govuk-link" href="mailto:{{ person.emailAddress }}">{{ person.emailAddress }}</a>
+          <a class="govuk-link" href="{{ person.emailHref }}">{{ person.emailAddress }}</a>
         </li>
       {%- endfor %}
     </ul>

@@ -115,6 +115,36 @@ describe('the data contract', () => {
     assertRejected(errors, 'websiteReference" must be a valid uri')
   })
 
+  test('rejects an email address with characters that could change a mailto: link', () => {
+    for (const address of [
+      'jo.bloggs?cc=someone@example.gov.uk',
+      'jo.bloggs&body=hello@example.gov.uk',
+      'jo.bloggs#top@example.gov.uk',
+      'jo.bloggs%20@example.gov.uk'
+    ]) {
+      const errors = errorsAfter((collections) => {
+        collections.people[0].emailAddressReference = address
+      })
+
+      assertRejected(
+        errors,
+        'emailAddressReference" with value "' + address + '" fails to match'
+      )
+    }
+  })
+
+  test('accepts an email address with an apostrophe or a plus sign', () => {
+    const errors = errorsAfter((collections) => {
+      collections.people[0].emailAddressReference =
+        "jo.o'bloggs+data@example.gov.uk"
+    })
+
+    assert.ok(
+      !errors.some((error) => error.includes('emailAddressReference')),
+      errors.join('; ')
+    )
+  })
+
   test('rejects a negative byte size', () => {
     const errors = errorsAfter((collections) => {
       dataAssetIn(collections, 'DA11113').distributions[0].byteSizeQuantity = -1

@@ -28,7 +28,11 @@ export const anyAddress = Joi.string().uri()
 
 export const code = Joi.string().pattern(/^[A-Z0-9]+(?:[_-][A-Z0-9]+)*$/)
 
-export const emailAddress = Joi.string().email({ tlds: { allow: false } })
+// A valid address that uses only characters that can't change a mailto:
+// link, such as ? or &, which could add recipients or text to an email
+export const emailAddress = Joi.string()
+  .email({ tlds: { allow: false } })
+  .pattern(/^[A-Za-z0-9._'+-]+@[A-Za-z0-9.-]+$/)
 
 export const wholeNumber = Joi.number().integer()
 

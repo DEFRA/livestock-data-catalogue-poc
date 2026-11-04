@@ -154,9 +154,34 @@ describe('the data asset page content', () => {
         {
           name: 'Jo Bloggs',
           organisationName: 'Animal and Plant Health Agency',
-          emailAddress: 'jo.bloggs@example.gov.uk'
+          emailAddress: 'jo.bloggs@example.gov.uk',
+          emailHref: 'mailto:jo.bloggs@example.gov.uk'
         }
       ])
+    })
+
+    test('encodes the email address in its mailto: link', () => {
+      const collections = catalogueCopy()
+      const address = "jo.o'bloggs+data@example.gov.uk"
+      collections.people.find(
+        (person) => person.name === 'Jo Bloggs'
+      ).emailAddressReference = address
+      for (const dataAsset of collections.dataAssets) {
+        for (const assignment of dataAsset.governanceAssignments ?? []) {
+          if (assignment.personName === 'Jo Bloggs') {
+            assignment.personEmailAddressReference = address
+          }
+        }
+      }
+      const page = pageFor('DA11111', {
+        fromCatalogue: buildCatalogue(collections)
+      })
+
+      assert.equal(
+        row(section(page, 'Responsibility').rows, 'Data Owner').people[0]
+          .emailHref,
+        "mailto:jo.o'bloggs%2Bdata@example.gov.uk"
+      )
     })
 
     test('does not show a Data Steward whose assignment has not started', () => {
