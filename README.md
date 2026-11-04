@@ -97,17 +97,19 @@ npm run format:check
 npm test
 ```
 
-- **Unit tests** cover the data contract, search, browsing and the data asset page, with a fixed date so they don't depend on when they run.
+- **Unit tests** cover the data contract, search, browsing and the data asset page, with a fixed date so they don't depend on when they run. They also check that every made-up address in the mock data uses a domain reserved for examples.
 - **Page tests** load the Kit's app with `USE_AUTH=false` on a random port, and read the HTML with jsdom.
 - **Accessibility tests** run axe-core's WCAG 2.2 AA rules on every page state. jsdom can't measure colour contrast, so check contrast, keyboard use, zoom and screen readers by hand.
+- **Stylesheet tests** compile the Sass with the Kit's own copy of Sass, in the Kit's order, and check the branding: no GDS Transport, Helvetica, and Defra's colour as the brand colour.
 - `npm test` fails if coverage of lines, branches or functions falls below 90%, and writes `coverage/lcov.info`.
 
-The [pull request checks](./.github/workflows/check-pull-request.yml) run the same commands, the dependency review, a build of the production image, and a scan of that image.
+The [pull request checks](./.github/workflows/check-pull-request.yml) run the same commands, a build of the production image, and a scan of that image. The dependency review runs in a job of its own, because it's the only job that can write to the pull request. The scan ignores the findings listed in [`.trivyignore`](./.trivyignore), which are accepted until upstream fixes are released. Each one has an expiry date.
 
 ## Branching and pull requests
 
 - Follow [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow): make every change on a branch named for its intent, and merge it with a pull request. Never commit to `main`.
 - `main` is protected: changes need a pull request with 1 approval, and are squash merged. While the team has one developer, a repository admin may merge without an approval (see [Prototype exceptions](#prototype-exceptions)).
+- While the team has one developer, all Phase 1 prototype work is in one draft pull request, with one commit for each piece of work and its Jira link.
 - Commit messages have a subject of 50 characters or fewer, in the imperative, then a blank line and a body that says what changed and why, with the Jira link.
 - Follow the [Defra software development standards](https://defra.github.io/software-development-standards/), and fill in the [pull request template](./.github/pull_request_template.md).
 
@@ -121,8 +123,10 @@ The prototype follows the Defra standards wherever it can. These rules can't app
 | Sass `@use`, not `@import`                                        | The Kit builds Sass with `@import`, so our Sass files are imported. They use only GOV.UK Frontend's settings and helpers                                                                               | The frontend service              |
 | ECS logs with pino                                                | The Kit logs to the console, which CDP collects. Our code logs only unexpected errors, with no request data                                                                                            | The frontend and backend services |
 | `GET /health` on port 8085                                        | CDP's prototype template listens on port 3000 with no `/health` route                                                                                                                                  | The frontend and backend services |
-| Redis sessions, CSRF tokens, CSP and security headers             | The Kit manages sessions and headers. The journey only reads data, with GET requests                                                                                                                   | The frontend service              |
+| Redis sessions, CSRF tokens, CSP and security headers             | The Kit manages sessions and headers, and our code can't change them. The journey only reads data, with GET requests                                                                                   | The frontend service              |
+| A generic page for every error                                    | The Kit shows its own error page, with details of the error, for errors that happen before our code runs. Our code can't change this. Our own errors show a generic page                               | The frontend service              |
 | SonarQube Cloud                                                   | The code is throwaway. The pull request checks still need 90% test coverage                                                                                                                            | The frontend and backend services |
+| Small, focused pull requests                                      | The team has one developer, who keeps all Phase 1 prototype work in one draft pull request, with one commit for each piece of work                                                                     | Every repository                  |
 | Every change is approved by another developer before it is merged | The team has one developer. Admins may merge without an approval, on a pull request only, and GitHub records each time. This needs an approved Defra exception, and ends when a second developer joins | Every repository                  |
 
 ## GOV.UK Prototype Kit and GOV.UK Frontend
