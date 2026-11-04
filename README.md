@@ -1,14 +1,24 @@
 # livestock-data-catalogue-poc
 
-`Node.js` prototype template, using the [GOV.UK Prototype Kit](https://github.com/alphagov/govuk-prototype-kit) and
-the [GOV.UK Frontend](https://github.com/alphagov/govuk-frontend).
+A prototype of the Livestock Data Catalogue, built with the [GOV.UK Prototype Kit](https://github.com/alphagov/govuk-prototype-kit) and [GOV.UK Frontend](https://github.com/alphagov/govuk-frontend), and run on Defra's Core Delivery Platform (CDP).
 
-> Basically the `GOV.UK Prototype Kit` and `GOV.UK Frontend` wrapped up and provided on the Core Delivery Platform
+The catalogue will hold metadata about livestock data: what each data asset holds, who is responsible for it and how to get it. This prototype tests the first journey, "find and view a data asset", with users before it is built in the frontend service, [livestock-data-catalogue-ui](https://github.com/DEFRA/livestock-data-catalogue-ui).
 
+> [!WARNING]
+> Prototype code is throwaway. Tested designs are rebuilt in the frontend service: no code is copied from here. The prototype is not designed to be resilient, secure or performant, and every value in its data is made up.
+
+- [The prototype](#the-prototype)
+  - [Pages](#pages)
+  - [Data](#data)
+  - [Code](#code)
 - [Requirements](#requirements)
   - [Node.js](#nodejs)
+- [Running the prototype](#running-the-prototype)
+- [Linting, formatting and tests](#linting-formatting-and-tests)
+- [Branching and pull requests](#branching-and-pull-requests)
+- [Prototype exceptions](#prototype-exceptions)
 - [GOV.UK Prototype Kit and GOV.UK Frontend](#govuk-prototype-kit-and-govuk-frontend)
-- [Using the refreshed GOV.UK brand](#using-the-refreshed-govuk-brand)
+- [Branding](#branding)
 - [Setting a password](#setting-a-password)
 - [Setting multiple passwords](#setting-multiple-passwords)
 - [Removing the need for a password](#removing-the-need-for-a-password)
@@ -27,6 +37,34 @@ the [GOV.UK Frontend](https://github.com/alphagov/govuk-frontend).
 - [Licence](#licence)
   - [About the licence](#about-the-licence)
 
+## The prototype
+
+### Pages
+
+| Address                                                                 | Page                                                                                                                                                                                        |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                                                     | Home: search, and browse by domain, by organisation and by recently updated                                                                                                                 |
+| `/data-assets`                                                          | Search data assets, with filters for type, domain, category, owning organisation and delivery group. Accepts `q`, `type`, `domain`, `category`, `organisation`, `delivery-group` and `page` |
+| `/data-assets/DA11111`                                                  | A data asset: its metadata, the people and organisations responsible for it, its security classification, its distributions and related data assets                                         |
+| `/report-a-problem`, `/accessibility-statement`, `/cookies`, `/privacy` | Support pages, linked from every page                                                                                                                                                       |
+
+Only published and deprecated data assets are shown. Draft and retired ones, unknown addresses and malformed identifiers show Page not found.
+
+### Data
+
+There is no database. The prototype reads the JSON files in [app/data/catalogue](./app/data/catalogue) once at start-up. Each file is one future MongoDB collection, shaped like model V0.11 from the Phase 1 stories. The [data README](./app/data/catalogue/README.md) describes each file, its sources and how to change the data safely.
+
+The data contract is in [schemas/catalogue](./schemas/catalogue): a Joi schema for each collection, the rules that span records, and the publication checks in story S26. The tests check every record against it.
+
+### Code
+
+- [app/routes.js](./app/routes.js) maps addresses to the handlers in [app/lib/handlers](./app/lib/handlers).
+- [app/lib](./app/lib) reads the data, decides what is visible, searches and builds what each page shows. Its functions are small and have no side effects, apart from reading the data at start-up.
+- [app/views](./app/views) has the Nunjucks templates. Every component is rendered with its GOV.UK Frontend macro.
+- [test](./test) has the tests, run with Node's built-in test runner.
+
+The code is ES modules. The Kit loads `app/routes.js` and `app/filters.js` with `require()`, which Node.js 24 supports for ES modules.
+
 ## Requirements
 
 ### Node.js
@@ -40,6 +78,52 @@ To use the correct version of Node.js for this application, via nvm:
 cd livestock-data-catalogue-poc
 nvm use
 ```
+
+## Running the prototype
+
+```bash
+nvm use
+npm ci
+npm run dev
+```
+
+Then open http://localhost:3000. The prototype asks for a password only when `NODE_ENV` is `production`, as it is on CDP. If the Kit asks whether to send usage data to GDS, answer no: the prototype shares nothing with third parties.
+
+## Linting, formatting and tests
+
+```bash
+npm run lint
+npm run format:check
+npm test
+```
+
+- **Unit tests** cover the data contract, search, browsing and the data asset page, with a fixed date so they don't depend on when they run.
+- **Page tests** load the Kit's app with `USE_AUTH=false` on a random port, and read the HTML with jsdom.
+- **Accessibility tests** run axe-core's WCAG 2.2 AA rules on every page state. jsdom can't measure colour contrast, so check contrast, keyboard use, zoom and screen readers by hand.
+- `npm test` fails if coverage of lines, branches or functions falls below 90%, and writes `coverage/lcov.info`.
+
+The [pull request checks](./.github/workflows/check-pull-request.yml) run the same commands, the dependency review, a build of the production image, and a scan of that image.
+
+## Branching and pull requests
+
+- Follow [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow): make every change on a branch named for its intent, and merge it with a pull request. Never commit to `main`.
+- `main` is protected: changes need a pull request with 1 approval, and are squash merged. While the team has one developer, a repository admin may merge without an approval (see [Prototype exceptions](#prototype-exceptions)).
+- Commit messages have a subject of 50 characters or fewer, in the imperative, then a blank line and a body that says what changed and why, with the Jira link.
+- Follow the [Defra software development standards](https://defra.github.io/software-development-standards/), and fill in the [pull request template](./.github/pull_request_template.md).
+
+## Prototype exceptions
+
+The prototype follows the Defra standards wherever it can. These rules can't apply to it, and are met in the services instead:
+
+| Rule                                                              | Why it can't apply here                                                                                                                                                                                | Where it applies                  |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| Hapi, never Express                                               | CDP's prototype template is the GOV.UK Prototype Kit, which is built on Express                                                                                                                        | The frontend service              |
+| Sass `@use`, not `@import`                                        | The Kit builds Sass with `@import`, so our Sass files are imported. They use only GOV.UK Frontend's settings and helpers                                                                               | The frontend service              |
+| ECS logs with pino                                                | The Kit logs to the console, which CDP collects. Our code logs only unexpected errors, with no request data                                                                                            | The frontend and backend services |
+| `GET /health` on port 8085                                        | CDP's prototype template listens on port 3000 with no `/health` route                                                                                                                                  | The frontend and backend services |
+| Redis sessions, CSRF tokens, CSP and security headers             | The Kit manages sessions and headers. The journey only reads data, with GET requests                                                                                                                   | The frontend service              |
+| SonarQube Cloud                                                   | The code is throwaway. The pull request checks still need 90% test coverage                                                                                                                            | The frontend and backend services |
+| Every change is approved by another developer before it is merged | The team has one developer. Admins may merge without an approval, on a pull request only, and GitHub records each time. This needs an approved Defra exception, and ends when a second developer joins | Every repository                  |
 
 ## GOV.UK Prototype Kit and GOV.UK Frontend
 
@@ -67,21 +151,13 @@ template provides both tools in a wrapper that runs on the Core Delivery Platfor
 > designed to be used in production or to be resilient, secure or performant, nor should it be. It is designed to be
 > used for prototyping ideas and testing them with users. It's a great tool for prototyping GOV web applications.
 
-## Using the refreshed GOV.UK brand
+## Branding
 
-The refreshed GOV.UK brand is available and turned on by default in the `livestock-data-catalogue-poc`. To turn it
-off simply go to [app/config.json](./app/config.json) and set the `"rebrand"` property to `false`. This will turn off
-the refreshed brand and use the legacy brand instead.
+The catalogue is for Defra staff and isn't on GOV.UK, so it doesn't use GOV.UK branding: no crown, GOV.UK logotype, GDS Transport font or GOV.UK brand colours, and no "GOV.UK" in page titles. Following [Using GOV.UK Frontend without GOV.UK branding](https://frontend.design-system.service.gov.uk/using-govuk-frontend-without-govuk-branding/):
 
-```json
-{
-  "plugins": {
-    "govuk-frontend": {
-      "rebrand": true
-    }
-  }
-}
-```
+- every page has the Generic header, the service name in service navigation and our own footer ([app/views/layouts/main.html](./app/views/layouts/main.html))
+- [app/assets/sass/settings.scss](./app/assets/sass/settings.scss) sets the font to Helvetica Neue, Helvetica or Arial, and the brand colour to Defra's organisation colour from GOV.UK Frontend
+- the browser theme colour is the same organisation colour, and the favicon is the Kit's unbranded one
 
 ## Setting a password
 
@@ -123,12 +199,13 @@ read [Environment Variables on CDP](#environment-variables-on-cdp).
 
 ## Npm scripts
 
-All available Npm scripts can be seen in [package.json](./package.json)
-To view them in your command line run:
-
-```bash
-npm run
-```
+| Script           | What it does                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| `npm run dev`    | Runs the prototype at http://localhost:3000, rebuilding when files change                         |
+| `npm start`      | Runs the prototype as it runs on CDP                                                              |
+| `npm run lint`   | Lints JavaScript with neostandard and Sass with the GDS Stylelint rules                           |
+| `npm run format` | Formats JavaScript, JSON and Markdown with Prettier. `format:check` checks without changing files |
+| `npm test`       | Runs the tests with coverage, and fails below 90%                                                 |
 
 ## Updating dependencies
 
@@ -175,10 +252,14 @@ pull request.
 The following environment variables are available in the `GOV.UK Prototype Kit`. For more information see
 their https://prototype-kit.service.gov.uk/docs/ or https://github.com/alphagov/govuk-prototype-kit.
 
-| Name            | Value    | Description                                              |
-| --------------- | -------- | -------------------------------------------------------- |
-| `PASSWORD`      | `string` | Password for basic authentication                        |
-| `PASSWORD_KEYS` | `string` | Comma-separated list of keys for password authentication |
+| Name            | Value     | Description                                                                                                  |
+| --------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| `PASSWORD`      | `string`  | Password for basic authentication. Required on CDP, where it is a secret set in the CDP Portal. Never in Git |
+| `PASSWORD_KEYS` | `string`  | Comma-separated list of keys for password authentication                                                     |
+| `USE_AUTH`      | `boolean` | Turns the password on or off. Defaults to `true` on CDP. The tests set it to `false`                         |
+| `PORT`          | `number`  | The port the prototype listens on. Defaults to `3000`                                                        |
+
+The prototype's own settings are in [app/config.json](./app/config.json): its service name, service navigation, and `useAutoStoreData` set to `false`, so the Kit doesn't copy query strings into the session.
 
 ### Secrets
 
