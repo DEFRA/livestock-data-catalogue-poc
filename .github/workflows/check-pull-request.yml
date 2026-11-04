@@ -17,9 +17,6 @@ jobs:
     name: Run Pull Request Checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions:
-      contents: read
-      pull-requests: write # the dependency review posts a summary comment
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -35,14 +32,25 @@ jobs:
       - run: npm run lint
       - run: npm test # fails below 90% coverage and writes coverage/lcov.info
 
+      - name: Build production image
+        run: docker build --target production --tag livestock-data-catalogue-poc:ci .
+
+  # A job of its own, because it needs to write to the pull request. It runs
+  # no code from the repository or its packages, so that token stays out of
+  # reach of the code the other jobs run.
+  dependency-review:
+    name: Review dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write # to post the summary comment
+    steps:
       - name: Dependency review
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: moderate
           comment-summary-in-pr: always
-
-      - name: Build production image
-        run: docker build --target production --tag livestock-data-catalogue-poc:ci .
 
   scan-image:
     name: Scan production image
