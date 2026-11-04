@@ -62,7 +62,7 @@ describe('the rules that span records', () => {
 
       assertBreach(
         breaches,
-        'Duplicate person: JO BLOGGS <jo.bloggs@example.gov.uk>'
+        'Duplicate person: JO BLOGGS <jo.bloggs@example.com>'
       )
     })
 
@@ -70,7 +70,7 @@ describe('the rules that span records', () => {
       const breaches = breachesAfter((collections) => {
         collections.people.push({
           ...collections.people[0],
-          emailAddressReference: 'jo.bloggs2@example.gov.uk'
+          emailAddressReference: 'jo.bloggs2@example.com'
         })
       })
 
@@ -161,12 +161,12 @@ describe('the rules that span records', () => {
           collections,
           'DA11111'
         ).governanceAssignments[0].personEmailAddressReference =
-          'someone.else@example.gov.uk'
+          'someone.else@example.com'
       })
 
       assertBreach(
         breaches,
-        'Data asset DA11111 refers to an unknown person: Jo Bloggs\nsomeone.else@example.gov.uk'
+        'Data asset DA11111 refers to an unknown person: Jo Bloggs\nsomeone.else@example.com'
       )
     })
 
@@ -353,7 +353,7 @@ describe('the rules that span records', () => {
       const breaches = breachesAfter((collections) => {
         dataAssetIn(collections, 'DA11111').governanceAssignments.push({
           personName: 'Sam Smith',
-          personEmailAddressReference: 'sam.smith@example.gov.uk',
+          personEmailAddressReference: 'sam.smith@example.com',
           governanceRoleCode: 'DATA_OWNER',
           effectiveFromDate: '2025-01-01'
         })
@@ -378,7 +378,7 @@ describe('the rules that span records', () => {
         assignments[0].effectiveToDate = '2025-12-31'
         assignments.push({
           personName: 'Sam Smith',
-          personEmailAddressReference: 'sam.smith@example.gov.uk',
+          personEmailAddressReference: 'sam.smith@example.com',
           governanceRoleCode: 'DATA_OWNER',
           effectiveFromDate: '2026-01-01'
         })
@@ -391,7 +391,7 @@ describe('the rules that span records', () => {
       const breaches = breachesAfter((collections) => {
         dataAssetIn(collections, 'DA11111').governanceAssignments.push({
           personName: 'Sam Smith',
-          personEmailAddressReference: 'sam.smith@example.gov.uk',
+          personEmailAddressReference: 'sam.smith@example.com',
           governanceRoleCode: 'DATA_STEWARD',
           effectiveFromDate: '2025-06-01'
         })
@@ -399,7 +399,7 @@ describe('the rules that span records', () => {
 
       assertBreach(
         breaches,
-        'Data asset DA11111 has overlapping assignments for Sam Smith <sam.smith@example.gov.uk> as DATA_STEWARD'
+        'Data asset DA11111 has overlapping assignments for Sam Smith <sam.smith@example.com> as DATA_STEWARD'
       )
     })
 
@@ -410,11 +410,11 @@ describe('the rules that span records', () => {
         )
         collections.people.push({
           ...samSmith,
-          emailAddressReference: 'sam.smith2@example.gov.uk'
+          emailAddressReference: 'sam.smith2@example.com'
         })
         dataAssetIn(collections, 'DA11111').governanceAssignments.push({
           personName: 'Sam Smith',
-          personEmailAddressReference: 'sam.smith2@example.gov.uk',
+          personEmailAddressReference: 'sam.smith2@example.com',
           governanceRoleCode: 'DATA_STEWARD',
           effectiveFromDate: '2025-06-01'
         })

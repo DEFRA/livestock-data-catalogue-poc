@@ -1,6 +1,6 @@
 # Mock catalogue data
 
-**Every value in these files is made up.** Organisation names and their websites are real and public. People, email addresses, data assets, distributions and web addresses are not.
+**Every value in these files is made up**, except organisation names, their websites and the licence addresses, which are real and public. People, email addresses, data assets, distributions and their web addresses are made up. Made-up addresses use only domains reserved for examples: `example.com` for email addresses and `example.org` for web addresses, so they can never reach anyone.
 
 The prototype reads these files at start-up instead of a database. Each file holds one future MongoDB collection, shaped like the planned documents, so the backend can reuse it as seed data and test fixtures.
 
@@ -56,6 +56,6 @@ These go beyond V0.11 until the data architect answers the open questions on LDA
 
 ## Changing the data
 
-1. Edit the JSON. Use only codes and names from the stories, and only made-up people, with `example.gov.uk` email addresses.
-2. Run `npm test`. The tests check every record against the data contract in [`schemas/catalogue`](../../../schemas/catalogue): each collection's schema, the rules that span records (unique keys, foreign keys, the organisation hierarchy, coherent dates and governance), and the publication checks in S26 for every Published and Deprecated data asset.
+1. Edit the JSON. Use only codes and names from the stories, and only made-up people, with `example.com` email addresses and `example.org` web addresses.
+2. Run `npm test`. The tests check every record against the data contract in [`schemas/catalogue`](../../../schemas/catalogue): each collection's schema, the rules that span records (unique keys, foreign keys, the organisation hierarchy, coherent dates and governance), and the publication checks in S26 for every Published and Deprecated data asset. They also check that every made-up address uses a domain reserved for examples.
 3. Run `npm run format` before committing.

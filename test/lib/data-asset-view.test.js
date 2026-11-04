@@ -154,15 +154,15 @@ describe('the data asset page content', () => {
         {
           name: 'Jo Bloggs',
           organisationName: 'Animal and Plant Health Agency',
-          emailAddress: 'jo.bloggs@example.gov.uk',
-          emailHref: 'mailto:jo.bloggs@example.gov.uk'
+          emailAddress: 'jo.bloggs@example.com',
+          emailHref: 'mailto:jo.bloggs@example.com'
         }
       ])
     })
 
     test('encodes the email address in its mailto: link', () => {
       const collections = catalogueCopy()
-      const address = "jo.o'bloggs+data@example.gov.uk"
+      const address = "jo.o'bloggs+data@example.com"
       collections.people.find(
         (person) => person.name === 'Jo Bloggs'
       ).emailAddressReference = address
@@ -180,7 +180,7 @@ describe('the data asset page content', () => {
       assert.equal(
         row(section(page, 'Responsibility').rows, 'Data Owner').people[0]
           .emailHref,
-        "mailto:jo.o'bloggs%2Bdata@example.gov.uk"
+        "mailto:jo.o'bloggs%2Bdata@example.com"
       )
     })
 
@@ -306,8 +306,8 @@ describe('the data asset page content', () => {
         'Livestock Movements API'
       )
       assert.deepEqual(row(api.rows, 'Access link').link, {
-        href: 'https://api.example.gov.uk/movements',
-        text: 'https://api.example.gov.uk/movements'
+        href: 'https://api.example.org/movements',
+        text: 'https://api.example.org/movements'
       })
     })
 
@@ -316,7 +316,7 @@ describe('the data asset page content', () => {
 
       assert.equal(
         row(events.rows, 'Broker').text,
-        'amqps://broker.example.gov.uk'
+        'amqps://broker.example.org'
       )
       assert.equal(row(events.rows, 'Topic').text, 'animal.movement.v1')
       assert.equal(
@@ -345,7 +345,7 @@ describe('the data asset page content', () => {
 
       assert.equal(
         row(extract.rows, 'Download link').link.href,
-        'https://files.example.gov.uk/holdings/holdings-2026-10.csv'
+        'https://files.example.org/holdings/holdings-2026-10.csv'
       )
       assert.equal(row(extract.rows, 'Size').text, '2.5 MB')
     })

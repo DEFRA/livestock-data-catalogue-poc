@@ -2,7 +2,7 @@
   {
     "titleName": "Livestock Movements API",
     "description": "Gives access to animal movements between holdings.",
-    "endpointReference": "https://api.example.gov.uk/movements",
+    "endpointReference": "https://api.example.org/movements",
     "serviceType": "REST API",
     "systemCreatedDateTime": "2026-09-04T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -12,7 +12,7 @@
   {
     "titleName": "Breed Codes API",
     "description": "Gives access to breed and species codes.",
-    "endpointReference": "https://api.example.gov.uk/breeds",
+    "endpointReference": "https://api.example.org/breeds",
     "serviceType": "REST API",
     "systemCreatedDateTime": "2026-09-04T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",

@@ -46,19 +46,19 @@
     "governanceAssignments": [
       {
         "personName": "Jo Bloggs",
-        "personEmailAddressReference": "jo.bloggs@example.gov.uk",
+        "personEmailAddressReference": "jo.bloggs@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2024-04-01"
       },
       {
         "personName": "Sam Smith",
-        "personEmailAddressReference": "sam.smith@example.gov.uk",
+        "personEmailAddressReference": "sam.smith@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2024-04-01"
       },
       {
         "personName": "Alex Example",
-        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "personEmailAddressReference": "alex.example@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2027-01-04"
       }
@@ -79,7 +79,7 @@
         "authenticationMethodCode": "OAUTH2",
         "licenceCode": "MOU",
         "dataServiceTitleName": "Livestock Movements API",
-        "accessReference": "https://api.example.gov.uk/movements",
+        "accessReference": "https://api.example.org/movements",
         "versionNumber": "1.0"
       },
       {
@@ -90,7 +90,7 @@
         "distributionFormatCode": "JSON_CLOUDEVENTS",
         "authenticationMethodCode": "MUTUAL_TLS",
         "licenceCode": "MOU",
-        "brokerReference": "amqps://broker.example.gov.uk",
+        "brokerReference": "amqps://broker.example.org",
         "topicName": "animal.movement.v1",
         "versionNumber": "1.0"
       }
@@ -157,13 +157,13 @@
     "governanceAssignments": [
       {
         "personName": "Alex Example",
-        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "personEmailAddressReference": "alex.example@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2023-06-01"
       },
       {
         "personName": "Alex Example",
-        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "personEmailAddressReference": "alex.example@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2023-06-01"
       }
@@ -177,7 +177,7 @@
         "distributionFormatCode": "CSV",
         "authenticationMethodCode": "API_KEY",
         "licenceCode": "RESTRICTED",
-        "downloadReference": "https://files.example.gov.uk/holdings/holdings-2026-10.csv",
+        "downloadReference": "https://files.example.org/holdings/holdings-2026-10.csv",
         "byteSizeQuantity": 2500000,
         "versionNumber": "2026-10"
       }
@@ -227,13 +227,13 @@
     "governanceAssignments": [
       {
         "personName": "Alex Example",
-        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "personEmailAddressReference": "alex.example@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2019-01-07"
       },
       {
         "personName": "Alex Example",
-        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "personEmailAddressReference": "alex.example@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2019-01-07"
       }
@@ -247,7 +247,7 @@
         "distributionFormatCode": "XML",
         "authenticationMethodCode": "BASIC",
         "licenceCode": "RESTRICTED",
-        "accessReference": "https://api.example.gov.uk/keepers/v1",
+        "accessReference": "https://api.example.org/keepers/v1",
         "versionNumber": "1.4"
       }
     ],
@@ -284,13 +284,13 @@
     "governanceAssignments": [
       {
         "personName": "Chris Sample",
-        "personEmailAddressReference": "chris.sample@example.gov.uk",
+        "personEmailAddressReference": "chris.sample@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2022-03-01"
       },
       {
         "personName": "Chris Sample",
-        "personEmailAddressReference": "chris.sample@example.gov.uk",
+        "personEmailAddressReference": "chris.sample@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2022-03-01"
       }
@@ -311,7 +311,7 @@
         "authenticationMethodCode": "API_KEY",
         "licenceCode": "OGL",
         "dataServiceTitleName": "Breed Codes API",
-        "accessReference": "https://api.example.gov.uk/breeds",
+        "accessReference": "https://api.example.org/breeds",
         "versionNumber": "2.1"
       }
     ],
@@ -379,20 +379,20 @@
     "governanceAssignments": [
       {
         "personName": "Sam Smith",
-        "personEmailAddressReference": "sam.smith@example.gov.uk",
+        "personEmailAddressReference": "sam.smith@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2021-01-04"
       },
       {
         "personName": "Jo Bloggs",
-        "personEmailAddressReference": "jo.bloggs@example.gov.uk",
+        "personEmailAddressReference": "jo.bloggs@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2021-01-04",
         "effectiveToDate": "2026-03-31"
       },
       {
         "personName": "Taylor Test",
-        "personEmailAddressReference": "taylor.test@example.gov.uk",
+        "personEmailAddressReference": "taylor.test@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2026-04-01"
       }
@@ -406,7 +406,7 @@
         "distributionFormatCode": "PARQUET",
         "authenticationMethodCode": "OAUTH2",
         "licenceCode": "RESTRICTED",
-        "accessReference": "https://data.example.gov.uk/views/tb-test-results",
+        "accessReference": "https://data.example.org/views/tb-test-results",
         "versionNumber": "3.2"
       }
     ],
@@ -449,13 +449,13 @@
     "governanceAssignments": [
       {
         "personName": "Sam Smith",
-        "personEmailAddressReference": "sam.smith@example.gov.uk",
+        "personEmailAddressReference": "sam.smith@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2026-06-01"
       },
       {
         "personName": "Jo Bloggs",
-        "personEmailAddressReference": "jo.bloggs@example.gov.uk",
+        "personEmailAddressReference": "jo.bloggs@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2026-06-01"
       }
@@ -500,13 +500,13 @@
     "governanceAssignments": [
       {
         "personName": "Alex Example",
-        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "personEmailAddressReference": "alex.example@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2023-06-01"
       },
       {
         "personName": "Alex Example",
-        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "personEmailAddressReference": "alex.example@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2023-06-01"
       }
@@ -520,7 +520,7 @@
         "distributionFormatCode": "XML",
         "authenticationMethodCode": "BASIC",
         "licenceCode": "RESTRICTED",
-        "accessReference": "https://files.example.gov.uk/holding-address/",
+        "accessReference": "https://files.example.org/holding-address/",
         "byteSizeQuantity": 48000000
       }
     ],
@@ -569,13 +569,13 @@
     "governanceAssignments": [
       {
         "personName": "Alex Example",
-        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "personEmailAddressReference": "alex.example@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2026-04-01"
       },
       {
         "personName": "Alex Example",
-        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "personEmailAddressReference": "alex.example@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2026-04-01"
       }
@@ -589,7 +589,7 @@
         "distributionFormatCode": "JSON",
         "authenticationMethodCode": "OAUTH2",
         "licenceCode": "RESTRICTED",
-        "accessReference": "https://api.example.gov.uk/keepers/v2",
+        "accessReference": "https://api.example.org/keepers/v2",
         "versionNumber": "2.0"
       }
     ],
@@ -633,13 +633,13 @@
     "governanceAssignments": [
       {
         "personName": "Chris Sample",
-        "personEmailAddressReference": "chris.sample@example.gov.uk",
+        "personEmailAddressReference": "chris.sample@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2022-03-01"
       },
       {
         "personName": "Chris Sample",
-        "personEmailAddressReference": "chris.sample@example.gov.uk",
+        "personEmailAddressReference": "chris.sample@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2022-03-01"
       }
@@ -653,7 +653,7 @@
         "distributionFormatCode": "CSV",
         "authenticationMethodCode": "NONE",
         "licenceCode": "OGL",
-        "downloadReference": "https://files.example.gov.uk/reference/species.csv",
+        "downloadReference": "https://files.example.org/reference/species.csv",
         "byteSizeQuantity": 18000,
         "versionNumber": "3"
       }
@@ -697,13 +697,13 @@
     "governanceAssignments": [
       {
         "personName": "Taylor Test",
-        "personEmailAddressReference": "taylor.test@example.gov.uk",
+        "personEmailAddressReference": "taylor.test@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2024-09-02"
       },
       {
         "personName": "Taylor Test",
-        "personEmailAddressReference": "taylor.test@example.gov.uk",
+        "personEmailAddressReference": "taylor.test@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2024-09-02"
       }
@@ -717,7 +717,7 @@
         "distributionFormatCode": "JSON",
         "authenticationMethodCode": "OAUTH2",
         "licenceCode": "MOU",
-        "accessReference": "https://api.example.gov.uk/wales/registrations",
+        "accessReference": "https://api.example.org/wales/registrations",
         "versionNumber": "1.2"
       }
     ],
@@ -761,13 +761,13 @@
     "governanceAssignments": [
       {
         "personName": "Morgan Demo",
-        "personEmailAddressReference": "morgan.demo@example.gov.uk",
+        "personEmailAddressReference": "morgan.demo@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2025-01-06"
       },
       {
         "personName": "Morgan Demo",
-        "personEmailAddressReference": "morgan.demo@example.gov.uk",
+        "personEmailAddressReference": "morgan.demo@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2025-01-06"
       }
@@ -781,7 +781,7 @@
         "distributionFormatCode": "CSV",
         "authenticationMethodCode": "MUTUAL_TLS",
         "licenceCode": "MOU",
-        "accessReference": "https://files.example.gov.uk/scotland/deaths/",
+        "accessReference": "https://files.example.org/scotland/deaths/",
         "byteSizeQuantity": 350000
       }
     ],
@@ -825,13 +825,13 @@
     "governanceAssignments": [
       {
         "personName": "Jamie Placeholder",
-        "personEmailAddressReference": "jamie.placeholder@example.gov.uk",
+        "personEmailAddressReference": "jamie.placeholder@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2025-04-01"
       },
       {
         "personName": "Jamie Placeholder",
-        "personEmailAddressReference": "jamie.placeholder@example.gov.uk",
+        "personEmailAddressReference": "jamie.placeholder@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2025-04-01"
       }

@@ -1,7 +1,7 @@
 [
   {
     "name": "Jo Bloggs",
-    "emailAddressReference": "jo.bloggs@example.gov.uk",
+    "emailAddressReference": "jo.bloggs@example.com",
     "organisationName": "Animal and Plant Health Agency",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -10,7 +10,7 @@
   },
   {
     "name": "Sam Smith",
-    "emailAddressReference": "sam.smith@example.gov.uk",
+    "emailAddressReference": "sam.smith@example.com",
     "organisationName": "Animal and Plant Health Agency",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -19,7 +19,7 @@
   },
   {
     "name": "Alex Example",
-    "emailAddressReference": "alex.example@example.gov.uk",
+    "emailAddressReference": "alex.example@example.com",
     "organisationName": "Rural Payments Agency",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -28,7 +28,7 @@
   },
   {
     "name": "Chris Sample",
-    "emailAddressReference": "chris.sample@example.gov.uk",
+    "emailAddressReference": "chris.sample@example.com",
     "organisationName": "Livestock Information Ltd",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -37,7 +37,7 @@
   },
   {
     "name": "Taylor Test",
-    "emailAddressReference": "taylor.test@example.gov.uk",
+    "emailAddressReference": "taylor.test@example.com",
     "organisationName": "Welsh Government",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -46,7 +46,7 @@
   },
   {
     "name": "Morgan Demo",
-    "emailAddressReference": "morgan.demo@example.gov.uk",
+    "emailAddressReference": "morgan.demo@example.com",
     "organisationName": "Scottish Government",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -55,7 +55,7 @@
   },
   {
     "name": "Jamie Placeholder",
-    "emailAddressReference": "jamie.placeholder@example.gov.uk",
+    "emailAddressReference": "jamie.placeholder@example.com",
     "organisationName": "Department for Environment, Food and Rural Affairs",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",

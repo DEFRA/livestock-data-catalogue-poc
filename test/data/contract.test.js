@@ -98,7 +98,7 @@ describe('the data contract', () => {
   test('rejects an access address that is not https', () => {
     const errors = errorsAfter((collections) => {
       dataAssetIn(collections, 'DA11111').distributions[0].accessReference =
-        'http://api.example.gov.uk/movements'
+        'http://api.example.org/movements'
     })
 
     assertRejected(
@@ -117,10 +117,10 @@ describe('the data contract', () => {
 
   test('rejects an email address with characters that could change a mailto: link', () => {
     for (const address of [
-      'jo.bloggs?cc=someone@example.gov.uk',
-      'jo.bloggs&body=hello@example.gov.uk',
-      'jo.bloggs#top@example.gov.uk',
-      'jo.bloggs%20@example.gov.uk'
+      'jo.bloggs?cc=someone@example.com',
+      'jo.bloggs&body=hello@example.com',
+      'jo.bloggs#top@example.com',
+      'jo.bloggs%20@example.com'
     ]) {
       const errors = errorsAfter((collections) => {
         collections.people[0].emailAddressReference = address
@@ -136,7 +136,7 @@ describe('the data contract', () => {
   test('accepts an email address with an apostrophe or a plus sign', () => {
     const errors = errorsAfter((collections) => {
       collections.people[0].emailAddressReference =
-        "jo.o'bloggs+data@example.gov.uk"
+        "jo.o'bloggs+data@example.com"
     })
 
     assert.ok(

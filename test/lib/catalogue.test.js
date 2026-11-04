@@ -33,9 +33,8 @@ describe('reading the catalogue', () => {
       'RPA'
     )
     assert.equal(
-      catalogue.peopleByKey.get(
-        personKey('Jo Bloggs', 'jo.bloggs@example.gov.uk')
-      ).organisationName,
+      catalogue.peopleByKey.get(personKey('Jo Bloggs', 'jo.bloggs@example.com'))
+        .organisationName,
       'Animal and Plant Health Agency'
     )
     assert.equal(

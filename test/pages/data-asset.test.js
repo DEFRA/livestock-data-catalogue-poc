@@ -97,14 +97,14 @@ describe('the data asset page', () => {
     test('shows the people responsible, with email links', () => {
       const rows = summaryRows(page.document.querySelector('main'))
       const ownerEmail = page.document.querySelector(
-        'a[href="mailto:jo.bloggs@example.gov.uk"]'
+        'a[href="mailto:jo.bloggs@example.com"]'
       )
 
       assert.equal(
         rows['Data Owner'],
-        'Jo Bloggs, Animal and Plant Health Agency jo.bloggs@example.gov.uk'
+        'Jo Bloggs, Animal and Plant Health Agency jo.bloggs@example.com'
       )
-      assert.equal(ownerEmail.textContent.trim(), 'jo.bloggs@example.gov.uk')
+      assert.equal(ownerEmail.textContent.trim(), 'jo.bloggs@example.com')
       assert.equal(
         rows['Data Custodian'],
         'Digital, Data and Technology Services'
@@ -133,9 +133,9 @@ describe('the data asset page', () => {
       assert.equal(summaryRows(cards[1]).Topic, 'animal.movement.v1')
       assert.equal(
         cards[0]
-          .querySelector('a[href="https://api.example.gov.uk/movements"]')
+          .querySelector('a[href="https://api.example.org/movements"]')
           .textContent.trim(),
-        'https://api.example.gov.uk/movements'
+        'https://api.example.org/movements'
       )
     })
 
