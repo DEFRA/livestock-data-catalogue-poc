@@ -8,7 +8,8 @@ function isClientError(error) {
 
 // One page for every unexpected error, with no details for the user.
 // The log line has the error message only: never request data, which
-// could hold personal data, and no line breaks to forge log entries.
+// could hold personal data, and no control characters, which could forge
+// or colour log lines.
 export function problemWithTheService(error, req, res, next) {
   if (res.headersSent) {
     next(error)
@@ -19,7 +20,7 @@ export function problemWithTheService(error, req, res, next) {
     return
   }
   console.error(
-    `Unexpected error: ${String(error.message).replace(/[\r\n]+/g, ' ')}`
+    `Unexpected error: ${String(error.message).replace(/[\p{Cc}\u2028\u2029]+/gu, ' ')}`
   )
   res.status(500).render('problem-with-the-service')
 }

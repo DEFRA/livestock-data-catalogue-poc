@@ -56,6 +56,20 @@ describe('handling an unexpected error', () => {
     )
   })
 
+  test('replaces every control character in the message, so it cannot forge or colour log lines', () => {
+    problemWithTheService(
+      new Error('first\u001b[31m red\u2028second\tthird'),
+      {},
+      fakeResponse(),
+      () => {}
+    )
+
+    assert.deepEqual(
+      console.error.mock.calls.map((call) => call.arguments),
+      [['Unexpected error: first [31m red second third']]
+    )
+  })
+
   test('shows Page not found for a request error, without logging it', () => {
     const response = fakeResponse()
     const error = Object.assign(new Error('Failed to decode param'), {
