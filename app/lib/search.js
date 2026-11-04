@@ -79,7 +79,8 @@ function selectedValues(queryValue, options) {
 export function readSearchQuery(query, filters) {
   const typedTerms = typeof query.q === 'string' ? query.q : ''
   const terms = typedTerms.trim().replace(/\s+/g, ' ')
-  const tooLong = terms.length > MAXIMUM_SEARCH_TERMS_LENGTH
+  const tooLong =
+    [...terms.normalize('NFC')].length > MAXIMUM_SEARCH_TERMS_LENGTH
   return {
     typedTerms,
     terms,
@@ -100,17 +101,19 @@ export function readSearchQuery(query, filters) {
 }
 
 function lowerCase(text) {
-  return text.toLocaleLowerCase('en-GB')
-}
-
-function wordsIn(terms) {
-  return lowerCase(terms).split(' ').filter(Boolean)
+  return text.normalize('NFC').toLocaleLowerCase('en-GB')
 }
 
 // Text as words with a space before each, so a search word only matches the
-// start of a word: "move" finds "movement", but "old" doesn't find "holding"
+// start of a word: "move" finds "movement", but "old" doesn't find "holding".
+// Anything other than a letter or number separates words, in the data and
+// in the search terms alike.
 function searchableText(text) {
-  return ` ${lowerCase(text).replace(/[^\p{L}\p{N}]+/gu, ' ')}`
+  return ` ${lowerCase(text).replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ')}`
+}
+
+function wordsIn(terms) {
+  return searchableText(terms).split(' ').filter(Boolean)
 }
 
 // How well a data asset matches every word: title matches first, then

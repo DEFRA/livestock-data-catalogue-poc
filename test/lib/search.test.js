@@ -95,9 +95,48 @@ describe('searching for data assets', () => {
       ])
     })
 
+    test('ignores punctuation in search terms, as it does in the data', () => {
+      assert.deepEqual(titlesFound({ q: 'cattle, sheep' }), [
+        'Animal Deaths',
+        'Animal Movement',
+        'Animal Registrations',
+        'Breed Reference Data'
+      ])
+      assert.deepEqual(titlesFound({ q: 'Bovine TB.' }), [
+        'Bovine TB Test Results'
+      ])
+    })
+
     test('treats regular expression characters as plain text', () => {
-      assert.deepEqual(titlesFound({ q: '(.*' }), [])
-      assert.deepEqual(titlesFound({ q: '[a-z]+' }), [])
+      assert.deepEqual(
+        titlesFound({ q: 'movement.*' }),
+        titlesFound({ q: 'movement' })
+      )
+      assert.deepEqual(
+        titlesFound({ q: '(animal' }),
+        titlesFound({ q: 'animal' })
+      )
+      assert.deepEqual(titlesFound({ q: '[a-z]+' }), titlesFound({ q: 'a z' }))
+    })
+
+    test('finds every data asset when the search terms have no letters or numbers', () => {
+      const found = search({ q: '?!' })
+
+      assert.equal(found.total, search({}).total)
+      assert.equal(
+        readSearchQuery({ q: '?!' }, FILTER_OPTIONS).error,
+        undefined
+      )
+    })
+
+    test('matches accented letters however they are typed', () => {
+      const collections = catalogueCopy()
+      dataAssetIn(collections, 'DA11111').titleName = 'Symudiadau Dŵr'
+      const changed = buildCatalogue(collections)
+
+      assert.deepEqual(titlesFound({ q: 'dw\u0302r' }, changed), [
+        'Symudiadau Dŵr'
+      ])
     })
 
     test('accepts search terms of 100 characters', () => {
@@ -111,6 +150,17 @@ describe('searching for data assets', () => {
 
       assert.equal(query.error, 'Search terms must be 100 characters or fewer')
       assert.equal(query.typedTerms, 'a'.repeat(101))
+    })
+
+    test('counts characters, not the code units JavaScript stores them in', () => {
+      const atLimit = readSearchQuery({ q: '🐄'.repeat(100) }, FILTER_OPTIONS)
+      const overLimit = readSearchQuery({ q: '🐄'.repeat(101) }, FILTER_OPTIONS)
+
+      assert.equal(atLimit.error, undefined)
+      assert.equal(
+        overLimit.error,
+        'Search terms must be 100 characters or fewer'
+      )
     })
 
     test('counts the length after removing extra spaces', () => {
