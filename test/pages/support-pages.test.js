@@ -59,6 +59,17 @@ describe('the support and error pages', () => {
     )
   })
 
+  test('the privacy page says search words are in the web address, which platform logs may keep', async () => {
+    const page = await app.getPage('/privacy')
+    const text = page.document
+      .querySelector('main')
+      .textContent.replace(/\s+/g, ' ')
+
+    assert.match(text, /Your search words are part of the web address/)
+    assert.match(text, /may keep logs of the web addresses/)
+    assert.doesNotMatch(text, /does not collect personal data/)
+  })
+
   test('the accessibility statement lists the Welsh keywords that are not marked as Welsh', async () => {
     const page = await app.getPage('/accessibility-statement')
     const knownIssues = [...page.document.querySelectorAll('h2')].find(
