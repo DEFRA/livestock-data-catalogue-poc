@@ -1,0 +1,855 @@
+[
+  {
+    "identifier": "DA11111",
+    "titleName": "Animal Movement",
+    "description": "Movements of cattle, sheep, goats and pigs between holdings. Each record shows the animals moved, the holding they left, the holding they arrived at and the date of the move.",
+    "organisationName": "Animal and Plant Health Agency",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Available to Defra group and approved partners",
+    "provenanceDescription": "Collected from keeper movement reports",
+    "creatorReference": "APHA",
+    "creationDate": "2024-04-01",
+    "acceptanceDate": "2024-05-01",
+    "modificationDate": "2026-10-28",
+    "validFromDate": "2024-04-01",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-10-28",
+    "lastReviewedDate": "2026-04-15",
+    "nextReviewDate": "2027-04-15",
+    "reviewFrequencyMonthQuantity": 12,
+    "lastReviewedByName": "Jo Bloggs",
+    "approvedByName": "Sam Smith",
+    "versionNumber": "2.3",
+    "spatialCoverageDescription": "England",
+    "temporalStartDate": "2024-04-01",
+    "deliveryGroupName": "Animal and Plant Delivery Group",
+    "dataAssetTypeCode": "TRANSACTIONAL_DATA",
+    "domainCode": "ANIMAL",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "REAL_TIME",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["MOVEMENT", "CATTLE", "SHEEP", "PIGS"],
+    "keywordNames": ["Cattle", "gwartheg", "Holding", "Movement"],
+    "jurisdictionCodes": ["GB-ENG"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "https://example.org/keeper-reports",
+        "relationshipTypeCode": "DERIVED_FROM",
+        "description": "Keeper movement reports"
+      },
+      {
+        "targetResourceIdentifier": "DA11113",
+        "relationshipTypeCode": "RELATED_TO",
+        "description": "Animals move between the holdings in this data asset"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Jo Bloggs",
+        "personEmailAddressReference": "jo.bloggs@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2024-04-01"
+      },
+      {
+        "personName": "Sam Smith",
+        "personEmailAddressReference": "sam.smith@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2024-04-01"
+      },
+      {
+        "personName": "Alex Example",
+        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2027-01-04"
+      }
+    ],
+    "custodians": [
+      {
+        "organisationName": "Digital, Data and Technology Services",
+        "effectiveFromDate": "2024-04-01"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Movements API",
+        "description": "Find movements by holding, animal or date.",
+        "distributionTypeCode": "API",
+        "accessMethodCode": "REST_API",
+        "distributionFormatCode": "JSON",
+        "authenticationMethodCode": "OAUTH2",
+        "licenceCode": "MOU",
+        "dataServiceTitleName": "Livestock Movements API",
+        "accessReference": "https://api.example.gov.uk/movements",
+        "versionNumber": "1.0"
+      },
+      {
+        "name": "Movement events",
+        "description": "An event for each movement, as it is reported.",
+        "distributionTypeCode": "EVENT_STREAM",
+        "accessMethodCode": "EVENT_BUS",
+        "distributionFormatCode": "JSON_CLOUDEVENTS",
+        "authenticationMethodCode": "MUTUAL_TLS",
+        "licenceCode": "MOU",
+        "brokerReference": "amqps://broker.example.gov.uk",
+        "topicName": "animal.movement.v1",
+        "versionNumber": "1.0"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-10T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-10-28T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA11112",
+    "titleName": "Animal Identity",
+    "description": "The identity of each animal: its official identifier, species, sex and date of birth.",
+    "organisationName": "Animal and Plant Health Agency",
+    "publicationStateCode": "DRAFT",
+    "dataAssetTypeCode": "MASTER_DATA",
+    "lifecycleStateCode": "IN_DEVELOPMENT",
+    "systemCreatedDateTime": "2026-10-20T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-10-21T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA11113",
+    "titleName": "Livestock Holding",
+    "description": "The holdings where livestock are kept, with their County Parish Holding (CPH) numbers, holding types and the species kept there.",
+    "organisationName": "Rural Payments Agency",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Available to Defra group and approved partners",
+    "provenanceDescription": "Registered by keepers and checked by the Rural Payments Agency",
+    "creatorReference": "RPA",
+    "creationDate": "2023-06-01",
+    "acceptanceDate": "2023-07-03",
+    "modificationDate": "2026-10-21",
+    "validFromDate": "2023-06-01",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-10-21",
+    "lastReviewedDate": "2026-06-01",
+    "nextReviewDate": "2027-06-01",
+    "reviewFrequencyMonthQuantity": 12,
+    "versionNumber": "4.0",
+    "spatialCoverageDescription": "Great Britain",
+    "deliveryGroupName": "Animal and Plant Delivery Group",
+    "dataAssetTypeCode": "MASTER_DATA",
+    "domainCode": "HOLDING",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "MONTHLY",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["HOLDINGS"],
+    "keywordNames": ["CPH", "Holding"],
+    "jurisdictionCodes": ["GB-ENG", "GB-WLS", "GB-SCT"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "https://example.org/holding-register",
+        "relationshipTypeCode": "DERIVED_FROM",
+        "description": "The holding register"
+      },
+      {
+        "targetResourceIdentifier": "DA11112",
+        "relationshipTypeCode": "RELATED_TO",
+        "description": "Animals are kept on these holdings"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Alex Example",
+        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2023-06-01"
+      },
+      {
+        "personName": "Alex Example",
+        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2023-06-01"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Holdings monthly extract",
+        "description": "Every holding, as at the end of each month.",
+        "distributionTypeCode": "DOWNLOAD",
+        "accessMethodCode": "DOWNLOAD",
+        "distributionFormatCode": "CSV",
+        "authenticationMethodCode": "API_KEY",
+        "licenceCode": "RESTRICTED",
+        "downloadReference": "https://files.example.gov.uk/holdings/holdings-2026-10.csv",
+        "byteSizeQuantity": 2500000,
+        "versionNumber": "2026-10"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-10T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-10-21T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA11114",
+    "titleName": "Keeper",
+    "description": "The people and businesses who keep livestock, with the holdings they keep it on.",
+    "organisationName": "Rural Payments Agency",
+    "publicationStateCode": "DEPRECATED",
+    "accessRightsDescription": "Available to Defra group and approved partners",
+    "provenanceDescription": "Registered by keepers with the Rural Payments Agency",
+    "creatorReference": "RPA",
+    "creationDate": "2019-01-07",
+    "acceptanceDate": "2019-02-01",
+    "modificationDate": "2026-08-14",
+    "validFromDate": "2019-01-07",
+    "validToDate": "2027-03-31",
+    "metadataDate": "2026-08-14",
+    "versionNumber": "1.4",
+    "spatialCoverageDescription": "Great Britain",
+    "dataAssetTypeCode": "MASTER_DATA",
+    "domainCode": "HOLDING",
+    "lifecycleStateCode": "DEPRECATED",
+    "updateFrequencyCode": "WEEKLY",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["KEEPERS"],
+    "keywordNames": ["Holding", "Keeper"],
+    "jurisdictionCodes": ["GB-GBN"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "https://example.org/keeper-register",
+        "relationshipTypeCode": "DERIVED_FROM",
+        "description": "The keeper register"
+      },
+      {
+        "targetResourceIdentifier": "DA1111A",
+        "relationshipTypeCode": "REPLACED_BY",
+        "description": "Use Livestock Keeper instead"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Alex Example",
+        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2019-01-07"
+      },
+      {
+        "personName": "Alex Example",
+        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2019-01-07"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Keeper API version 1",
+        "description": "The original keeper API. It will be switched off on 31 March 2027.",
+        "distributionTypeCode": "API",
+        "accessMethodCode": "REST_API",
+        "distributionFormatCode": "XML",
+        "authenticationMethodCode": "BASIC",
+        "licenceCode": "RESTRICTED",
+        "accessReference": "https://api.example.gov.uk/keepers/v1",
+        "versionNumber": "1.4"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-10T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-10T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA11115",
+    "titleName": "Breed Reference Data",
+    "description": "The breeds of cattle, sheep, goats and pigs, with the code for each breed and the species it belongs to.",
+    "organisationName": "Livestock Information Ltd",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Open to anyone under the Open Government Licence",
+    "provenanceDescription": "Maintained by Livestock Information Ltd with breed societies",
+    "creatorReference": "LI",
+    "creationDate": "2022-03-01",
+    "acceptanceDate": "2022-03-15",
+    "modificationDate": "2026-09-30",
+    "validFromDate": "2022-03-01",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-09-30",
+    "versionNumber": "7",
+    "spatialCoverageDescription": "United Kingdom",
+    "dataAssetTypeCode": "REFERENCE_DATA",
+    "domainCode": "REFERENCE_DATA",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "QUARTERLY",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["BREEDS"],
+    "keywordNames": ["Breed", "Reference data"],
+    "jurisdictionCodes": ["GB-UKM"],
+    "governanceAssignments": [
+      {
+        "personName": "Chris Sample",
+        "personEmailAddressReference": "chris.sample@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2022-03-01"
+      },
+      {
+        "personName": "Chris Sample",
+        "personEmailAddressReference": "chris.sample@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2022-03-01"
+      }
+    ],
+    "custodians": [
+      {
+        "organisationName": "Agriculture and Horticulture Development Board",
+        "effectiveFromDate": "2022-03-01"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Breed codes API",
+        "description": "Look up a breed by its code, or list the breeds of a species.",
+        "distributionTypeCode": "API",
+        "accessMethodCode": "REST_API",
+        "distributionFormatCode": "JSON",
+        "authenticationMethodCode": "API_KEY",
+        "licenceCode": "OGL",
+        "dataServiceTitleName": "Breed Codes API",
+        "accessReference": "https://api.example.gov.uk/breeds",
+        "versionNumber": "2.1"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-11T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-30T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA11116",
+    "titleName": "Old Holdings",
+    "description": "Holdings registered before 2010. Replaced by Livestock Holding.",
+    "organisationName": "Rural Payments Agency",
+    "publicationStateCode": "RETIRED",
+    "accessRightsDescription": "No longer available",
+    "creationDate": "2005-04-01",
+    "modificationDate": "2019-12-31",
+    "dataAssetTypeCode": "MASTER_DATA",
+    "domainCode": "HOLDING",
+    "lifecycleStateCode": "RETIRED",
+    "updateFrequencyCode": "NOT_UPDATED",
+    "keywordNames": ["Holding"],
+    "systemCreatedDateTime": "2026-09-12T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-12T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA11117",
+    "titleName": "Bovine TB Test Results",
+    "description": "The result of every bovine tuberculosis (TB) test on cattle, with the holding, the test type and the date of the test.",
+    "organisationName": "Animal and Plant Health Agency",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Available to Defra group only",
+    "provenanceDescription": "Recorded by vets and laboratories that carry out TB tests",
+    "creatorReference": "APHA",
+    "creationDate": "2021-01-04",
+    "acceptanceDate": "2021-02-01",
+    "modificationDate": "2026-10-30",
+    "validFromDate": "2021-01-04",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-10-30",
+    "lastReviewedDate": "2026-07-01",
+    "nextReviewDate": "2026-12-31",
+    "reviewFrequencyMonthQuantity": 6,
+    "versionNumber": "3.2",
+    "spatialCoverageDescription": "England and Wales",
+    "temporalStartDate": "2021-01-04",
+    "deliveryGroupName": "Animal and Plant Delivery Group",
+    "dataAssetTypeCode": "TRANSACTIONAL_DATA",
+    "domainCode": "DISEASE_AND_TESTING",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "DAILY",
+    "informationAssetName": "Animal Disease Records",
+    "categoryCodes": ["DISEASE", "CATTLE", "HEALTH"],
+    "keywordNames": ["Bovine TB", "Cattle", "Test results"],
+    "jurisdictionCodes": ["GB-ENG", "GB-WLS"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "https://example.org/tb-testing-system",
+        "relationshipTypeCode": "DERIVED_FROM",
+        "description": "The TB testing system"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Sam Smith",
+        "personEmailAddressReference": "sam.smith@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2021-01-04"
+      },
+      {
+        "personName": "Jo Bloggs",
+        "personEmailAddressReference": "jo.bloggs@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2021-01-04",
+        "effectiveToDate": "2026-03-31"
+      },
+      {
+        "personName": "Taylor Test",
+        "personEmailAddressReference": "taylor.test@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2026-04-01"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "TB test results view",
+        "description": "A read-only view of test results, refreshed every night.",
+        "distributionTypeCode": "DATABASE_VIEW",
+        "accessMethodCode": "DATABASE_QUERY_TOOL",
+        "distributionFormatCode": "PARQUET",
+        "authenticationMethodCode": "OAUTH2",
+        "licenceCode": "RESTRICTED",
+        "accessReference": "https://data.example.gov.uk/views/tb-test-results",
+        "versionNumber": "3.2"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-12T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-10-30T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA11118",
+    "titleName": "Movement Restrictions",
+    "description": "Restrictions on moving animals on or off a holding, for example during a disease outbreak, with the reason and the dates they apply.",
+    "organisationName": "Animal and Plant Health Agency",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "No distribution is available yet. Ask the Data Owner for access while the data asset is being developed.",
+    "provenanceDescription": "Recorded by APHA when it places or lifts a restriction",
+    "creatorReference": "APHA",
+    "creationDate": "2026-06-01",
+    "acceptanceDate": "2026-06-15",
+    "modificationDate": "2026-10-14",
+    "validFromDate": "2026-06-01",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-10-14",
+    "spatialCoverageDescription": "England",
+    "dataAssetTypeCode": "TRANSACTIONAL_DATA",
+    "domainCode": "RESTRICTIONS_AND_MARKERS",
+    "lifecycleStateCode": "IN_DEVELOPMENT",
+    "updateFrequencyCode": "IRREGULAR",
+    "informationAssetName": "Animal Disease Records",
+    "categoryCodes": ["DISEASE", "MOVEMENT"],
+    "keywordNames": ["Movement", "Restriction"],
+    "jurisdictionCodes": ["GB-ENG"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "DA11111",
+        "relationshipTypeCode": "RELATED_TO",
+        "description": "Restrictions stop movements on or off a holding"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Sam Smith",
+        "personEmailAddressReference": "sam.smith@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2026-06-01"
+      },
+      {
+        "personName": "Jo Bloggs",
+        "personEmailAddressReference": "jo.bloggs@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2026-06-01"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-13T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-10-14T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA11119",
+    "titleName": "Holding Address",
+    "description": "The address of each holding, with its Unique Property Reference Number (UPRN) where it has one.",
+    "organisationName": "Rural Payments Agency",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Available to Defra group and approved partners",
+    "provenanceDescription": "Taken from holding registrations and matched to address data",
+    "creatorReference": "RPA",
+    "creationDate": "2023-06-01",
+    "acceptanceDate": "2023-07-03",
+    "modificationDate": "2026-09-18",
+    "validFromDate": "2023-06-01",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-09-18",
+    "spatialCoverageDescription": "Great Britain",
+    "deliveryGroupName": "Farming and Countryside Delivery Group",
+    "dataAssetTypeCode": "MASTER_DATA",
+    "domainCode": "ADDRESS",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "WEEKLY",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["HOLDINGS"],
+    "keywordNames": ["Address", "Holding", "UPRN"],
+    "jurisdictionCodes": ["GB-GBN"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "DA11113",
+        "relationshipTypeCode": "RELATED_TO",
+        "description": "Each address belongs to a holding"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Alex Example",
+        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2023-06-01"
+      },
+      {
+        "personName": "Alex Example",
+        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2023-06-01"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Holding address weekly file",
+        "description": "A file of every holding address, sent each Monday.",
+        "distributionTypeCode": "FILE",
+        "accessMethodCode": "FILE_TRANSFER",
+        "distributionFormatCode": "XML",
+        "authenticationMethodCode": "BASIC",
+        "licenceCode": "RESTRICTED",
+        "accessReference": "https://files.example.gov.uk/holding-address/",
+        "byteSizeQuantity": 48000000
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-13T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-18T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA1111A",
+    "titleName": "Livestock Keeper",
+    "description": "The people and businesses who keep livestock, with the holdings they keep it on and their contact preferences.",
+    "organisationName": "Rural Payments Agency",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Available to Defra group and approved partners",
+    "provenanceDescription": "Registered by keepers with the Rural Payments Agency",
+    "creatorReference": "RPA",
+    "creationDate": "2026-04-01",
+    "acceptanceDate": "2026-05-01",
+    "modificationDate": "2026-10-24",
+    "validFromDate": "2026-04-01",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-10-24",
+    "versionNumber": "2.0",
+    "spatialCoverageDescription": "Great Britain",
+    "dataAssetTypeCode": "MASTER_DATA",
+    "domainCode": "HOLDING",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "DAILY",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["KEEPERS"],
+    "keywordNames": ["Holding", "Keeper"],
+    "jurisdictionCodes": ["GB-GBN"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "https://example.org/keeper-register",
+        "relationshipTypeCode": "DERIVED_FROM",
+        "description": "The keeper register"
+      },
+      {
+        "targetResourceIdentifier": "DA11114",
+        "relationshipTypeCode": "REPLACES",
+        "description": "Replaces the Keeper data asset"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Alex Example",
+        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2026-04-01"
+      },
+      {
+        "personName": "Alex Example",
+        "personEmailAddressReference": "alex.example@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2026-04-01"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Keeper API version 2",
+        "description": "Find keepers by name, CPH number or holding.",
+        "distributionTypeCode": "API",
+        "accessMethodCode": "REST_API",
+        "distributionFormatCode": "JSON",
+        "authenticationMethodCode": "OAUTH2",
+        "licenceCode": "RESTRICTED",
+        "accessReference": "https://api.example.gov.uk/keepers/v2",
+        "versionNumber": "2.0"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-14T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-10-24T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA1111B",
+    "titleName": "Species Reference Data",
+    "description": "The species of livestock the catalogue covers, with the code for each species.",
+    "organisationName": "Livestock Information Ltd",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Open to anyone under the Open Government Licence",
+    "provenanceDescription": "Maintained by Livestock Information Ltd",
+    "creatorReference": "LI",
+    "creationDate": "2022-03-01",
+    "acceptanceDate": "2022-03-15",
+    "modificationDate": "2026-05-11",
+    "validFromDate": "2022-03-01",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-05-11",
+    "versionNumber": "3",
+    "spatialCoverageDescription": "United Kingdom",
+    "dataAssetTypeCode": "REFERENCE_DATA",
+    "domainCode": "REFERENCE_DATA",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "ANNUALLY",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["SPECIES"],
+    "keywordNames": ["Reference data", "Species"],
+    "jurisdictionCodes": ["GB-UKM"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "DA11115",
+        "relationshipTypeCode": "REFERENCED_BY",
+        "description": "Each breed belongs to a species"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Chris Sample",
+        "personEmailAddressReference": "chris.sample@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2022-03-01"
+      },
+      {
+        "personName": "Chris Sample",
+        "personEmailAddressReference": "chris.sample@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2022-03-01"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Species list",
+        "description": "Every species code and name.",
+        "distributionTypeCode": "DOWNLOAD",
+        "accessMethodCode": "DOWNLOAD",
+        "distributionFormatCode": "CSV",
+        "authenticationMethodCode": "NONE",
+        "licenceCode": "OGL",
+        "downloadReference": "https://files.example.gov.uk/reference/species.csv",
+        "byteSizeQuantity": 18000,
+        "versionNumber": "3"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-14T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-14T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA1111D",
+    "titleName": "Animal Registrations",
+    "description": "Births and registrations of cattle, sheep and goats in Wales, with the date each animal was registered.",
+    "organisationName": "Welsh Government",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Available to the Welsh Government, Defra group and approved partners",
+    "provenanceDescription": "Reported by keepers in Wales",
+    "creatorReference": "Welsh Government",
+    "creationDate": "2024-09-02",
+    "acceptanceDate": "2024-10-01",
+    "modificationDate": "2026-10-07",
+    "validFromDate": "2024-09-02",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-10-07",
+    "spatialCoverageDescription": "Wales",
+    "dataAssetTypeCode": "TRANSACTIONAL_DATA",
+    "domainCode": "ANIMAL",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "DAILY",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["REGISTRATION", "CATTLE", "SHEEP"],
+    "keywordNames": ["Births", "Registration"],
+    "jurisdictionCodes": ["GB-WLS"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "https://example.org/wales-livestock-register",
+        "relationshipTypeCode": "DERIVED_FROM",
+        "description": "The livestock register for Wales"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Taylor Test",
+        "personEmailAddressReference": "taylor.test@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2024-09-02"
+      },
+      {
+        "personName": "Taylor Test",
+        "personEmailAddressReference": "taylor.test@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2024-09-02"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Registrations API",
+        "description": "Find registrations by holding or date.",
+        "distributionTypeCode": "API",
+        "accessMethodCode": "REST_API",
+        "distributionFormatCode": "JSON",
+        "authenticationMethodCode": "OAUTH2",
+        "licenceCode": "MOU",
+        "accessReference": "https://api.example.gov.uk/wales/registrations",
+        "versionNumber": "1.2"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-15T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-10-07T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA1111E",
+    "titleName": "Animal Deaths",
+    "description": "Deaths of cattle, sheep and pigs in Scotland, with the date and the reason where it is known.",
+    "organisationName": "Scottish Government",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Available to the Scottish Government, Defra group and approved partners",
+    "provenanceDescription": "Reported by keepers and collection services in Scotland",
+    "creatorReference": "Scottish Government",
+    "creationDate": "2025-01-06",
+    "acceptanceDate": "2025-02-03",
+    "modificationDate": "2026-10-31",
+    "validFromDate": "2025-01-06",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-10-31",
+    "spatialCoverageDescription": "Scotland",
+    "temporalStartDate": "2025-01-06",
+    "dataAssetTypeCode": "TRANSACTIONAL_DATA",
+    "domainCode": "ANIMAL",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "DAILY",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["DEATH", "CATTLE", "SHEEP", "PIGS"],
+    "keywordNames": ["Deaths", "Fallen stock"],
+    "jurisdictionCodes": ["GB-SCT"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "https://example.org/scotland-fallen-stock",
+        "relationshipTypeCode": "DERIVED_FROM",
+        "description": "Fallen stock collection records"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Morgan Demo",
+        "personEmailAddressReference": "morgan.demo@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2025-01-06"
+      },
+      {
+        "personName": "Morgan Demo",
+        "personEmailAddressReference": "morgan.demo@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2025-01-06"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Deaths daily file",
+        "description": "A file of the previous day's deaths, sent every morning.",
+        "distributionTypeCode": "FILE",
+        "accessMethodCode": "FILE_TRANSFER",
+        "distributionFormatCode": "CSV",
+        "authenticationMethodCode": "MUTUAL_TLS",
+        "licenceCode": "MOU",
+        "accessReference": "https://files.example.gov.uk/scotland/deaths/",
+        "byteSizeQuantity": 350000
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-15T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-10-31T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "identifier": "DA1111F",
+    "titleName": "Livestock Movement Statistics",
+    "description": "Monthly counts of animal movements by species and region, for reporting and analysis.",
+    "organisationName": "Department for Environment, Food and Rural Affairs",
+    "publicationStateCode": "PUBLISHED",
+    "accessRightsDescription": "Open to anyone under the Open Government Licence",
+    "provenanceDescription": "Counted from the Animal Movement data asset each month",
+    "creatorReference": "Defra",
+    "creationDate": "2025-04-01",
+    "acceptanceDate": "2025-04-30",
+    "modificationDate": "2026-10-03",
+    "validFromDate": "2025-04-01",
+    "validToDate": "9999-12-31",
+    "metadataDate": "2026-10-03",
+    "spatialCoverageDescription": "England",
+    "temporalStartDate": "2025-04-01",
+    "dataAssetTypeCode": "ANALYTICAL_DATA",
+    "domainCode": "OPERATIONAL_INTELLIGENCE",
+    "lifecycleStateCode": "ACTIVE",
+    "updateFrequencyCode": "MONTHLY",
+    "informationAssetName": "Livestock Traceability Records",
+    "categoryCodes": ["MOVEMENT"],
+    "keywordNames": ["Movement", "Statistics"],
+    "jurisdictionCodes": ["GB-ENG"],
+    "relationships": [
+      {
+        "targetResourceIdentifier": "DA11111",
+        "relationshipTypeCode": "DERIVED_FROM",
+        "description": "Counted from animal movements"
+      }
+    ],
+    "governanceAssignments": [
+      {
+        "personName": "Jamie Placeholder",
+        "personEmailAddressReference": "jamie.placeholder@example.gov.uk",
+        "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2025-04-01"
+      },
+      {
+        "personName": "Jamie Placeholder",
+        "personEmailAddressReference": "jamie.placeholder@example.gov.uk",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2025-04-01"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Quarterly printed report",
+        "description": "A printed report sent each quarter. There is no online copy: ask the Data Owner for one.",
+        "distributionTypeCode": "FILE",
+        "accessMethodCode": "FILE_TRANSFER",
+        "distributionFormatCode": "HARD_COPY",
+        "authenticationMethodCode": "NONE",
+        "licenceCode": "OGL"
+      }
+    ],
+    "systemCreatedDateTime": "2026-09-16T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-10-03T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  }
+]

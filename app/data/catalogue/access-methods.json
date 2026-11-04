@@ -1,0 +1,22 @@
+[
+  {
+    "code": "REST_API",
+    "name": "REST API"
+  },
+  {
+    "code": "EVENT_BUS",
+    "name": "Event Bus"
+  },
+  {
+    "code": "DOWNLOAD",
+    "name": "Download"
+  },
+  {
+    "code": "DATABASE_QUERY_TOOL",
+    "name": "Database Query Tool"
+  },
+  {
+    "code": "FILE_TRANSFER",
+    "name": "File Transfer"
+  }
+]

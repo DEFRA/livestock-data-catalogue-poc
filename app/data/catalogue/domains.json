@@ -1,0 +1,46 @@
+[
+  {
+    "code": "ANIMAL",
+    "name": "Animal"
+  },
+  {
+    "code": "HOLDING",
+    "name": "Holding"
+  },
+  {
+    "code": "ADDRESS",
+    "name": "Address"
+  },
+  {
+    "code": "DISEASE_AND_TESTING",
+    "name": "Disease & Testing"
+  },
+  {
+    "code": "ANIMAL_HEALTH",
+    "name": "Animal Health"
+  },
+  {
+    "code": "RESTRICTIONS_AND_MARKERS",
+    "name": "Restrictions & Markers"
+  },
+  {
+    "code": "ASSURANCE",
+    "name": "Assurance"
+  },
+  {
+    "code": "IMPORT_AND_EXPORT",
+    "name": "Import & Export"
+  },
+  {
+    "code": "INSPECTION_AND_COMPLIANCE",
+    "name": "Inspection & Compliance"
+  },
+  {
+    "code": "OPERATIONAL_INTELLIGENCE",
+    "name": "Operational Intelligence"
+  },
+  {
+    "code": "REFERENCE_DATA",
+    "name": "Reference Data"
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "code": "ANIMAL_IDENTIFICATION",
+    "name": "Animal Identification"
+  },
+  {
+    "code": "MOVEMENT",
+    "name": "Animal Movement"
+  },
+  {
+    "code": "HEALTH",
+    "name": "Animal Health"
+  },
+  {
+    "code": "HOLDINGS",
+    "name": "Holdings"
+  },
+  {
+    "code": "KEEPERS",
+    "name": "Keepers"
+  },
+  {
+    "code": "BREEDS",
+    "name": "Breeds"
+  },
+  {
+    "code": "SPECIES",
+    "name": "Species"
+  },
+  {
+    "code": "CATTLE",
+    "name": "Cattle"
+  },
+  {
+    "code": "PIGS",
+    "name": "Pigs"
+  },
+  {
+    "code": "SHEEP",
+    "name": "Sheep"
+  },
+  {
+    "code": "REGISTRATION",
+    "name": "Animal Registration"
+  },
+  {
+    "code": "DEATH",
+    "name": "Animal Death"
+  },
+  {
+    "code": "DISEASE",
+    "name": "Disease"
+  }
+]

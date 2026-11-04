@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Livestock Traceability Records",
+    "securityClassificationCode": "OFFICIAL",
+    "retentionPeriodDescription": "7 years after last movement",
+    "systemCreatedDateTime": "2026-09-05T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-05T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "name": "Animal Disease Records",
+    "securityClassificationCode": "OFFICIAL_SENSITIVE",
+    "retentionPeriodDescription": "10 years after the case is closed",
+    "systemCreatedDateTime": "2026-09-05T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-05T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  }
+]

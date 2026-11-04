@@ -1,0 +1,18 @@
+[
+  {
+    "code": "GOVERNMENT_DEPARTMENT",
+    "name": "Government Department"
+  },
+  {
+    "code": "EXECUTIVE_AGENCY",
+    "name": "Executive Agency"
+  },
+  {
+    "code": "ARMS_LENGTH_BODY",
+    "name": "Arms Length Body"
+  },
+  {
+    "code": "DEVOLVED_ADMINISTRATION",
+    "name": "Devolved Administration"
+  }
+]

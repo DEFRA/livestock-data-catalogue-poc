@@ -1,0 +1,22 @@
+[
+  {
+    "code": "DRAFT",
+    "name": "Draft",
+    "description": "Being prepared; not visible to catalogue users"
+  },
+  {
+    "code": "PUBLISHED",
+    "name": "Published",
+    "description": "Visible to catalogue users"
+  },
+  {
+    "code": "DEPRECATED",
+    "name": "Deprecated",
+    "description": "Visible but flagged as being replaced"
+  },
+  {
+    "code": "RETIRED",
+    "name": "Retired",
+    "description": "Withdrawn from the catalogue"
+  }
+]

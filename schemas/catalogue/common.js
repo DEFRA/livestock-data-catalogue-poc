@@ -1,0 +1,46 @@
+import Joi from 'joi'
+
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
+
+// A pattern alone would accept impossible dates such as 2026-02-30
+function isRealDate(value) {
+  const date = new Date(`${value.slice(0, 10)}T00:00:00Z`)
+  return (
+    !Number.isNaN(date.getTime()) &&
+    date.toISOString().startsWith(value.slice(0, 10))
+  )
+}
+
+function realDate(value, helpers) {
+  return isRealDate(value) ? value : helpers.error('any.invalid')
+}
+
+export const text = Joi.string()
+
+export const date = Joi.string().pattern(DATE_PATTERN).custom(realDate)
+
+export const dateTime = Joi.string().pattern(DATE_TIME_PATTERN).custom(realDate)
+
+export const httpsAddress = Joi.string().uri({ scheme: ['https'] })
+
+export const anyAddress = Joi.string().uri()
+
+export const code = Joi.string().pattern(/^[A-Z0-9]+(?:[_-][A-Z0-9]+)*$/)
+
+export const emailAddress = Joi.string().email({ tlds: { allow: false } })
+
+export const wholeNumber = Joi.number().integer()
+
+export const userId = Joi.string().guid({ version: 'uuidv4' })
+
+export const systemAttributes = {
+  systemCreatedDateTime: dateTime.required(),
+  systemCreatedByUserId: userId.required(),
+  systemUpdatedDateTime: dateTime.required(),
+  systemUpdatedByUserId: userId.required()
+}
+
+export function ignoringCase(first, second) {
+  return first.toLowerCase() === second.toLowerCase()
+}

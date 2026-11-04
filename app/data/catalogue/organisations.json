@@ -1,0 +1,84 @@
+[
+  {
+    "name": "Department for Environment, Food and Rural Affairs",
+    "abbreviatedName": "Defra",
+    "websiteReference": "https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs",
+    "organisationTypeCode": "GOVERNMENT_DEPARTMENT",
+    "systemCreatedDateTime": "2026-09-01T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-01T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "name": "Animal and Plant Health Agency",
+    "abbreviatedName": "APHA",
+    "websiteReference": "https://www.gov.uk/government/organisations/animal-and-plant-health-agency",
+    "parentOrganisationName": "Department for Environment, Food and Rural Affairs",
+    "organisationTypeCode": "EXECUTIVE_AGENCY",
+    "systemCreatedDateTime": "2026-09-01T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-01T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "name": "Rural Payments Agency",
+    "abbreviatedName": "RPA",
+    "websiteReference": "https://www.gov.uk/government/organisations/rural-payments-agency",
+    "parentOrganisationName": "Department for Environment, Food and Rural Affairs",
+    "organisationTypeCode": "EXECUTIVE_AGENCY",
+    "systemCreatedDateTime": "2026-09-01T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-01T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "name": "Agriculture and Horticulture Development Board",
+    "abbreviatedName": "AHDB",
+    "websiteReference": "https://ahdb.org.uk",
+    "parentOrganisationName": "Department for Environment, Food and Rural Affairs",
+    "organisationTypeCode": "ARMS_LENGTH_BODY",
+    "systemCreatedDateTime": "2026-09-01T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-01T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "name": "Livestock Information Ltd",
+    "abbreviatedName": "LI",
+    "websiteReference": "https://www.livestockinformation.org.uk",
+    "parentOrganisationName": "Department for Environment, Food and Rural Affairs",
+    "organisationTypeCode": "ARMS_LENGTH_BODY",
+    "systemCreatedDateTime": "2026-09-01T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-01T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "name": "Welsh Government",
+    "websiteReference": "https://www.gov.wales",
+    "organisationTypeCode": "DEVOLVED_ADMINISTRATION",
+    "systemCreatedDateTime": "2026-09-01T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-01T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "name": "Scottish Government",
+    "websiteReference": "https://www.gov.scot",
+    "organisationTypeCode": "DEVOLVED_ADMINISTRATION",
+    "systemCreatedDateTime": "2026-09-01T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-01T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "name": "Digital, Data and Technology Services",
+    "abbreviatedName": "DDTS",
+    "parentOrganisationName": "Department for Environment, Food and Rural Affairs",
+    "organisationTypeCode": "GOVERNMENT_DEPARTMENT",
+    "systemCreatedDateTime": "2026-09-01T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-01T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "code": "GB-ENG",
+    "name": "England"
+  },
+  {
+    "code": "GB-WLS",
+    "name": "Wales"
+  },
+  {
+    "code": "GB-SCT",
+    "name": "Scotland"
+  },
+  {
+    "code": "GB-NIR",
+    "name": "Northern Ireland"
+  },
+  {
+    "code": "GB-GBN",
+    "name": "Great Britain"
+  },
+  {
+    "code": "GB-UKM",
+    "name": "United Kingdom"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "code": "MASTER_DATA",
+    "name": "Master Data",
+    "description": "Core business entities such as animals, holdings and keepers"
+  },
+  {
+    "code": "REFERENCE_DATA",
+    "name": "Reference Data",
+    "description": "Controlled lists such as breeds and species"
+  },
+  {
+    "code": "TRANSACTIONAL_DATA",
+    "name": "Transactional Data",
+    "description": "Events such as movements, births and deaths"
+  },
+  {
+    "code": "ANALYTICAL_DATA",
+    "name": "Analytical Data",
+    "description": "Derived or aggregated data for reporting and analysis"
+  }
+]

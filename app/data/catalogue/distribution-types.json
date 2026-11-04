@@ -1,0 +1,22 @@
+[
+  {
+    "code": "API",
+    "name": "API"
+  },
+  {
+    "code": "EVENT_STREAM",
+    "name": "Event Stream"
+  },
+  {
+    "code": "DOWNLOAD",
+    "name": "Download"
+  },
+  {
+    "code": "FILE",
+    "name": "File"
+  },
+  {
+    "code": "DATABASE_VIEW",
+    "name": "Database View"
+  }
+]
