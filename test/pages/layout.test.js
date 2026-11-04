@@ -9,6 +9,7 @@ const PAGES = [
     '/data-assets',
     'Search data assets (page 1 of 2) – Livestock Data Catalogue'
   ],
+  ['/data-assets/DA11111', 'Animal Movement – Livestock Data Catalogue'],
   ['/report-a-problem', 'Report a problem – Livestock Data Catalogue'],
   [
     '/accessibility-statement',

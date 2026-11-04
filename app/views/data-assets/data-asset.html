@@ -1,0 +1,88 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "partials/summary-value.html" import appSummaryValue %}
+
+{% block containerStart %}
+  {{ govukBreadcrumbs({
+    collapseOnMobile: true,
+    items: [
+      { text: "Home", href: "/" },
+      { text: "Data assets", href: "/data-assets" }
+    ]
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">Data asset</span>
+      <h1 class="govuk-heading-l">{{ titleName }}</h1>
+
+      {% if isDeprecated %}
+        <p class="govuk-body">
+          {{ govukTag({ text: "Deprecated", classes: "govuk-tag--grey" }) }}
+        </p>
+        {% set replacementHtml -%}
+          This data asset is being replaced.
+          {%- if replacement %} Use <a class="govuk-link" href="{{ replacement.href }}">{{ replacement.titleName }}</a> instead.{% endif %}
+        {%- endset %}
+        {{ govukWarningText({
+          html: replacementHtml,
+          iconFallbackText: "Warning"
+        }) }}
+      {% endif %}
+
+      <p class="govuk-body-l">{{ description }}</p>
+
+      {% for section in sections %}
+        <h2 class="govuk-heading-m">{{ section.heading }}</h2>
+        {% set summaryRows = [] %}
+        {% for row in section.rows %}
+          {% set summaryRows = summaryRows.concat([{
+            key: { text: row.key },
+            value: { html: appSummaryValue(row) }
+          }]) %}
+        {% endfor %}
+        {{ govukSummaryList({ rows: summaryRows }) }}
+      {% endfor %}
+
+      <h2 class="govuk-heading-m">Ways to get this data</h2>
+      {% if distributions | length %}
+        {% for distribution in distributions %}
+          {% set distributionRows = [] %}
+          {% for row in distribution.rows %}
+            {% set distributionRows = distributionRows.concat([{
+              key: { text: row.key },
+              value: { html: appSummaryValue(row) }
+            }]) %}
+          {% endfor %}
+          {{ govukSummaryList({
+            card: {
+              title: { text: distribution.name, headingLevel: 3 }
+            },
+            rows: distributionRows
+          }) }}
+        {% endfor %}
+      {% else %}
+        <p class="govuk-body">There are no distributions for this data asset.</p>
+        <p class="govuk-body">{{ accessRightsDescription }}</p>
+      {% endif %}
+
+      {% if relatedGroups | length %}
+        <h2 class="govuk-heading-m">Related data assets and resources</h2>
+        {% for group in relatedGroups %}
+          <h3 class="govuk-heading-s">{{ group.heading }}</h3>
+          <ul class="govuk-list">
+            {% for link in group.links %}
+              <li><a class="govuk-link" href="{{ link.href }}">{{ link.text }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
