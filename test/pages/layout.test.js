@@ -132,4 +132,18 @@ describe('the layout of every page', () => {
       })
     })
   }
+
+  test('stops files the Kit serves itself saying which web framework it runs on, once it has served a page', async () => {
+    await app.getPage('/')
+    const response = await fetch(
+      new URL(
+        '/plugin-assets/govuk-frontend/dist/govuk/govuk-frontend.min.js',
+        app.baseUrl
+      )
+    )
+    await response.arrayBuffer()
+
+    assert.equal(response.status, 200)
+    assert.equal(response.headers.get('x-powered-by'), null)
+  })
 })
