@@ -49,6 +49,16 @@ describe('the support and error pages', () => {
     ])
   })
 
+  test('the cookies table uses smaller text on small screens, so it fits 320 pixels', async () => {
+    const page = await app.getPage('/cookies')
+
+    assert.ok(
+      page.document
+        .querySelector('table')
+        .classList.contains('govuk-table--small-text-until-tablet')
+    )
+  })
+
   test('shows Page not found, with status 404, for an address that does not exist', async () => {
     const page = await app.getPage('/no-such-page')
 

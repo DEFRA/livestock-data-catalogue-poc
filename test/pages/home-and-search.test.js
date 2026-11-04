@@ -107,6 +107,12 @@ describe('the home page', () => {
     ])
     assert.equal(table.querySelectorAll('tbody tr').length, 5)
   })
+
+  test('uses smaller table text on small screens, so the 3-column table fits 320 pixels', () => {
+    const table = page.document.querySelectorAll('table')[2]
+
+    assert.ok(table.classList.contains('govuk-table--small-text-until-tablet'))
+  })
 })
 
 describe('the search page', () => {
