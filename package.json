@@ -4,12 +4,17 @@
   "description": "livestock-data-catalogue-poc. GOV.UK Prototype Kit with CDP Platform running capabilities",
   "author": "Defra DDTS",
   "license": "(OGL-UK-3, MIT) see licenses in /LICENSES",
+  "type": "module",
   "scripts": {
     "dev": "govuk-prototype-kit dev",
     "serve": "govuk-prototype-kit serve",
     "start": "govuk-prototype-kit start",
     "format": "prettier --write \"**/*.{cjs,js,json,md}\"",
-    "format:check": "prettier --check \"**/*.{cjs,js,json,md}\""
+    "format:check": "prettier --check \"**/*.{cjs,js,json,md}\"",
+    "lint": "npm run lint:js && npm run lint:scss",
+    "lint:js": "eslint .",
+    "lint:scss": "stylelint \"app/assets/sass/**/*.scss\"",
+    "test": "mkdir -p coverage && node --test --experimental-test-coverage --test-coverage-include='app/**/*.js' --test-coverage-include='schemas/**/*.js' --test-coverage-lines=90 --test-coverage-branches=90 --test-coverage-functions=90 --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info 'test/**/*.test.js'"
   },
   "dependencies": {
     "@govuk-prototype-kit/common-templates": "3.0.1",
@@ -17,6 +22,13 @@
     "govuk-prototype-kit": "14.0.2"
   },
   "devDependencies": {
-    "prettier": "3.9.10"
+    "axe-core": "4.14.0",
+    "eslint": "10.13.0",
+    "joi": "18.3.1",
+    "jsdom": "30.1.3",
+    "neostandard": "0.14.1",
+    "prettier": "3.9.10",
+    "stylelint": "17.16.0",
+    "stylelint-config-gds": "3.0.0"
   }
 }
