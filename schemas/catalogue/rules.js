@@ -381,15 +381,23 @@ function governanceBreaches(collections) {
     ) {
       breaches.push(`${owner} has overlapping Data Owner assignments`)
     }
-    const byPersonAndRole = Map.groupBy(
-      assignments,
-      (assignment) =>
-        `${assignment.personName} as ${assignment.governanceRoleCode}`
+    // A person is identified by their name and email address together (S03)
+    const byPersonAndRole = Map.groupBy(assignments, (assignment) =>
+      [
+        personKey(
+          assignment.personName,
+          assignment.personEmailAddressReference
+        ),
+        assignment.governanceRoleCode
+      ].join('\n')
     )
-    for (const [personAndRole, periods] of byPersonAndRole) {
+    for (const periods of byPersonAndRole.values()) {
       if (anyOverlap(periods)) {
+        const [
+          { personName, personEmailAddressReference, governanceRoleCode }
+        ] = periods
         breaches.push(
-          `${owner} has overlapping assignments for ${personAndRole}`
+          `${owner} has overlapping assignments for ${personName} <${personEmailAddressReference}> as ${governanceRoleCode}`
         )
       }
     }

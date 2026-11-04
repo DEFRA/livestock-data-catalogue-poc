@@ -399,8 +399,28 @@ describe('the rules that span records', () => {
 
       assertBreach(
         breaches,
-        'Data asset DA11111 has overlapping assignments for Sam Smith as DATA_STEWARD'
+        'Data asset DA11111 has overlapping assignments for Sam Smith <sam.smith@example.gov.uk> as DATA_STEWARD'
       )
+    })
+
+    test('does not mix up 2 people with the same name', () => {
+      const breaches = breachesAfter((collections) => {
+        const samSmith = collections.people.find(
+          (person) => person.name === 'Sam Smith'
+        )
+        collections.people.push({
+          ...samSmith,
+          emailAddressReference: 'sam.smith2@example.gov.uk'
+        })
+        dataAssetIn(collections, 'DA11111').governanceAssignments.push({
+          personName: 'Sam Smith',
+          personEmailAddressReference: 'sam.smith2@example.gov.uk',
+          governanceRoleCode: 'DATA_STEWARD',
+          effectiveFromDate: '2025-06-01'
+        })
+      })
+
+      assert.deepEqual(breaches, [])
     })
 
     test('rejects 2 current Data Custodians', () => {
