@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import { after, before, describe, test } from 'node:test'
 
+import { browseLists } from '../../app/lib/browse.js'
+import { buildCatalogue } from '../../app/lib/catalogue-data.js'
 import { startApp } from '../helpers/app.js'
+import { catalogueCopy, dataAssetIn } from '../helpers/catalogue.js'
 
 function texts(document, selector) {
   return [...document.querySelectorAll(selector)].map((element) =>
@@ -112,6 +115,22 @@ describe('the home page', () => {
     const table = page.document.querySelectorAll('table')[2]
 
     assert.ok(table.classList.contains('govuk-table--small-text-until-tablet'))
+  })
+
+  test('tags a deprecated data asset in Recently updated', async () => {
+    const collections = catalogueCopy()
+    dataAssetIn(collections, 'DA11114').modificationDate = '2026-11-01'
+    const changed = await app.renderPage(
+      'index',
+      browseLists(buildCatalogue(collections))
+    )
+    const [deprecated, published] = changed.document
+      .querySelectorAll('table')[2]
+      .querySelectorAll('tbody tr')
+
+    assert.equal(deprecated.querySelector('a').textContent.trim(), 'Keeper')
+    assert.deepEqual(texts(deprecated, '.govuk-tag'), ['Deprecated'])
+    assert.equal(published.querySelector('.govuk-tag'), null)
   })
 })
 

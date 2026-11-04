@@ -3,6 +3,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "partials/links.html" import appLink %}
 
 {% set mainClasses = "govuk-main-wrapper--auto-spacing" %}
@@ -26,8 +27,14 @@
 
   {% set recentRows = [] %}
   {% for dataAsset in recentlyUpdated %}
+    {% set titleHtml %}
+      {{- appLink(dataAsset.href, dataAsset.titleName) -}}
+      {%- if dataAsset.isDeprecated %}
+        {{ govukTag({ text: "Deprecated", classes: "govuk-tag--grey" }) -}}
+      {% endif -%}
+    {% endset %}
     {% set recentRows = recentRows.concat([[
-      { html: appLink(dataAsset.href, dataAsset.titleName) },
+      { html: titleHtml },
       { text: dataAsset.typeName },
       { text: dataAsset.modificationDate | formatDate }
     ]]) %}
