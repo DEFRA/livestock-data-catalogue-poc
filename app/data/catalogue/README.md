@@ -7,7 +7,7 @@ The prototype reads these files at start-up instead of a database. Each file hol
 ## Sources
 
 1. The Phase 1 logical data model V0.11, in the "Logical Data Model" diagrams and acceptance criteria of the Phase 1 Jira stories S01 to S26 ([LDAT-181](https://eaflood.atlassian.net/browse/LDAT-181)). Entities, attributes, business keys, foreign keys and reference values follow them exactly.
-2. The data architect's answers on [LDAT-235](https://eaflood.atlassian.net/browse/LDAT-235) (4 November 2026): Licence (S23), a mandatory Authentication Method (S22), the Security Classification codes (S25), and no exemptions, interim values or active states.
+2. The data architect's answers on [LDAT-235](https://eaflood.atlassian.net/browse/LDAT-235) (4 November 2026): Licence (S23), a mandatory Authentication Method (S22), the Security Classification codes (S25), and no exemptions, interim values or active states. Later that day: an optional Valid To Date and Coverage Start and End Dates (S06), distribution names unique within a data asset (S18), and Digital, Data and Technology Services as a government department.
 3. LADU-DATA-001 for names, and the draft MongoDB profile in our review of it: plural camelCase collections and camelCase fields.
 
 ## Files
@@ -40,18 +40,16 @@ The prototype reads these files at start-up instead of a database. Each file hol
 
 - **Field names** are camelCase versions of the V0.11 attribute names, without the entity's own name: Data Asset "Title Name" is `titleName`, and a foreign key keeps the name it has in the diagram, such as `organisationName`.
 - **Link entities and distributions** are embedded in their data asset: `categoryCodes`, `keywordNames`, `jurisdictionCodes`, `relationships`, `governanceAssignments`, `custodians` and `distributions`.
-- **Keys** are V0.11's business keys: names, codes, and the data asset identifier, which matches `^DA[1-9A-HJKM-Z]{5}$` (S05). There are no internal identifiers: the backend adds them and links records by them (LDAT-235, answer 4).
-- **Dates** are `YYYY-MM-DD` and date-times are `YYYY-MM-DDThh:mm:ssZ`, in UTC (ISO 8601). Files are UTF-8.
+- **Keys** are V0.11's business keys: names, codes, and the data asset identifier, which matches `^DA[1-9A-HJKM-Z]{5}$` (S05). A distribution's key is its data asset and its name, so its name is unique within the data asset (S18). There are no internal identifiers: the backend adds them and links records by them (LDAT-235, answer 4).
+- **Dates** are `YYYY-MM-DD` and date-times are `YYYY-MM-DDThh:mm:ssZ`, in UTC (ISO 8601). Files are UTF-8. A data asset with no `validToDate` is valid with no end date (S06).
 - **System attributes:** every record in the 6 core collections has `systemCreatedDateTime`, `systemCreatedByUserId`, `systemUpdatedDateTime` and `systemUpdatedByUserId` (LADU-DATA-001). The user IDs are made-up UUIDs.
 - **Visibility:** only Published and Deprecated data assets are shown to catalogue users (S11). The files also hold a Draft (DA11112) and a Retired (DA11116) data asset, to test that they stay hidden.
 
 ## Provisional choices
 
-These go beyond V0.11 until the data architect answers the open questions on LDAT-235:
+These go beyond V0.11, and stay until the data architect decides:
 
-- `9999-12-31` is "the agreed open-ended value" for Valid To Date (S06, question 7).
-- A relationship target inside the catalogue is held as its data asset identifier, and anything else as an `https` address (S16, question 9).
-- Digital, Data and Technology Services has the Organisation Type `GOVERNMENT_DEPARTMENT`, with Defra as its parent (S04, question 11).
+- A relationship target inside the catalogue is held as its data asset identifier, and anything else as an `https` address (S16). The data architect wants to test this with real data assets first (LDAT-235, question 9).
 - A data asset with no distribution can be published when its access rights include the words "no distribution is available" (S26).
 
 ## Changing the data

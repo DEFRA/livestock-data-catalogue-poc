@@ -1,6 +1,7 @@
 import { isCurrentOn } from '../../app/lib/periods.js'
 
-// S06, S08 to S12: needed before a data asset can be published
+// S06, S08 to S12: needed before a data asset can be published. Valid To
+// Date is optional: without one, a data asset is valid with no end date.
 const PUBLISH_ATTRIBUTES = [
   ['accessRightsDescription', 'Access Rights Description'],
   ['provenanceDescription', 'Provenance Description'],
@@ -9,7 +10,6 @@ const PUBLISH_ATTRIBUTES = [
   ['acceptanceDate', 'Acceptance Date'],
   ['modificationDate', 'Modification Date'],
   ['validFromDate', 'Valid From Date'],
-  ['validToDate', 'Valid To Date'],
   ['metadataDate', 'Metadata Date'],
   ['dataAssetTypeCode', 'Data Asset Type Code'],
   ['domainCode', 'Domain Code'],
@@ -30,10 +30,10 @@ const DATE_PAIRS = [
   ['modificationDate', 'Modification Date', 'creationDate', 'Creation Date'],
   ['validToDate', 'Valid To Date', 'validFromDate', 'Valid From Date'],
   [
-    'temporalEndDate',
-    'Temporal End Date',
-    'temporalStartDate',
-    'Temporal Start Date'
+    'coverageEndDate',
+    'Coverage End Date',
+    'coverageStartDate',
+    'Coverage Start Date'
   ],
   [
     'nextReviewDate',

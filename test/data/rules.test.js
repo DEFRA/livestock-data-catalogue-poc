@@ -46,13 +46,27 @@ describe('the rules that span records', () => {
       assertBreach(breaches, 'Duplicate data asset identifier: DA11111')
     })
 
-    test('rejects 2 distributions in different data assets whose names differ only in case', () => {
+    test('rejects 2 distributions in one data asset whose names differ only in case (S18)', () => {
       const breaches = breachesAfter((collections) => {
-        dataAssetIn(collections, 'DA11113').distributions[0].name =
-          'movements api'
+        const distributions = dataAssetIn(collections, 'DA11111').distributions
+        distributions[1].name = distributions[0].name.toUpperCase()
       })
 
-      assertBreach(breaches, 'Duplicate distribution name: movements api')
+      assertBreach(
+        breaches,
+        'Duplicate distribution name in data asset DA11111: MOVEMENTS API'
+      )
+    })
+
+    test('allows 2 data assets to have distributions with the same name (S18)', () => {
+      const breaches = breachesAfter((collections) => {
+        dataAssetIn(collections, 'DA11113').distributions[0].name = dataAssetIn(
+          collections,
+          'DA11111'
+        ).distributions[0].name
+      })
+
+      assert.deepEqual(breaches, [])
     })
 
     test('rejects 2 people with the same name and email address, ignoring case', () => {
@@ -297,9 +311,9 @@ describe('the rules that span records', () => {
         'Valid To Date cannot be before Valid From Date'
       ],
       [
-        'temporalEndDate',
-        'temporalStartDate',
-        'Temporal End Date cannot be before Temporal Start Date'
+        'coverageEndDate',
+        'coverageStartDate',
+        'Coverage End Date cannot be before Coverage Start Date'
       ],
       [
         'nextReviewDate',

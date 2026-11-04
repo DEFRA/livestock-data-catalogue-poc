@@ -86,7 +86,7 @@ describe('the data asset page', () => {
       assert.equal(rows['Data asset type'], 'Transactional Data')
       assert.equal(rows.Domain, 'Animal')
       assert.equal(rows['Update frequency'], 'Real time')
-      assert.equal(rows['Valid to'], 'Open-ended')
+      assert.equal(rows['Valid to'], 'No end date')
       assert.equal(rows['Lifecycle state'], 'Active')
       assert.doesNotMatch(
         page.document.querySelector('main').textContent,

@@ -84,10 +84,10 @@ describe('the data asset page content', () => {
       assert.equal(row(coverage, 'Next review').text, '15 April 2027')
     })
 
-    test('shows the agreed open-ended value as Open-ended', () => {
+    test('shows No end date when a data asset is valid with no end date (S06)', () => {
       const coverage = section(pageFor('DA11111'), 'Coverage and dates').rows
 
-      assert.equal(row(coverage, 'Valid to').text, 'Open-ended')
+      assert.equal(row(coverage, 'Valid to').text, 'No end date')
     })
 
     test('shows an end of validity as a date', () => {
@@ -96,24 +96,13 @@ describe('the data asset page content', () => {
       assert.equal(row(coverage, 'Valid to').text, '31 March 2027')
     })
 
-    test('leaves out the end of validity when there is none', () => {
-      const coverage = section(
-        pageAfter('DA11111', (dataAsset) => {
-          delete dataAsset.validToDate
-        }),
-        'Coverage and dates'
-      ).rows
-
-      assert.equal(row(coverage, 'Valid to'), undefined)
-    })
-
     test('shows a time period with a start and an end, or an end only', () => {
       const both = pageAfter('DA11111', (dataAsset) => {
-        dataAsset.temporalEndDate = '2026-03-31'
+        dataAsset.coverageEndDate = '2026-03-31'
       })
       const endOnly = pageAfter('DA11111', (dataAsset) => {
-        delete dataAsset.temporalStartDate
-        dataAsset.temporalEndDate = '2026-03-31'
+        delete dataAsset.coverageStartDate
+        dataAsset.coverageEndDate = '2026-03-31'
       })
 
       assert.equal(

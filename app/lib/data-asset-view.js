@@ -7,10 +7,6 @@ import { searchHref } from './search.js'
 import { dataAssetHref } from './summaries.js'
 import { findVisibleDataAsset } from './visibility.js'
 
-// The agreed open-ended value for Valid To Date (S06). Provisional until
-// the data architect confirms it.
-export const OPEN_ENDED_DATE = '9999-12-31'
-
 const BYTE_UNITS = [
   [1e9, 'GB'],
   [1e6, 'MB'],
@@ -70,13 +66,6 @@ function timePeriod(start, end) {
   return end ? `Until ${formatDate(end)}` : undefined
 }
 
-function validTo(date) {
-  if (date === undefined) {
-    return undefined
-  }
-  return date === OPEN_ENDED_DATE ? 'Open-ended' : formatDate(date)
-}
-
 function lastReviewed(dataAsset) {
   if (!dataAsset.lastReviewedDate) {
     return undefined
@@ -122,10 +111,16 @@ function coverageSection(catalogue, dataAsset) {
       textRow('Spatial coverage', dataAsset.spatialCoverageDescription),
       textRow(
         'Time period',
-        timePeriod(dataAsset.temporalStartDate, dataAsset.temporalEndDate)
+        timePeriod(dataAsset.coverageStartDate, dataAsset.coverageEndDate)
       ),
       dateRow('Valid from', dataAsset.validFromDate),
-      textRow('Valid to', validTo(dataAsset.validToDate)),
+      // Without a Valid To Date, a data asset is valid with no end date (S06)
+      textRow(
+        'Valid to',
+        dataAsset.validToDate
+          ? formatDate(dataAsset.validToDate)
+          : 'No end date'
+      ),
       textRow(
         'Update frequency',
         nameFor(catalogue, 'updateFrequencies', dataAsset.updateFrequencyCode)

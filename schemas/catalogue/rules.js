@@ -57,13 +57,13 @@ function uniqueKeyBreaches(collections) {
       collections.deliveryGroups.map((deliveryGroup) => deliveryGroup.name),
       lowerCased
     ],
-    [
-      'distribution name',
-      dataAssets.flatMap((dataAsset) =>
-        (dataAsset.distributions ?? []).map((distribution) => distribution.name)
-      ),
+    // A distribution's key is its data asset and its name (S18), so names
+    // must be unique within each data asset, but not across them
+    ...dataAssets.map((dataAsset) => [
+      `distribution name in data asset ${dataAsset.identifier}`,
+      (dataAsset.distributions ?? []).map((distribution) => distribution.name),
       lowerCased
-    ],
+    ]),
     [
       'data service title',
       collections.dataServices.map((dataService) => dataService.titleName),

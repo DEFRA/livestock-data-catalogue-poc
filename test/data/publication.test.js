@@ -28,6 +28,13 @@ describe('the publication checks (S26)', () => {
     ])
   })
 
+  test('does not need a Valid To Date, because a data asset can be valid with no end date (S06)', () => {
+    const dataAsset = animalMovement()
+    delete dataAsset.validToDate
+
+    assert.deepEqual(outstanding(dataAsset), [])
+  })
+
   for (const [field, message] of [
     ['categoryCodes', 'At least one Category is required'],
     ['keywordNames', 'At least one Keyword is required'],
