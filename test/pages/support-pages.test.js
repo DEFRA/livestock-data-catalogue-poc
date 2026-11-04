@@ -59,6 +59,29 @@ describe('the support and error pages', () => {
     )
   })
 
+  test('the page for unexpected errors says what to do, with no details of the error', async () => {
+    const page = await app.renderPage('problem-with-the-service')
+
+    assert.equal(
+      page.document.title,
+      'Sorry, there is a problem with the service – Livestock Data Catalogue'
+    )
+    assert.equal(
+      page.document.querySelector('h1').textContent.trim(),
+      'Sorry, there is a problem with the service'
+    )
+    assert.deepEqual(
+      [...page.document.querySelectorAll('main p')].map((paragraph) =>
+        paragraph.textContent.trim().replace(/\s+/g, ' ')
+      ),
+      ['Try again later.', 'If the problem continues, report a problem.']
+    )
+    assert.equal(
+      page.document.querySelector('main a').getAttribute('href'),
+      '/report-a-problem'
+    )
+  })
+
   test('shows Page not found, with status 404, for an address that does not exist', async () => {
     const page = await app.getPage('/no-such-page')
 

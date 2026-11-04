@@ -30,6 +30,19 @@ export async function startApp() {
         document: new JSDOM(html).window.document
       }
     },
+    // Renders a view with the Kit's templates, for pages or data that no
+    // request can reach in a test, such as the page for unexpected errors
+    renderPage(view, locals = {}) {
+      return new Promise((resolve, reject) => {
+        app.render(view, locals, (error, html) => {
+          if (error) {
+            reject(error)
+            return
+          }
+          resolve({ html, document: new JSDOM(html).window.document })
+        })
+      })
+    },
     async stop() {
       server.close()
       await once(server, 'close')

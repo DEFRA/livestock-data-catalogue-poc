@@ -28,4 +28,10 @@ describe('accessibility of the support and error pages', () => {
       assert.deepEqual(await findAccessibilityViolations(page.html), [])
     })
   }
+
+  test('the page for unexpected errors has no WCAG 2.2 AA violations that axe can find', async () => {
+    const page = await app.renderPage('problem-with-the-service')
+
+    assert.deepEqual(await findAccessibilityViolations(page.html), [])
+  })
 })
