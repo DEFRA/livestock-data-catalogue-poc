@@ -1,12 +1,110 @@
 {% extends "layouts/main.html" %}
 
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "partials/links.html" import appLink %}
+
 {% set mainClasses = "govuk-main-wrapper--auto-spacing" %}
 
 {% block content %}
+  {% set domainRows = [] %}
+  {% for domain in domains %}
+    {% set domainRows = domainRows.concat([[
+      { html: appLink(domain.href, domain.text) },
+      { text: domain.count, format: "numeric" }
+    ]]) %}
+  {% endfor %}
+
+  {% set organisationRows = [] %}
+  {% for organisation in organisations %}
+    {% set organisationRows = organisationRows.concat([[
+      { html: appLink(organisation.href, organisation.text) },
+      { text: organisation.count, format: "numeric" }
+    ]]) %}
+  {% endfor %}
+
+  {% set recentRows = [] %}
+  {% for dataAsset in recentlyUpdated %}
+    {% set recentRows = recentRows.concat([[
+      { html: appLink(dataAsset.href, dataAsset.titleName) },
+      { text: dataAsset.typeName },
+      { text: dataAsset.modificationDate | formatDate }
+    ]]) %}
+  {% endfor %}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-xl">{{ serviceName }}</h1>
       <p class="govuk-body-l">Find livestock data, who is responsible for it and how to get it.</p>
+
+      <form method="get" action="/data-assets" novalidate>
+        {{ govukInput({
+          id: "q",
+          name: "q",
+          type: "search",
+          label: {
+            text: "Search data assets",
+            classes: "govuk-label--m"
+          },
+          hint: {
+            text: "For example, animal movement or breed"
+          }
+        }) }}
+        {{ govukButton({
+          text: "Search"
+        }) }}
+      </form>
+    </div>
+
+    <div class="govuk-grid-column-one-third">
+      <h2 class="govuk-heading-m">About the catalogue</h2>
+      <p class="govuk-body">A data asset is a set of livestock data that an organisation looks after, such as animal movements or the register of holdings.</p>
+      <p class="govuk-body">Each data asset shows who is responsible for it and its distributions: the ways you can get the data, such as an API or a download.</p>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half">
+      {{ govukTable({
+        caption: "Browse by domain",
+        captionClasses: "govuk-table__caption--m",
+        firstCellIsHeader: true,
+        head: [
+          { text: "Domain" },
+          { text: "Data assets", format: "numeric" }
+        ],
+        rows: domainRows
+      }) }}
+    </div>
+
+    <div class="govuk-grid-column-one-half">
+      {{ govukTable({
+        caption: "Browse by organisation",
+        captionClasses: "govuk-table__caption--m",
+        firstCellIsHeader: true,
+        head: [
+          { text: "Owning organisation" },
+          { text: "Data assets", format: "numeric" }
+        ],
+        rows: organisationRows
+      }) }}
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {{ govukTable({
+        caption: "Recently updated",
+        captionClasses: "govuk-table__caption--m",
+        firstCellIsHeader: true,
+        head: [
+          { text: "Data asset" },
+          { text: "Type" },
+          { text: "Last updated" }
+        ],
+        rows: recentRows
+      }) }}
     </div>
   </div>
 {% endblock %}

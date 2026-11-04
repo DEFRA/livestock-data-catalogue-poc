@@ -1,0 +1,4 @@
+{# A link built from autoescaped values, for a component's html option #}
+{% macro appLink(href, text) -%}
+  <a class="govuk-link" href="{{ href }}">{{ text }}</a>
+{%- endmacro %}

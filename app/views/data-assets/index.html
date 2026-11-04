@@ -1,0 +1,118 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set mainClasses = "govuk-main-wrapper--auto-spacing" %}
+
+{% block content %}
+  <form method="get" action="/data-assets" novalidate>
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {% if errorMessage %}
+          {{ govukErrorSummary({
+            titleText: "There is a problem",
+            errorList: [
+              {
+                text: errorMessage,
+                href: "#q"
+              }
+            ]
+          }) }}
+        {% endif %}
+
+        {{ govukInput({
+          id: "q",
+          name: "q",
+          type: "search",
+          value: typedTerms,
+          label: {
+            text: "Search data assets",
+            isPageHeading: true,
+            classes: "govuk-label--l"
+          },
+          errorMessage: { text: errorMessage } if errorMessage else undefined
+        }) }}
+        {{ govukButton({
+          text: "Search"
+        }) }}
+      </div>
+    </div>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-third">
+        <h2 class="govuk-heading-m">Filter</h2>
+        {% for group in filterGroups %}
+          {% if group.items | length %}
+            {{ govukCheckboxes({
+              idPrefix: group.parameter,
+              name: group.parameter,
+              classes: "govuk-checkboxes--small",
+              fieldset: {
+                legend: {
+                  text: group.legend,
+                  classes: "govuk-fieldset__legend--s"
+                }
+              },
+              items: group.items
+            }) }}
+          {% endif %}
+        {% endfor %}
+        {{ govukButton({
+          text: "Apply filters",
+          classes: "govuk-button--secondary"
+        }) }}
+        {% if clearFiltersHref %}
+          <p class="govuk-body">
+            <a class="govuk-link" href="{{ clearFiltersHref }}">Clear filters</a>
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="govuk-grid-column-two-thirds">
+        {% if results %}
+          <p class="govuk-body">{{ resultCount }}</p>
+
+          {% if results | length %}
+            <ul class="govuk-list">
+              {% for result in results %}
+                <li>
+                  <h2 class="govuk-heading-s govuk-!-margin-bottom-2">
+                    <a class="govuk-link" href="{{ result.href }}">{{ result.titleName }}</a>
+                  </h2>
+                  {% if result.isDeprecated %}
+                    <p class="govuk-body govuk-!-margin-bottom-2">
+                      {{ govukTag({ text: "Deprecated", classes: "govuk-tag--grey" }) }}
+                    </p>
+                  {% endif %}
+                  <p class="govuk-body govuk-!-margin-bottom-2">{{ result.summary }}</p>
+                  <p class="govuk-body-s">{{ result.typeName }} owned by {{ result.organisationName }}, in the {{ result.domainName }} domain. Last updated {{ result.modificationDate | formatDate }}.</p>
+                  {% if not loop.last %}
+                    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+
+            {% if pagination %}
+              {{ govukPagination(pagination) }}
+            {% endif %}
+          {% else %}
+            <p class="govuk-body">There are no matching data assets.</p>
+            <p class="govuk-body">Improve your results by:</p>
+            <ul class="govuk-list govuk-list--bullet">
+              <li>removing filters</li>
+              <li>checking your spelling</li>
+              <li>using fewer words</li>
+              <li>searching for something less specific</li>
+            </ul>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </form>
+{% endblock %}

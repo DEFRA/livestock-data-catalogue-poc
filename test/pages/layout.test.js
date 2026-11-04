@@ -5,6 +5,10 @@ import { startApp } from '../helpers/app.js'
 
 const PAGES = [
   ['/', 'Livestock Data Catalogue'],
+  [
+    '/data-assets',
+    'Search data assets (page 1 of 2) – Livestock Data Catalogue'
+  ],
   ['/report-a-problem', 'Report a problem – Livestock Data Catalogue'],
   [
     '/accessibility-statement',
