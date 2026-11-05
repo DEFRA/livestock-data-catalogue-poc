@@ -2,10 +2,10 @@
 // The catalogue isn't on GOV.UK, so it must not use GDS Transport or the
 // GOV.UK brand colour. Its brand colour is Defra's organisation colour.
 @use "sass:map";
-@import "node_modules/govuk-frontend/dist/govuk/settings/colours-organisations";
+@use "node_modules/govuk-frontend/dist/govuk/settings/colours-organisations" as organisations;
 
 $govuk-font-family: "Helvetica Neue", helvetica, arial, sans-serif;
 
 $govuk-functional-colours: (
-  brand: map.get($govuk-colours-organisations, "department-for-environment-food-rural-affairs", "contrast-safe")
+  brand: map.get(organisations.$govuk-colours-organisations, "department-for-environment-food-rural-affairs", "contrast-safe")
 );
