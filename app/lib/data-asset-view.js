@@ -194,14 +194,14 @@ function responsibilitySection(catalogue, dataAsset, today) {
         }
       },
       peopleRow(
-        'Data Owner',
+        'Data owner',
         currentPeople(catalogue, dataAsset, 'DATA_OWNER', today)
       ),
       peopleRow(
-        'Data Stewards',
+        'Data stewards',
         currentPeople(catalogue, dataAsset, 'DATA_STEWARD', today)
       ),
-      textRow('Data Custodian', custodian?.organisationName)
+      textRow('Data custodian', custodian?.organisationName)
     )
   }
 }

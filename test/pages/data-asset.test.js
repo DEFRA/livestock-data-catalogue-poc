@@ -101,12 +101,12 @@ describe('the data asset page', () => {
       )
 
       assert.equal(
-        rows['Data Owner'],
+        rows['Data owner'],
         'Jo Bloggs, Animal and Plant Health Agency jo.bloggs@example.com'
       )
       assert.equal(ownerEmail.textContent.trim(), 'jo.bloggs@example.com')
       assert.equal(
-        rows['Data Custodian'],
+        rows['Data custodian'],
         'Digital, Data and Technology Services'
       )
     })

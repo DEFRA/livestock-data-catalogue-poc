@@ -136,10 +136,19 @@ describe('the data asset page content', () => {
       })
     })
 
+    test('names each role in sentence case', () => {
+      const responsibility = section(pageFor('DA11115'), 'Responsibility').rows
+
+      assert.deepEqual(
+        responsibility.map((summaryRow) => summaryRow.key),
+        ['Owning organisation', 'Data owner', 'Data stewards', 'Data custodian']
+      )
+    })
+
     test('shows the current Data Owner with their organisation and email address', () => {
       const responsibility = section(pageFor('DA11111'), 'Responsibility').rows
 
-      assert.deepEqual(row(responsibility, 'Data Owner').people, [
+      assert.deepEqual(row(responsibility, 'Data owner').people, [
         {
           name: 'Jo Bloggs',
           organisationName: 'Animal and Plant Health Agency',
@@ -167,7 +176,7 @@ describe('the data asset page content', () => {
       })
 
       assert.equal(
-        row(section(page, 'Responsibility').rows, 'Data Owner').people[0]
+        row(section(page, 'Responsibility').rows, 'Data owner').people[0]
           .emailHref,
         "mailto:jo.o'bloggs%2Bdata@example.com"
       )
@@ -176,7 +185,7 @@ describe('the data asset page content', () => {
     test('does not show a Data Steward whose assignment has not started', () => {
       const stewards = row(
         section(pageFor('DA11111'), 'Responsibility').rows,
-        'Data Stewards'
+        'Data stewards'
       ).people
 
       assert.deepEqual(
@@ -189,7 +198,7 @@ describe('the data asset page content', () => {
       const later = pageFor('DA11111', { today: '2027-01-04' })
       const stewards = row(
         section(later, 'Responsibility').rows,
-        'Data Stewards'
+        'Data stewards'
       ).people
 
       assert.deepEqual(
@@ -201,7 +210,7 @@ describe('the data asset page content', () => {
     test('does not show a Data Steward whose assignment has ended', () => {
       const stewards = row(
         section(pageFor('DA11117'), 'Responsibility').rows,
-        'Data Stewards'
+        'Data stewards'
       ).people
 
       assert.deepEqual(
@@ -214,7 +223,7 @@ describe('the data asset page content', () => {
       const responsibility = section(pageFor('DA11115'), 'Responsibility').rows
 
       assert.equal(
-        row(responsibility, 'Data Custodian').text,
+        row(responsibility, 'Data custodian').text,
         'Agriculture and Horticulture Development Board'
       )
     })
@@ -222,8 +231,12 @@ describe('the data asset page content', () => {
     test('leaves out the Data Custodian and delivery group when there are none', () => {
       const responsibility = section(pageFor('DA1111B'), 'Responsibility').rows
 
-      assert.equal(row(responsibility, 'Data Custodian'), undefined)
+      assert.equal(row(responsibility, 'Data custodian'), undefined)
       assert.equal(row(responsibility, 'Delivery group'), undefined)
+      assert.deepEqual(
+        responsibility.map((summaryRow) => summaryRow.key),
+        ['Owning organisation', 'Data owner', 'Data stewards']
+      )
     })
 
     test('leaves out a role with nobody currently in it', () => {
@@ -234,7 +247,7 @@ describe('the data asset page content', () => {
         'Responsibility'
       ).rows
 
-      assert.equal(row(responsibility, 'Data Owner'), undefined)
+      assert.equal(row(responsibility, 'Data owner'), undefined)
     })
   })
 
