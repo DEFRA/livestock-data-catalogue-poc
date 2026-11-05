@@ -2,6 +2,7 @@ import govukPrototypeKit from 'govuk-prototype-kit'
 
 import { showDataAsset } from './lib/handlers/data-asset.js'
 import { pageNotFound, problemWithTheService } from './lib/handlers/errors.js'
+import { showHealth } from './lib/handlers/health.js'
 import { showHome } from './lib/handlers/home.js'
 import { pageDefaults } from './lib/handlers/page-defaults.js'
 import { renderPage } from './lib/handlers/pages.js'
@@ -12,6 +13,7 @@ const router = govukPrototypeKit.requests.setupRouter()
 const signIn = createSignIn()
 
 router.use(pageDefaults)
+router.get('/health', showHealth)
 router.use(signIn.requireSignIn)
 
 router.get('/sign-in', signIn.showSignIn)

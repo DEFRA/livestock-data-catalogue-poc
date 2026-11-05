@@ -75,6 +75,14 @@ describe('signing in to the prototype on CDP', () => {
       })
     }
 
+    test("CDP's health check opens without signing in", async () => {
+      const page = await app.getPage('/health')
+
+      assert.equal(page.status, 200)
+      assert.match(page.headers.get('content-type'), /^application\/json/)
+      assert.deepEqual(JSON.parse(page.html), { message: 'success' })
+    })
+
     test('the Defra logo loads without signing in, so the sign-in page is branded', async () => {
       const response = await fetch(
         new URL('/public/images/defra-logo.svg', app.baseUrl)
