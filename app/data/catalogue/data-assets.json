@@ -17,7 +17,7 @@
     "nextReviewDate": "2027-04-15",
     "reviewFrequencyMonthQuantity": 12,
     "lastReviewedByName": "Jo Bloggs",
-    "approvedByName": "Sam Smith",
+    "approvedByName": "Sam Specimen",
     "versionNumber": "2.3",
     "spatialCoverageDescription": "England",
     "coverageStartDate": "2024-04-01",
@@ -50,8 +50,8 @@
         "effectiveFromDate": "2024-04-01"
       },
       {
-        "personName": "Sam Smith",
-        "personEmailAddressReference": "sam.smith@example.com",
+        "personName": "Sam Specimen",
+        "personEmailAddressReference": "sam.specimen@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2024-04-01"
       },
@@ -374,8 +374,8 @@
     ],
     "governanceAssignments": [
       {
-        "personName": "Sam Smith",
-        "personEmailAddressReference": "sam.smith@example.com",
+        "personName": "Sam Specimen",
+        "personEmailAddressReference": "sam.specimen@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2021-01-04"
       },
@@ -443,8 +443,8 @@
     ],
     "governanceAssignments": [
       {
-        "personName": "Sam Smith",
-        "personEmailAddressReference": "sam.smith@example.com",
+        "personName": "Sam Specimen",
+        "personEmailAddressReference": "sam.specimen@example.com",
         "governanceRoleCode": "DATA_OWNER",
         "effectiveFromDate": "2026-06-01"
       },

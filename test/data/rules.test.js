@@ -366,8 +366,8 @@ describe('the rules that span records', () => {
     test('rejects 2 current Data Owners', () => {
       const breaches = breachesAfter((collections) => {
         dataAssetIn(collections, 'DA11111').governanceAssignments.push({
-          personName: 'Sam Smith',
-          personEmailAddressReference: 'sam.smith@example.com',
+          personName: 'Sam Specimen',
+          personEmailAddressReference: 'sam.specimen@example.com',
           governanceRoleCode: 'DATA_OWNER',
           effectiveFromDate: '2025-01-01'
         })
@@ -391,8 +391,8 @@ describe('the rules that span records', () => {
         ).governanceAssignments
         assignments[0].effectiveToDate = '2025-12-31'
         assignments.push({
-          personName: 'Sam Smith',
-          personEmailAddressReference: 'sam.smith@example.com',
+          personName: 'Sam Specimen',
+          personEmailAddressReference: 'sam.specimen@example.com',
           governanceRoleCode: 'DATA_OWNER',
           effectiveFromDate: '2026-01-01'
         })
@@ -404,8 +404,8 @@ describe('the rules that span records', () => {
     test('rejects overlapping periods for the same person and role', () => {
       const breaches = breachesAfter((collections) => {
         dataAssetIn(collections, 'DA11111').governanceAssignments.push({
-          personName: 'Sam Smith',
-          personEmailAddressReference: 'sam.smith@example.com',
+          personName: 'Sam Specimen',
+          personEmailAddressReference: 'sam.specimen@example.com',
           governanceRoleCode: 'DATA_STEWARD',
           effectiveFromDate: '2025-06-01'
         })
@@ -413,22 +413,22 @@ describe('the rules that span records', () => {
 
       assertBreach(
         breaches,
-        'Data asset DA11111 has overlapping assignments for Sam Smith <sam.smith@example.com> as DATA_STEWARD'
+        'Data asset DA11111 has overlapping assignments for Sam Specimen <sam.specimen@example.com> as DATA_STEWARD'
       )
     })
 
     test('does not mix up 2 people with the same name', () => {
       const breaches = breachesAfter((collections) => {
-        const samSmith = collections.people.find(
-          (person) => person.name === 'Sam Smith'
+        const samSpecimen = collections.people.find(
+          (person) => person.name === 'Sam Specimen'
         )
         collections.people.push({
-          ...samSmith,
-          emailAddressReference: 'sam.smith2@example.com'
+          ...samSpecimen,
+          emailAddressReference: 'sam.specimen2@example.com'
         })
         dataAssetIn(collections, 'DA11111').governanceAssignments.push({
-          personName: 'Sam Smith',
-          personEmailAddressReference: 'sam.smith2@example.com',
+          personName: 'Sam Specimen',
+          personEmailAddressReference: 'sam.specimen2@example.com',
           governanceRoleCode: 'DATA_STEWARD',
           effectiveFromDate: '2025-06-01'
         })

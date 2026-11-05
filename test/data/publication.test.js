@@ -71,7 +71,7 @@ describe('the publication checks (S26)', () => {
   test('does not count a Data Steward whose assignment has not started', () => {
     const dataAsset = animalMovement()
     dataAsset.governanceAssignments = dataAsset.governanceAssignments.filter(
-      (assignment) => assignment.personName !== 'Sam Smith'
+      (assignment) => assignment.personName !== 'Sam Specimen'
     )
 
     assert.deepEqual(outstanding(dataAsset), [
