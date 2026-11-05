@@ -358,7 +358,7 @@ export function createSignIn({
       })
       showSignInPage(res, {
         returnUrl,
-        errorMessage: 'The password is not correct'
+        errorMessage: 'Enter the correct password'
       })
       return
     }

@@ -173,7 +173,7 @@ describe('signing in to the prototype on CDP', () => {
   describe('with an empty or wrong password', () => {
     for (const [password, message] of [
       ['', 'Enter the password'],
-      ['a-wrong-password', 'The password is not correct']
+      ['a-wrong-password', 'Enter the correct password']
     ]) {
       test(`shows "${message}", clears the field and signs nobody in`, async () => {
         const page = await app.getPage('/sign-in', {

@@ -525,7 +525,7 @@ describe('signing in', () => {
     assert.equal(response.rendered.locals.errorMessage, 'Enter the password')
   })
 
-  test('says the password is not correct, logs it without the password, and signs nobody in', () => {
+  test('asks for the correct password, logs it without the password, and signs nobody in', () => {
     const { signIn } = createSignIn({ environment: ON_CDP })
     const response = fakeResponse()
 
@@ -541,7 +541,7 @@ describe('signing in', () => {
     assert.equal(response.cookieSet, undefined)
     assert.equal(
       response.rendered.locals.errorMessage,
-      'The password is not correct'
+      'Enter the correct password'
     )
     assert.equal(response.rendered.locals.returnUrl, '/data-assets')
     assert.deepEqual(
