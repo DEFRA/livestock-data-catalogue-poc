@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-import { catalogueCopy } from '../helpers/catalogue.js'
+import { isVisible } from '../../app/lib/visibility.js'
+import { catalogueCopy, dataAssetIn } from '../helpers/catalogue.js'
 
 // Domains reserved for examples (RFC 2606 and RFC 6761), which nobody can
 // register, so a made-up link or email address can never reach anyone
@@ -38,6 +39,19 @@ function madeUpAddresses(collections) {
   return [...people, ...dataServices, ...dataAssets].filter(Boolean)
 }
 
+// S06: the Metadata Date is set to today when the catalogue metadata
+// changes, so it can't be before the record's last update. That update
+// is in UTC, and today's date in London is never before the UTC date.
+function metadataDatesBeforeLastUpdate(collections) {
+  return collections.dataAssets
+    .filter(isVisible)
+    .filter(
+      (dataAsset) =>
+        dataAsset.metadataDate < dataAsset.systemUpdatedDateTime.slice(0, 10)
+    )
+    .map((dataAsset) => dataAsset.identifier)
+}
+
 describe('the mock data', () => {
   test('uses only domains reserved for examples in made-up email and web addresses', () => {
     const addresses = madeUpAddresses(catalogueCopy())
@@ -61,5 +75,16 @@ describe('the mock data', () => {
       ),
       ['jo.bloggs@example.co.uk']
     )
+  })
+
+  test('gives each visible data asset a metadata date no earlier than its last update (S06)', () => {
+    assert.deepEqual(metadataDatesBeforeLastUpdate(catalogueCopy()), [])
+  })
+
+  test('finds a visible data asset whose metadata date is before its last update', () => {
+    const collections = catalogueCopy()
+    dataAssetIn(collections, 'DA11111').metadataDate = '2026-10-27'
+
+    assert.deepEqual(metadataDatesBeforeLastUpdate(collections), ['DA11111'])
   })
 })
