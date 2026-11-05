@@ -10,7 +10,8 @@ function referenceName(listName) {
   return (catalogue, code) => nameFor(catalogue, listName, code)
 }
 
-function sameText(catalogue, value) {
+// Organisations and delivery groups are keyed by name, so the value shows
+function nameIsValue(catalogue, value) {
   return value
 }
 
@@ -39,13 +40,13 @@ export const FILTERS = Object.freeze([
     parameter: 'organisation',
     legend: 'Owning organisation',
     valuesOf: (dataAsset) => [dataAsset.organisationName],
-    nameOf: sameText
+    nameOf: nameIsValue
   },
   {
     parameter: 'delivery-group',
     legend: 'Delivery group',
     valuesOf: (dataAsset) => [dataAsset.deliveryGroupName],
-    nameOf: sameText
+    nameOf: nameIsValue
   }
 ])
 
