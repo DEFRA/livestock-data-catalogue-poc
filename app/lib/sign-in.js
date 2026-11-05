@@ -1,26 +1,47 @@
-import { timingSafeEqual } from 'node:crypto'
-import { createRequire } from 'node:module'
+import {
+  createHash,
+  createHmac,
+  randomBytes,
+  scryptSync,
+  timingSafeEqual
+} from 'node:crypto'
 
 import { isDataAssetIdentifier } from './identifiers.js'
-
-// The Prototype Kit's own password encryption, so the cookie matches the one
-// the Kit sets, and the prototype adds no cryptography of its own
-const { encryptPassword } = createRequire(import.meta.url)(
-  'govuk-prototype-kit/lib/utils'
-)
 
 const SIGN_IN_PATH = '/sign-in'
 const SIGNED_OUT_PATH = '/signed-out'
 
-// The Kit's cookie, listed on the cookies page
-const COOKIE_NAME = 'authentication'
+// Our own cookie, listed on the cookies page. The Kit's password page sets a
+// cookie with another name, which is never accepted here.
+const COOKIE_NAME = 'prototype-sign-in'
 const COOKIE_OPTIONS = Object.freeze({
   httpOnly: true,
   secure: true,
   sameSite: 'lax',
   path: '/'
 })
-const COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000
+
+// A sign-in lasts one working day. The server checks the time in the cookie,
+// so a copied cookie stops working too, not only the browser's.
+const SIGNED_IN_FOR = 8 * 60 * 60 * 1000
+// CDP can run several copies of the prototype, whose clocks can differ a little
+const CLOCK_DIFFERENCE_ALLOWED = 60 * 1000
+
+// The cookie is "time.random.signature", signed with HMAC-SHA256
+const SIGNED_COOKIE = /^(\d{1,15})\.([\w-]{22})\.([\w-]{43})$/
+
+// The signing key comes from the passwords through scrypt, with settings from
+// the OWASP Password Storage Cheat Sheet. So every copy of the prototype gets
+// the same key with no extra secret, changing a password ends every sign-in,
+// and a copied cookie is slow to test password guesses against.
+const KEY_SALT = 'livestock-data-catalogue-poc sign-in'
+const SCRYPT_OPTIONS = Object.freeze({
+  N: 2 ** 15,
+  r: 8,
+  p: 3,
+  maxmem: 64 * 1024 * 1024
+})
+const signingKeys = new Map()
 
 // Anyone can sign in or out, and read the support pages, which the footer
 // links to from the sign-in page
@@ -109,20 +130,60 @@ function signInAddress(returnUrl) {
     : `${SIGN_IN_PATH}?${new URLSearchParams({ returnUrl })}`
 }
 
+function digest(text) {
+  return createHash('sha256').update(text).digest()
+}
+
+function signingKey(passwords) {
+  const secret = JSON.stringify(passwords)
+  if (!signingKeys.has(secret)) {
+    signingKeys.set(secret, scryptSync(secret, KEY_SALT, 32, SCRYPT_OPTIONS))
+  }
+  return signingKeys.get(secret)
+}
+
+function signature(key, text) {
+  return createHmac('sha256', key).update(text).digest('base64url')
+}
+
+function newSignedCookie(key, now) {
+  const text = `${now}.${randomBytes(16).toString('base64url')}`
+  return `${text}.${signature(key, text)}`
+}
+
+function isSignedCookie(key, cookie, now) {
+  const parts = SIGNED_COOKIE.exec(cookie)
+  if (parts === null) {
+    return false
+  }
+  const [, issuedAt, random, givenSignature] = parts
+  const age = now - Number(issuedAt)
+  return (
+    age >= -CLOCK_DIFFERENCE_ALLOWED &&
+    age < SIGNED_IN_FOR &&
+    sameText(givenSignature, signature(key, `${issuedAt}.${random}`))
+  )
+}
+
 // The prototype's password check, which replaces the Kit's own so that the
 // sign-in page can have the Defra layout. The Kit's check is turned off in
 // app/config.json, and the passwords are CDP secrets.
-export function createSignIn({ environment = process.env } = {}) {
+export function createSignIn({
+  environment = process.env,
+  clock = Date.now
+} = {}) {
   const required = isSignInRequired(environment)
-  const passwordHashes = passwordsFrom(environment).map(encryptPassword)
+  const passwords = passwordsFrom(environment)
+  // Digests have one length, so comparing them takes the same time
+  // whatever the password's length
+  const passwordDigests = passwords.map(digest)
+  const key =
+    required && passwords.length > 0 ? signingKey(passwords) : undefined
   let reportedNoPassword = false
 
   function isSignedIn(req) {
     const cookie = req.cookies?.[COOKIE_NAME]
-    return (
-      typeof cookie === 'string' &&
-      passwordHashes.some((hash) => sameText(cookie, hash))
-    )
+    return typeof cookie === 'string' && isSignedCookie(key, cookie, clock())
   }
 
   function showSignInPage(res, { returnUrl, errorMessage }) {
@@ -138,7 +199,7 @@ export function createSignIn({ environment = process.env } = {}) {
       next()
       return
     }
-    if (passwordHashes.length === 0) {
+    if (key === undefined) {
       if (!reportedNoPassword) {
         console.error(
           'The prototype has no password, so nobody can sign in. Set the PASSWORD secret in the CDP Portal.'
@@ -179,8 +240,8 @@ export function createSignIn({ environment = process.env } = {}) {
       showSignInPage(res, { returnUrl, errorMessage: 'Enter the password' })
       return
     }
-    const hash = encryptPassword(password)
-    if (!passwordHashes.some((passwordHash) => sameText(hash, passwordHash))) {
+    const given = digest(password)
+    if (!passwordDigests.some((known) => timingSafeEqual(given, known))) {
       console.warn('Sign-in failed: the password was not correct')
       showSignInPage(res, {
         returnUrl,
@@ -188,9 +249,9 @@ export function createSignIn({ environment = process.env } = {}) {
       })
       return
     }
-    res.cookie(COOKIE_NAME, hash, {
+    res.cookie(COOKIE_NAME, newSignedCookie(key, clock()), {
       ...COOKIE_OPTIONS,
-      maxAge: COOKIE_MAX_AGE
+      maxAge: SIGNED_IN_FOR
     })
     res.redirect(303, returnUrl)
   }

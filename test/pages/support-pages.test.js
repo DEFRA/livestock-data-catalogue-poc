@@ -34,7 +34,7 @@ describe('the support and error pages', () => {
     })
   }
 
-  test('the cookies page lists the authentication cookie with its purpose and expiry', async () => {
+  test('the cookies page lists the sign-in cookie with its purpose and expiry', async () => {
     const page = await app.getPage('/cookies')
     const cells = [
       ...page.document.querySelectorAll(
@@ -43,9 +43,9 @@ describe('the support and error pages', () => {
     ].map((cell) => cell.textContent.trim())
 
     assert.deepEqual(cells, [
-      'authentication',
-      "Remembers that you have entered the prototype's password",
-      '30 days'
+      'prototype-sign-in',
+      'Remembers that you have signed in to the prototype',
+      '8 hours'
     ])
   })
 

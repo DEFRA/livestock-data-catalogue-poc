@@ -11,9 +11,23 @@ import {
 
 const PASSWORD = 'made-up-test-password'
 const ON_CDP = { NODE_ENV: 'production', PASSWORD }
+const COOKIE = 'prototype-sign-in'
+const EIGHT_HOURS = 8 * 60 * 60 * 1000
+const SIGNED_COOKIE = /^\d+\.[\w-]{22}\.[\w-]{43}$/
 
-function cookieFor(password) {
+// The cookie the Prototype Kit's own password page sets
+function kitCookieFor(password) {
   return createHash('sha256').update(password).digest('hex')
+}
+
+// Signs in as a browser would, and returns the cookie the prototype sets
+function cookieFrom(signIn, password = PASSWORD) {
+  const response = fakeResponse()
+  signIn(
+    fakeRequest({ path: '/sign-in', method: 'POST', body: { password } }),
+    response
+  )
+  return response.cookieSet.value
 }
 
 function fakeRequest({
@@ -235,12 +249,12 @@ describe('the sign-in check', () => {
   })
 
   test('lets someone who has signed in through, and says they have', () => {
-    const { requireSignIn } = createSignIn({ environment: ON_CDP })
+    const { requireSignIn, signIn } = createSignIn({ environment: ON_CDP })
     const response = fakeResponse()
     const next = mock.fn()
 
     requireSignIn(
-      fakeRequest({ cookies: { authentication: cookieFor(PASSWORD) } }),
+      fakeRequest({ cookies: { [COOKIE]: cookieFrom(signIn) } }),
       response,
       next
     )
@@ -249,13 +263,32 @@ describe('the sign-in check', () => {
     assert.equal(response.locals.signedIn, true)
   })
 
+  test('accepts a cookie from another copy of the prototype with the same passwords', () => {
+    const first = createSignIn({ environment: ON_CDP })
+    const second = createSignIn({ environment: ON_CDP })
+    const next = mock.fn()
+
+    second.requireSignIn(
+      fakeRequest({ cookies: { [COOKIE]: cookieFrom(first.signIn) } }),
+      fakeResponse(),
+      next
+    )
+
+    assert.equal(next.mock.callCount(), 1)
+  })
+
   test('does not accept a cookie for a password that is no longer set', () => {
+    const before = createSignIn({
+      environment: { ...ON_CDP, PASSWORD: 'made-up-old-password' }
+    })
     const { requireSignIn } = createSignIn({ environment: ON_CDP })
     const response = fakeResponse()
     const next = mock.fn()
 
     requireSignIn(
-      fakeRequest({ cookies: { authentication: cookieFor('old-password') } }),
+      fakeRequest({
+        cookies: { [COOKIE]: cookieFrom(before.signIn, 'made-up-old-password') }
+      }),
       response,
       next
     )
@@ -264,12 +297,84 @@ describe('the sign-in check', () => {
     assert.deepEqual(response.redirected, ['/sign-in?returnUrl=%2Fdata-assets'])
   })
 
+  test('stops accepting a cookie after 8 hours, because the server checks its time', () => {
+    let now = Date.parse('2026-11-05T09:00:00Z')
+    const { requireSignIn, signIn } = createSignIn({
+      environment: ON_CDP,
+      clock: () => now
+    })
+    const request = fakeRequest({ cookies: { [COOKIE]: cookieFrom(signIn) } })
+    const next = mock.fn()
+
+    now += EIGHT_HOURS - 1
+    requireSignIn(request, fakeResponse(), next)
+    now += 1
+    requireSignIn(request, fakeResponse(), next)
+
+    assert.equal(next.mock.callCount(), 1)
+  })
+
+  test('accepts a cookie from a copy whose clock is up to a minute ahead, and no more', () => {
+    const signedInAt = Date.parse('2026-11-05T09:00:00Z')
+    let now = signedInAt
+    const { requireSignIn, signIn } = createSignIn({
+      environment: ON_CDP,
+      clock: () => now
+    })
+    const request = fakeRequest({ cookies: { [COOKIE]: cookieFrom(signIn) } })
+    const next = mock.fn()
+
+    now = signedInAt - 60 * 1000
+    requireSignIn(request, fakeResponse(), next)
+    now = signedInAt - 60 * 1000 - 1
+    requireSignIn(request, fakeResponse(), next)
+
+    assert.equal(next.mock.callCount(), 1)
+  })
+
+  test('does not accept a cookie that has been changed', () => {
+    const { requireSignIn, signIn } = createSignIn({ environment: ON_CDP })
+    const cookie = cookieFrom(signIn)
+    const [issuedAt, nonce, signature] = cookie.split('.')
+    const changeFirst = (text) => (text[0] === 'A' ? 'B' : 'A') + text.slice(1)
+    const next = mock.fn()
+
+    for (const changed of [
+      `${Number(issuedAt) + 1}.${nonce}.${signature}`,
+      `${issuedAt}.${changeFirst(nonce)}.${signature}`,
+      `${issuedAt}.${nonce}.${changeFirst(signature)}`,
+      `${cookie}.more`,
+      ''
+    ]) {
+      requireSignIn(
+        fakeRequest({ cookies: { [COOKIE]: changed } }),
+        fakeResponse(),
+        next
+      )
+    }
+
+    assert.equal(next.mock.callCount(), 0)
+  })
+
+  test("does not accept the Kit's own cookie, so the Kit's password page can't sign anyone in", () => {
+    const { requireSignIn } = createSignIn({ environment: ON_CDP })
+    const next = mock.fn()
+
+    requireSignIn(
+      fakeRequest({ cookies: { authentication: kitCookieFor(PASSWORD) } }),
+      fakeResponse(),
+      next
+    )
+
+    assert.equal(next.mock.callCount(), 0)
+  })
+
   test('does not accept the password itself as the cookie', () => {
     const { requireSignIn } = createSignIn({ environment: ON_CDP })
     const next = mock.fn()
 
     requireSignIn(
-      fakeRequest({ cookies: { authentication: PASSWORD } }),
+      fakeRequest({ cookies: { [COOKIE]: PASSWORD } }),
       fakeResponse(),
       next
     )
@@ -333,7 +438,7 @@ describe('signing in', () => {
     mock.restoreAll()
   })
 
-  test('sets a cookie that holds a hash of the password, never the password, and returns to the page', () => {
+  test('sets a signed cookie for 8 hours, holding neither the password nor its hash, and returns to the page', () => {
     const { signIn } = createSignIn({ environment: ON_CDP })
     const response = fakeResponse()
 
@@ -346,18 +451,24 @@ describe('signing in', () => {
       response
     )
 
-    assert.deepEqual(response.cookieSet, {
-      name: 'authentication',
-      value: cookieFor(PASSWORD),
-      options: {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 30 * 24 * 60 * 60 * 1000
-      }
+    assert.equal(response.cookieSet.name, COOKIE)
+    assert.match(response.cookieSet.value, SIGNED_COOKIE)
+    assert.ok(!response.cookieSet.value.includes(PASSWORD))
+    assert.ok(!response.cookieSet.value.includes(kitCookieFor(PASSWORD)))
+    assert.deepEqual(response.cookieSet.options, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: EIGHT_HOURS
     })
     assert.deepEqual(response.redirected, [303, '/data-assets?q=cattle'])
+  })
+
+  test('gives every sign-in a different cookie', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP })
+
+    assert.notEqual(cookieFrom(signIn), cookieFrom(signIn))
   })
 
   test('accepts a research password listed in PASSWORD_KEYS', () => {
@@ -379,10 +490,7 @@ describe('signing in', () => {
       response
     )
 
-    assert.equal(
-      response.cookieSet.value,
-      cookieFor('made-up-research-password')
-    )
+    assert.match(response.cookieSet.value, SIGNED_COOKIE)
     assert.deepEqual(response.redirected, [303, '/'])
   })
 
@@ -487,14 +595,14 @@ describe('the sign-in page', () => {
   })
 
   test('goes straight to the page for someone who has already signed in', () => {
-    const { showSignIn } = createSignIn({ environment: ON_CDP })
+    const { showSignIn, signIn } = createSignIn({ environment: ON_CDP })
     const response = fakeResponse()
 
     showSignIn(
       fakeRequest({
         path: '/sign-in',
         query: { returnUrl: '/data-assets' },
-        cookies: { authentication: cookieFor(PASSWORD) }
+        cookies: { [COOKIE]: cookieFrom(signIn) }
       }),
       response
     )
@@ -511,7 +619,7 @@ describe('signing out', () => {
     signOut(fakeRequest({ path: '/sign-out' }), response)
 
     assert.deepEqual(response.cookieCleared, {
-      name: 'authentication',
+      name: COOKIE,
       options: { httpOnly: true, secure: true, sameSite: 'lax', path: '/' }
     })
     assert.deepEqual(response.redirected, ['/signed-out'])

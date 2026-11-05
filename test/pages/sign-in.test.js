@@ -7,7 +7,8 @@ import { startApp } from '../helpers/app.js'
 // The prototype as it runs on CDP, with made-up passwords
 const PASSWORD = 'made-up-test-password'
 const RESEARCH_PASSWORD = 'made-up-research-password'
-const SIGNED_IN = `authentication=${createHash('sha256').update(PASSWORD).digest('hex')}`
+// The cookie the Prototype Kit's own password page sets
+const KIT_COOKIE = `authentication=${createHash('sha256').update(PASSWORD).digest('hex')}`
 
 function texts(document, selector) {
   return [...document.querySelectorAll(selector)].map((element) =>
@@ -17,6 +18,7 @@ function texts(document, selector) {
 
 describe('signing in to the prototype on CDP', () => {
   let app
+  let signedIn
 
   before(async () => {
     mock.method(console, 'warn', () => {})
@@ -30,6 +32,10 @@ describe('signing in to the prototype on CDP', () => {
         PASSWORD_01: RESEARCH_PASSWORD
       }
     })
+    const response = await app.getPage('/sign-in', {
+      form: { password: PASSWORD }
+    })
+    signedIn = response.headers.getSetCookie()[0].split(';')[0]
   })
 
   after(async () => {
@@ -82,6 +88,16 @@ describe('signing in to the prototype on CDP', () => {
       const page = await app.getPage('/data-assets')
 
       assert.doesNotMatch(page.headers.get('location'), /manage-prototype/)
+    })
+
+    test("the Kit's own cookie does not sign you in", async () => {
+      const page = await app.getPage('/data-assets', { cookie: KIT_COOKIE })
+
+      assert.equal(page.status, 302)
+      assert.equal(
+        page.headers.get('location'),
+        '/sign-in?returnUrl=%2Fdata-assets'
+      )
     })
   })
 
@@ -202,15 +218,16 @@ describe('signing in to the prototype on CDP', () => {
       assert.equal(response.headers.get('location'), '/data-assets?q=cattle')
     })
 
-    test('sets a cookie that is HttpOnly, Secure and SameSite=Lax, for 30 days, and does not hold the password', () => {
+    test('sets a signed cookie that is HttpOnly, Secure and SameSite=Lax, for 8 hours, and holds neither the password nor its hash', () => {
       const [cookie] = response.headers.getSetCookie()
 
-      assert.equal(cookie.split(';')[0], SIGNED_IN)
-      assert.match(cookie, /; Max-Age=2592000;/)
+      assert.match(cookie, /^prototype-sign-in=\d+\.[\w-]{22}\.[\w-]{43};/)
+      assert.match(cookie, /; Max-Age=28800;/)
       assert.match(cookie, /; HttpOnly/)
       assert.match(cookie, /; Secure/)
       assert.match(cookie, /; SameSite=Lax/)
       assert.ok(!cookie.includes(PASSWORD))
+      assert.ok(!cookie.includes(KIT_COOKIE.split('=')[1]))
     })
 
     test('also works with a research password', async () => {
@@ -234,7 +251,7 @@ describe('signing in to the prototype on CDP', () => {
   describe('after signing in', () => {
     test('every page opens, with Sign out in the service navigation', async () => {
       for (const path of ['/', '/data-assets', '/data-assets/DA11111']) {
-        const page = await app.getPage(path, { cookie: SIGNED_IN })
+        const page = await app.getPage(path, { cookie: signedIn })
 
         assert.equal(page.status, 200, path)
         assert.deepEqual(
@@ -252,7 +269,7 @@ describe('signing in to the prototype on CDP', () => {
 
     test('the sign-in page goes straight to the page you wanted', async () => {
       const page = await app.getPage('/sign-in?returnUrl=%2Fdata-assets', {
-        cookie: SIGNED_IN
+        cookie: signedIn
       })
 
       assert.equal(page.status, 302)
@@ -262,7 +279,7 @@ describe('signing in to the prototype on CDP', () => {
     test('the sign-in page never sends you to another site', async () => {
       const page = await app.getPage(
         `/sign-in?${new URLSearchParams({ returnUrl: '/.//example.com/' })}`,
-        { cookie: SIGNED_IN }
+        { cookie: signedIn }
       )
 
       assert.equal(page.status, 302)
@@ -270,12 +287,12 @@ describe('signing in to the prototype on CDP', () => {
     })
 
     test('signing out removes the cookie and shows that you have signed out', async () => {
-      const response = await app.getPage('/sign-out', { cookie: SIGNED_IN })
+      const response = await app.getPage('/sign-out', { cookie: signedIn })
       const [cookie] = response.headers.getSetCookie()
 
       assert.equal(response.status, 302)
       assert.equal(response.headers.get('location'), '/signed-out')
-      assert.match(cookie, /^authentication=;/)
+      assert.match(cookie, /^prototype-sign-in=;/)
       assert.match(cookie, /Expires=Thu, 01 Jan 1970 00:00:00 GMT/)
     })
   })
