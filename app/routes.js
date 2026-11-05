@@ -6,11 +6,18 @@ import { showHome } from './lib/handlers/home.js'
 import { pageDefaults } from './lib/handlers/page-defaults.js'
 import { renderPage } from './lib/handlers/pages.js'
 import { searchDataAssets } from './lib/handlers/search.js'
+import { createSignIn } from './lib/sign-in.js'
 
 const router = govukPrototypeKit.requests.setupRouter()
+const signIn = createSignIn()
 
 router.use(pageDefaults)
+router.use(signIn.requireSignIn)
 
+router.get('/sign-in', signIn.showSignIn)
+router.post('/sign-in', signIn.signIn)
+router.get('/sign-out', signIn.signOut)
+router.get('/signed-out', renderPage('signed-out'))
 router.get('/', showHome)
 router.get('/data-assets', searchDataAssets)
 router.get('/data-assets/:identifier', showDataAsset)

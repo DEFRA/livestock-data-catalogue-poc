@@ -39,16 +39,29 @@
 {% endblock %}
 
 {% block govukServiceNavigation %}
-  {{ govukServiceNavigation({
-    navigation: [
+  {# Pages for signing in and out have no navigation, because every page it
+     links to needs signing in. "Sign out" shows once someone has signed in. #}
+  {% if not hideServiceNavigation %}
+    {% set navigationItems = [
       {
         href: "/data-assets",
         text: "Data assets",
         current: navigationItem == "data-assets",
         active: navigationItem == "data-asset"
       }
-    ]
-  }) }}
+    ] %}
+    {% if signedIn %}
+      {% set navigationItems = navigationItems.concat([
+        {
+          href: "/sign-out",
+          text: "Sign out"
+        }
+      ]) %}
+    {% endif %}
+    {{ govukServiceNavigation({
+      navigation: navigationItems
+    }) }}
+  {% endif %}
 {% endblock %}
 
 {% block headerEnd %}

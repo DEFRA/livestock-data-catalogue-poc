@@ -1,5 +1,6 @@
 {
   "serviceName": "Livestock Data Catalogue",
   "useServiceNavigation": true,
-  "useAutoStoreData": false
+  "useAutoStoreData": false,
+  "useAuth": false
 }

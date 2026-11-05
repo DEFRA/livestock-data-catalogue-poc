@@ -1,0 +1,51 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/password-input/macro.njk" import govukPasswordInput %}
+
+{% set pageName = "Sign in" %}
+{% set hideServiceNavigation = true %}
+{% set mainClasses = "govuk-main-wrapper--auto-spacing" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorMessage %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: errorMessage,
+              href: "#password"
+            }
+          ]
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l">Sign in</h1>
+      <p class="govuk-body">This is a prototype of the Livestock Data Catalogue, used for research. It is not a real service, and its data is made up.</p>
+      <p class="govuk-body">Only sign in if you have been invited to test the prototype. Use the password the research team gave you.</p>
+
+      <form method="post" action="/sign-in" novalidate>
+        <input type="hidden" name="returnUrl" value="{{ returnUrl }}">
+
+        {{ govukPasswordInput({
+          id: "password",
+          name: "password",
+          label: {
+            text: "Password",
+            classes: "govuk-label--s"
+          },
+          errorMessage: {
+            text: errorMessage
+          } if errorMessage
+        }) }}
+
+        {{ govukButton({
+          text: "Sign in"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
