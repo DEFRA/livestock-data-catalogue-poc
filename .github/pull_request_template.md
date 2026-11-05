@@ -15,7 +15,7 @@ Ticket: <!-- link -->
 **Process**
 
 - [ ] Small, focused change on a branch, linked to a ticket. Commit messages follow the Defra rules.
-- [ ] README, docs, environment variable lists, `.env.example` and CDP config updated where affected.
+- [ ] README, docs, environment variable lists, `.env.template` and CDP config updated where affected.
 - [ ] Version bumped in source (SemVer) if this is a release.
 
 **Quality**

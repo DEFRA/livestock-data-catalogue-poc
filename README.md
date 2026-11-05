@@ -9,6 +9,7 @@ The catalogue will hold metadata about livestock data: what each data asset hold
 
 - [The prototype](#the-prototype)
   - [Pages](#pages)
+  - [Signing in](#signing-in)
   - [Data](#data)
   - [Code](#code)
 - [Requirements](#requirements)
@@ -141,19 +142,19 @@ The [pull request checks](./.github/workflows/check-pull-request.yml) run the sa
 
 The prototype follows the Defra standards wherever it can. These rules can't apply to it, and are met in the services instead:
 
-| Rule                                                              | Why it can't apply here                                                                                                                                                                                                                                                                                                    | Where it applies                  |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Hapi, never Express                                               | CDP's prototype template is the GOV.UK Prototype Kit, which is built on Express                                                                                                                                                                                                                                            | The frontend service              |
-| Sass `@use`, not `@import`                                        | The Kit builds Sass with `@import`, so it imports our Sass files. Our own files load GOV.UK Frontend with `@use`                                                                                                                                                                                                           | The frontend service              |
-| ECS logs with pino                                                | The Kit logs plain text to the console, which CDP collects. Our code writes ECS JSON lines to stdout without pino ([app/lib/log.js](./app/lib/log.js)): sign-ins, sign-outs, wrong passwords and unexpected errors, with CDP's request ID and no request data                                                              | The frontend and backend services |
-| Port 8085                                                         | CDP's prototype template sets `PORT` to 3000 in its Dockerfile. The prototype listens on `PORT`, and answers `GET /health` there without signing in                                                                                                                                                                        | The frontend and backend services |
-| Redis sessions and CSRF tokens                                    | The Kit manages sessions, and the prototype keeps nothing in them. The journey only reads data, with GET requests. Instead of CSRF tokens, signing in and out only count from the prototype's own pages or the address bar, checked with the browser's `Sec-Fetch-Site` header, so other sites can't sign people in or out | The frontend service              |
-| Security headers on every response                                | Our pages send a Content Security Policy with a new nonce each time, `nosniff`, frame protection, a referrer policy, `no-store` and HSTS ([app/lib/handlers/page-defaults.js](./app/lib/handlers/page-defaults.js)). Files the Kit serves before our code runs, and the Kit's own error page, don't have them              | The frontend service              |
-| Staff sign in with Microsoft Entra ID                             | A prototype for research, with made-up data that is already public, uses the password CDP gives every prototype. Research participants outside Defra have no Defra account                                                                                                                                                 | The frontend service              |
-| A generic page for every error                                    | The Kit shows its own error page, with details of the error, for errors that happen before our code runs. Our code can't change this. Our own errors show a generic page                                                                                                                                                   | The frontend service              |
-| SonarQube Cloud                                                   | The code is throwaway. The pull request checks still need 90% test coverage                                                                                                                                                                                                                                                | The frontend and backend services |
-| Small, focused pull requests                                      | The team has one developer, who keeps all Phase 1 prototype work in one draft pull request, with one commit for each piece of work                                                                                                                                                                                         | Every repository                  |
-| Every change is approved by another developer before it is merged | The team has one developer. Admins may merge without an approval, on a pull request only, and GitHub records each time. This needs an approved Defra exception, and ends when a second developer joins                                                                                                                     | Every repository                  |
+| Rule                                                              | Why it can't apply here                                                                                                                                                                                                                                                                                                     | Where it applies                  | Approved Defra exception            |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ----------------------------------- |
+| Hapi, never Express                                               | CDP's prototype template is the GOV.UK Prototype Kit, which is built on Express                                                                                                                                                                                                                                             | The frontend service              | Comes with CDP's prototype template |
+| Sass `@use`, not `@import`                                        | The Kit builds Sass with `@import`, so it imports our Sass files. Our own files load GOV.UK Frontend with `@use`                                                                                                                                                                                                            | The frontend service              | Comes with CDP's prototype template |
+| ECS logs with pino                                                | The Kit logs plain text to the console, which CDP collects. Our code writes ECS JSON lines to stdout without pino ([app/lib/log.js](./app/lib/log.js)): sign-ins, sign-outs, wrong passwords and unexpected errors, with CDP's request ID and no request data                                                               | The frontend and backend services | Pending                             |
+| Port 8085                                                         | CDP's prototype template sets `PORT` to 3000 in its Dockerfile. The prototype listens on `PORT`, and answers `GET /health` there without signing in                                                                                                                                                                         | The frontend and backend services | Comes with CDP's prototype template |
+| Redis sessions and CSRF tokens                                    | The Kit manages sessions, and the prototype keeps nothing in them. The journey only reads data, with GET requests. Instead of CSRF tokens, signing in and out only count from the prototype's own pages or the address bar, checked with the browser's `Sec-Fetch-Site` header, so other sites can't sign people in or out  | The frontend service              | Pending                             |
+| Security headers on every response                                | Our pages send a Content Security Policy with a new nonce each time, `nosniff`, frame protection, a referrer policy, `no-store` and HSTS ([app/lib/handlers/page-defaults.js](./app/lib/handlers/page-defaults.js)). Files the Kit serves before our code runs, and the Kit's own error page, don't have them               | The frontend service              | Pending                             |
+| Staff sign in with Microsoft Entra ID                             | A prototype for research, with made-up data that is already public, uses the password CDP gives every prototype. Research participants outside Defra have no Defra account                                                                                                                                                  | The frontend service              | Pending                             |
+| A generic page for every error                                    | The Kit shows its own error page, with the error and some lines of library code, for errors before our code runs, such as a form the Kit can't read. Anyone can cause one, but it holds no catalogue data. Our code can't change it, because the Kit finds its own template before ours. Our own errors show a generic page | The frontend service              | Pending                             |
+| SonarQube Cloud                                                   | The code is throwaway. The pull request checks still need 90% test coverage                                                                                                                                                                                                                                                 | The frontend and backend services | Pending                             |
+| Small, focused pull requests                                      | The team has one developer, who keeps all Phase 1 prototype work in one draft pull request, with one commit for each piece of work                                                                                                                                                                                          | Every repository                  | Pending                             |
+| Every change is approved by another developer before it is merged | The team has one developer. Admins may merge without an approval, on a pull request only, and GitHub records each time. This ends when a second developer joins                                                                                                                                                             | Every repository                  | Pending: needed before merge        |
 
 ## GOV.UK Prototype Kit and GOV.UK Frontend
 
@@ -185,7 +186,7 @@ template provides both tools in a wrapper that runs on the Core Delivery Platfor
 
 The catalogue is for Defra staff and isn't on GOV.UK, so it doesn't use GOV.UK branding: no crown, GOV.UK logotype, GDS Transport font, GOV.UK header or footer, or GOV.UK brand colours, and no "GOV.UK" in page titles. It follows [Defra's branding guidance for services not on GOV.UK](https://digital.defra.gov.uk/design/branding), which says they must use the Defra header, logo, footer and favicon, and Helvetica or Arial. It builds them with GOV.UK Frontend, following [Using GOV.UK Frontend without GOV.UK branding](https://frontend.design-system.service.gov.uk/using-govuk-frontend-without-govuk-branding/):
 
-- **Header:** the Generic header with the class `app-generic-header--defra`, which makes it white, as on Defra's own digital service manual. It shows the Defra logo and the service name in Defra green ([app/views/layouts/main.html](./app/views/layouts/main.html)). Screen readers skip the logo and read the service name and the department's name. The service navigation has only the navigation, because the header has the service name.
+- **Header:** the Generic header with the class `app-generic-header--defra`, which makes it white, as on Defra's own digital service manual. It shows the Defra logo and the service name in Defra green ([app/views/layouts/main.html](./app/views/layouts/main.html)). Screen readers skip the logo and read the service name and the department's name. Defra's branding guidance asks for "the Defra header", and Defra's digital service manual shows the service name in it, next to the logo. So the service navigation has only the navigation, and doesn't repeat the service name.
 - **Footer:** our own footer, with Defra's green top border, the support links and the Open Government Licence statement ([app/views/partials/app-footer.html](./app/views/partials/app-footer.html)).
 - **Font and colour:** [app/assets/sass/settings.scss](./app/assets/sass/settings.scss) sets the font to Helvetica Neue, Helvetica or Arial, and the brand colour to Defra's contrast-safe organisation colour from GOV.UK Frontend. The browser theme colour is the same.
 - **Logo and favicon:** [app/assets/images](./app/assets/images) has the Defra logo and favicons, copied unchanged from Defra's [digital service manual](https://github.com/DEFRA/service-manual-ui/tree/main/src/client/images). The logo includes the Royal Arms, which are Crown copyright and not covered by the Open Government Licence: only Defra services may use it.
@@ -196,33 +197,32 @@ The catalogue is for Defra staff and isn't on GOV.UK, so it doesn't use GOV.UK b
 > Do not commit the `.env` file to GitHub, it is in the `.gitignore` file by default. Sensitive information such as a
 > password can be provided to a prototype via the Secrets page of your prototype in the CDP Portal Frontend
 
-Basic authentication is on by default in CDP environments for prototypes. This means you will need to set a password
-for your prototype. Our [sign-in page](#signing-in) uses this secret. You can do this via your prototypes secrets tab in the Portal Frontend. For information on how to do
-this, follow these steps:
+CDP turns password protection on for every prototype, so you need to set a password. The prototype's own
+[sign-in page](#signing-in) checks it, in place of the Kit's basic authentication. Set it in your prototype's Secrets tab
+in the CDP Portal Frontend:
 
 1. Read the **Setting a password** section on https://prototype-kit.service.gov.uk/docs/publishing
 1. Go to the CDP Portal Frontend
 1. Log in
 1. Navigate to your prototype on the services list page
 1. Navigate to your prototypes `Secrets` tab
-1. Add a secret with a name `PASSWORD` and a `value` of your choosing
+1. Add a secret with a name `PASSWORD` and a value of at least 16 characters, for example 3 or 4 random words
 1. Re-deploy your prototype for the new secrets to be made available to it
 
 ## Setting multiple passwords
 
-The `GOV.UK Prototype Kit` has the ability to set up multiple passwords via secrets. For more information on how to do
-this read the **If you want to create additional passwords** section on
+The sign-in page also accepts the passwords named in `PASSWORD_KEYS`, as the `GOV.UK Prototype Kit` does. For more
+information read the **If you want to create additional passwords** section on
 https://prototype-kit.service.gov.uk/docs/publishing. To add a secret to an environment your prototype is running in
 see [Creating a secret](#creating-a-secret)
 
 ## Removing the need for a password
 
-By default, the `GOV.UK Prototype Kit` requires a password has been set on your prototype when it has been deployed to
-an environment. If you would like to turn off this requirement you can do so by setting the following environment
+On CDP, the sign-in page asks for a password. If you would like to turn this off, set the following environment
 variable:
 
 ```dotenv
-ENV USE_AUTH=false
+USE_AUTH=false
 ```
 
 This can be set in `cdp-app-config` for instructions on how to do so
@@ -283,12 +283,14 @@ pull request.
 The following environment variables are available in the `GOV.UK Prototype Kit`. For more information see
 their https://prototype-kit.service.gov.uk/docs/ or https://github.com/alphagov/govuk-prototype-kit.
 
-| Name            | Value     | Description                                                                                                           |
-| --------------- | --------- | --------------------------------------------------------------------------------------------------------------------- |
-| `PASSWORD`      | `string`  | The password for [signing in](#signing-in). Required on CDP, where it is a secret set in the CDP Portal. Never in Git |
-| `PASSWORD_KEYS` | `string`  | Comma-separated names of secrets that hold extra passwords, for example research rounds                               |
-| `USE_AUTH`      | `boolean` | `false` turns signing in off. Leave it unset on CDP, where signing in is on. The tests set it to `false`              |
-| `PORT`          | `number`  | The port the prototype listens on. Defaults to `3000`                                                                 |
+| Name            | Value     | Description                                                                                                                              |
+| --------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `PASSWORD`      | `string`  | The password for [signing in](#signing-in). Required on CDP, where it is a secret set in the CDP Portal. Never in Git                    |
+| `PASSWORD_KEYS` | `string`  | Comma-separated names of secrets that hold extra passwords, for example research rounds                                                  |
+| `USE_AUTH`      | `boolean` | `false` turns signing in off. Leave it unset on CDP, where signing in is on. The tests set it to `false`                                 |
+| `PORT`          | `number`  | The port the prototype listens on. Defaults to `3000`                                                                                    |
+| `NODE_ENV`      | `string`  | `production` on CDP, where signing in is on and the Kit's management pages are closed. Unset on your computer                            |
+| `USE_HTTPS`     | `boolean` | `false` in the CDP Dockerfile, because CDP serves HTTPS in front of the prototype. Set it to `false` to run as CDP does on your computer |
 
 The prototype's own settings are in [app/config.json](./app/config.json): its service name, service navigation, and `useAutoStoreData` set to `false`, so the Kit doesn't copy query strings into the session.
 

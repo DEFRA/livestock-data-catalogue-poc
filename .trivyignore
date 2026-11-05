@@ -1,15 +1,25 @@
 # Findings accepted on 4 November 2026 until upstream fixes are released:
 # https://eaflood.atlassian.net/browse/LDAT-237
+# Accepted by the team's developer, pending a Defra exception.
 # Each line expires, so the image scan fails again if a finding is still
 # here after that date. Remove a line as soon as its fix is in the image.
 
-# body-parser and follow-redirects, bundled inside GOV.UK Prototype Kit 14.0.2
+# Bundled inside GOV.UK Prototype Kit 14.0.2, so only a Kit release fixes them
+
+# body-parser 2.3.0, fixed in 2.4.0 (GHSA-27r3-jxmh-p828)
 CVE-2026-111181 exp:2026-12-04
+# follow-redirects 1.16.0, fixed in 1.16.1 (GHSA-8r9p-f939-6h3c)
 CVE-2026-111755 exp:2026-12-04
+# follow-redirects 1.16.0, fixed in 1.16.1 (GHSA-q3jh-wrc6-jgq8)
 CVE-2026-111756 exp:2026-12-04
+# follow-redirects 1.16.0, fixed in 1.16.2 (GHSA-mrwp-f3q8-3g9p)
 CVE-2026-116689 exp:2026-12-04
 
-# undici, in the npm that comes with Defra base image 3.2.4-node24.22.1
+# In the npm that comes with Defra base image 3.2.4-node24.22.1
+
+# undici, fixed in 6.29.1 (GHSA-2m5v-pch6-74hx)
 CVE-2026-109383 exp:2026-12-04
+# undici, fixed in 6.29.1 (GHSA-xjj6-f33q-929c)
 CVE-2026-109869 exp:2026-12-04
+# undici, fixed in 6.29.1 (GHSA-qrxm-fqhp-jwvm)
 CVE-2026-87018 exp:2026-12-04
