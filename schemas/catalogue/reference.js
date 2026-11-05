@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-import { code, httpsAddress, text } from './common.js'
+import { anyAddress, code, text } from './common.js'
 
 const MEDIA_TYPE_PATTERN = /^[a-z]+\/[a-z0-9.+-]+$/
 
@@ -16,10 +16,10 @@ function referenceSchema(extraFields = {}) {
 export const plainReferenceSchema = referenceSchema()
 
 export const categorySchema = referenceSchema({
-  vocabularyReference: httpsAddress
+  vocabularyReference: anyAddress
 })
 
-export const jurisdictionSchema = referenceSchema({ reference: httpsAddress })
+export const jurisdictionSchema = referenceSchema({ reference: anyAddress })
 
 export const distributionFormatSchema = referenceSchema({
   mediaType: Joi.string().pattern(MEDIA_TYPE_PATTERN)
@@ -30,7 +30,7 @@ export const licenceSchema = Joi.object({
   code: code.required(),
   name: text.required(),
   versionNumber: text,
-  reference: httpsAddress
+  reference: anyAddress
 })
 
 const codeListValues = Joi.array().items(plainReferenceSchema).min(1)

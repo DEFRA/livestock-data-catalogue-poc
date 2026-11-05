@@ -22,8 +22,9 @@ export const date = Joi.string().pattern(DATE_PATTERN).custom(realDate)
 
 export const dateTime = Joi.string().pattern(DATE_TIME_PATTERN).custom(realDate)
 
-export const httpsAddress = Joi.string().uri({ scheme: ['https'] })
-
+// V0.11 asks only that an address is a valid URI, so any scheme is allowed.
+// It must be absolute, with no spaces or control characters. Only https
+// addresses become links (app/lib/data-asset-view.js).
 export const anyAddress = Joi.string().uri()
 
 export const code = Joi.string().pattern(/^[A-Z0-9]+(?:[_-][A-Z0-9]+)*$/)

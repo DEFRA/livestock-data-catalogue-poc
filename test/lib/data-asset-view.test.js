@@ -361,6 +361,24 @@ describe('the data asset page content', () => {
       })
     })
 
+    for (const address of [
+      'sftp://files.example.org/licences/ogl.txt',
+      'javascript:alert(1)'
+    ]) {
+      test(`shows the licence as text, never as a link, when its address is ${address}`, () => {
+        const page = pageAfter('DA1111B', (dataAsset, collections) => {
+          collections.licences.find(
+            (licence) => licence.code === 'OGL'
+          ).reference = address
+        })
+
+        assert.deepEqual(row(page.distributions[0].rows, 'Licence'), {
+          key: 'Licence',
+          text: 'Open Government Licence 3.0'
+        })
+      })
+    }
+
     test('shows the download link and the size', () => {
       const [extract] = pageFor('DA11113').distributions
 
@@ -393,6 +411,27 @@ describe('the data asset page content', () => {
         text: 'javascript:alert(1)'
       })
     })
+
+    for (const [key, field, address] of [
+      ['Access link', 'accessReference', 'sftp://files.example.org/movements/'],
+      [
+        'Download link',
+        'downloadReference',
+        'sftp://files.example.org/movements.csv'
+      ],
+      ['Download link', 'downloadReference', 'javascript:alert(1)']
+    ]) {
+      test(`shows the ${key.toLowerCase()} ${address} as text, never as a link`, () => {
+        const page = pageAfter('DA11111', (dataAsset) => {
+          dataAsset.distributions[0][field] = address
+        })
+
+        assert.deepEqual(row(page.distributions[0].rows, key), {
+          key,
+          text: address
+        })
+      })
+    }
 
     test('has no distributions when the data asset has none', () => {
       const page = pageFor('DA11118')
@@ -470,6 +509,18 @@ describe('the data asset page content', () => {
       const page = pageAfter('DA11111', (dataAsset) => {
         dataAsset.relationships[0].targetResourceIdentifier =
           'javascript:alert(1)'
+      })
+
+      assert.deepEqual(
+        page.relatedGroups.map((group) => group.heading),
+        ['Related to']
+      )
+    })
+
+    test('leaves out an external resource whose address is sftp', () => {
+      const page = pageAfter('DA11111', (dataAsset) => {
+        dataAsset.relationships[0].targetResourceIdentifier =
+          'sftp://files.example.org/keeper-reports/'
       })
 
       assert.deepEqual(

@@ -95,25 +95,85 @@ describe('the data contract', () => {
     )
   })
 
-  test('rejects an access address that is not https', () => {
-    const errors = errorsAfter((collections) => {
-      dataAssetIn(collections, 'DA11111').distributions[0].accessReference =
-        'http://api.example.org/movements'
+  // V0.11 asks only that each of these is a valid URI, with no rule on its
+  // scheme (S01, S13, S15, S18, S23 and S24)
+  const ADDRESS_ATTRIBUTES = [
+    [
+      'an organisation website',
+      'websiteReference',
+      (collections) => collections.organisations[0]
+    ],
+    [
+      'a data service endpoint',
+      'endpointReference',
+      (collections) => collections.dataServices[0]
+    ],
+    [
+      'a category vocabulary',
+      'vocabularyReference',
+      (collections) => collections.categories[0]
+    ],
+    [
+      'a jurisdiction reference',
+      'reference',
+      (collections) => collections.jurisdictions[0]
+    ],
+    [
+      'a licence reference',
+      'reference',
+      (collections) => collections.licences[0]
+    ],
+    [
+      'a distribution access address',
+      'accessReference',
+      (collections) => dataAssetIn(collections, 'DA11111').distributions[0]
+    ],
+    [
+      'a distribution download address',
+      'downloadReference',
+      (collections) => dataAssetIn(collections, 'DA11111').distributions[0]
+    ],
+    [
+      'a distribution broker address',
+      'brokerReference',
+      (collections) => dataAssetIn(collections, 'DA11111').distributions[1]
+    ]
+  ]
+
+  for (const [description, field, recordIn] of ADDRESS_ATTRIBUTES) {
+    test(`accepts ${description} with a scheme other than https`, () => {
+      const errors = errorsAfter((collections) => {
+        recordIn(collections)[field] = 'sftp://files.example.org/livestock/'
+      })
+
+      assert.deepEqual(errors, [])
     })
 
-    assertRejected(
-      errors,
-      'accessReference" must be a valid uri with a scheme matching the https pattern'
-    )
-  })
+    test(`rejects ${description} that is not a well-formed URI`, () => {
+      const errors = errorsAfter((collections) => {
+        recordIn(collections)[field] = 'files.example.org/livestock'
+      })
 
-  test('rejects a script address in a website reference', () => {
-    const errors = errorsAfter((collections) => {
-      collections.organisations[0].websiteReference = 'javascript:alert(1)'
+      assertRejected(errors, `${field}" must be a valid uri`)
     })
+  }
 
-    assertRejected(errors, 'websiteReference" must be a valid uri')
-  })
+  for (const [description, address] of [
+    ['a space in it', 'https://api.example.org/animal movements'],
+    ['a space at the start', ' https://api.example.org/movements'],
+    ['a line break at the end', 'https://api.example.org/movements\n'],
+    ['a tab in it', 'https://api.example.org/\tmovements'],
+    ['a null character in it', 'https://api.example.org/\u0000movements']
+  ]) {
+    test(`rejects an address with ${description}`, () => {
+      const errors = errorsAfter((collections) => {
+        dataAssetIn(collections, 'DA11111').distributions[0].accessReference =
+          address
+      })
+
+      assertRejected(errors, 'accessReference" must be a valid uri')
+    })
+  }
 
   test('rejects an email address with characters that could change a mailto: link', () => {
     for (const address of [

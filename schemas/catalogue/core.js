@@ -1,9 +1,9 @@
 import Joi from 'joi'
 
 import {
+  anyAddress,
   code,
   emailAddress,
-  httpsAddress,
   systemAttributes,
   text
 } from './common.js'
@@ -12,7 +12,7 @@ export const organisationSchema = Joi.object({
   name: text.required(),
   abbreviatedName: text,
   description: text,
-  websiteReference: httpsAddress,
+  websiteReference: anyAddress,
   parentOrganisationName: text,
   organisationTypeCode: code.required(),
   ...systemAttributes
@@ -35,7 +35,7 @@ export const deliveryGroupSchema = Joi.object({
 export const dataServiceSchema = Joi.object({
   titleName: text.required(),
   description: text,
-  endpointReference: httpsAddress,
+  endpointReference: anyAddress,
   serviceType: text,
   ...systemAttributes
 })
