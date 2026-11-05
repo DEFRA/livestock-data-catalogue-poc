@@ -16,9 +16,10 @@
   {% if hasErrors %}Error: {% endif %}{% if pageName %}{{ pageName }} – {% endif %}{{ serviceName }}
 {%- endblock %}
 
+{# The same markup as GOV.UK Frontend's template, with Defra's icons #}
 {% block headIcons %}
-  <link rel="icon" href="/public/images/favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="/public/images/favicon.ico" type="image/x-icon">
+  <link rel="icon" sizes="48x48" href="/public/images/favicon.ico">
+  <link rel="icon" sizes="any" href="/public/images/favicon.svg" type="image/svg+xml">
 {% endblock %}
 
 {% block govukHeader %}

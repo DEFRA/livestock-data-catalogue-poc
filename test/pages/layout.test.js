@@ -152,11 +152,15 @@ describe('the layout of every page', () => {
         )
         assert.deepEqual(
           [...page.document.querySelectorAll('link[rel~="icon"]')].map(
-            (icon) => [icon.getAttribute('href'), icon.getAttribute('type')]
+            (icon) => [
+              icon.getAttribute('href'),
+              icon.getAttribute('sizes'),
+              icon.getAttribute('type')
+            ]
           ),
           [
-            ['/public/images/favicon.svg', 'image/svg+xml'],
-            ['/public/images/favicon.ico', 'image/x-icon']
+            ['/public/images/favicon.ico', '48x48', null],
+            ['/public/images/favicon.svg', 'any', 'image/svg+xml']
           ]
         )
         assert.equal(
