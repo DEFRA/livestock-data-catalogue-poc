@@ -44,6 +44,19 @@ const SCRYPT_OPTIONS = Object.freeze({
 })
 const signingKeys = new Map()
 
+// A shared password must be long enough that it can't be guessed. Shorter
+// ones are ignored, and with none left nobody can sign in.
+const SHORTEST_PASSWORD = 16
+
+// At most 10 wrong passwords a minute from one address, so the password
+// can't be guessed quickly. On CDP the address is the platform proxy's until
+// the prototype is told how many proxies there are, so the limit is shared.
+const WRONG_PASSWORDS_ALLOWED = 10
+const WRONG_PASSWORD_WINDOW = 60 * 1000
+const ADDRESSES_TRACKED = 1000
+const TOO_MANY_WRONG_PASSWORDS =
+  'You have entered the wrong password too many times. Wait 1 minute, then try again.'
+
 // Sign-ins and sign-outs are logged as ECS authentication events, so CDP's
 // logs show when people sign in, and any run of wrong passwords
 const SIGN_IN_EVENT = Object.freeze({
@@ -182,13 +195,51 @@ export function createSignIn({
   clock = Date.now
 } = {}) {
   const required = isSignInRequired(environment)
-  const passwords = passwordsFrom(environment)
+  const allPasswords = passwordsFrom(environment)
+  const passwords = allPasswords.filter(
+    (password) => password.length >= SHORTEST_PASSWORD
+  )
+  if (required && passwords.length < allPasswords.length) {
+    logEvent({
+      level: 'warn',
+      message:
+        'A password is shorter than 16 characters, so it cannot be used to sign in. Set longer passwords in the CDP Portal.',
+      event: { category: ['configuration'], outcome: 'failure' }
+    })
+  }
   // Digests have one length, so comparing them takes the same time
   // whatever the password's length
   const passwordDigests = passwords.map(digest)
   const key =
     required && passwords.length > 0 ? signingKey(passwords) : undefined
+  const wrongPasswords = new Map()
   let reportedNoPassword = false
+
+  function hasTooManyWrongPasswords(address, now) {
+    const record = wrongPasswords.get(address)
+    return (
+      record !== undefined &&
+      now - record.since < WRONG_PASSWORD_WINDOW &&
+      record.count >= WRONG_PASSWORDS_ALLOWED
+    )
+  }
+
+  function countWrongPassword(address, now) {
+    const record = wrongPasswords.get(address)
+    if (record !== undefined && now - record.since < WRONG_PASSWORD_WINDOW) {
+      record.count += 1
+      return
+    }
+    for (const [knownAddress, { since }] of wrongPasswords) {
+      if (now - since >= WRONG_PASSWORD_WINDOW) {
+        wrongPasswords.delete(knownAddress)
+      }
+    }
+    if (wrongPasswords.size >= ADDRESSES_TRACKED) {
+      wrongPasswords.delete(wrongPasswords.keys().next().value)
+    }
+    wrongPasswords.set(address, { since: now, count: 1 })
+  }
 
   function isSignedIn(req) {
     const cookie = req.cookies?.[COOKIE_NAME]
@@ -213,7 +264,7 @@ export function createSignIn({
         logEvent({
           level: 'error',
           message:
-            'The prototype has no password, so nobody can sign in. Set the PASSWORD secret in the CDP Portal.',
+            'The prototype has no password of 16 characters or more, so nobody can sign in. Set the PASSWORD secret in the CDP Portal.',
           event: { category: ['configuration'], outcome: 'failure' },
           req
         })
@@ -247,6 +298,22 @@ export function createSignIn({
       res.redirect(303, '/')
       return
     }
+    const now = clock()
+    if (hasTooManyWrongPasswords(req.ip, now)) {
+      logEvent({
+        level: 'warn',
+        message: 'Sign-in refused: too many wrong passwords',
+        event: {
+          ...SIGN_IN_EVENT,
+          outcome: 'failure',
+          reason: 'too many wrong passwords'
+        },
+        req
+      })
+      res.status(429)
+      showSignInPage(res, { returnUrl, errorMessage: TOO_MANY_WRONG_PASSWORDS })
+      return
+    }
     const password =
       typeof req.body?.password === 'string' ? req.body.password : ''
     if (password === '') {
@@ -255,6 +322,7 @@ export function createSignIn({
     }
     const given = digest(password)
     if (!passwordDigests.some((known) => timingSafeEqual(given, known))) {
+      countWrongPassword(req.ip, now)
       logEvent({
         level: 'warn',
         message: 'Sign-in failed: the password was not correct',
@@ -271,7 +339,8 @@ export function createSignIn({
       })
       return
     }
-    res.cookie(COOKIE_NAME, newSignedCookie(key, clock()), {
+    wrongPasswords.delete(req.ip)
+    res.cookie(COOKIE_NAME, newSignedCookie(key, now), {
       ...COOKIE_OPTIONS,
       maxAge: SIGNED_IN_FOR
     })

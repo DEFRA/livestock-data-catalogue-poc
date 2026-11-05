@@ -36,7 +36,8 @@ function fakeRequest({
   query = {},
   body,
   cookies = {},
-  headers = {}
+  headers = {},
+  ip = '203.0.113.10'
 } = {}) {
   return {
     path,
@@ -45,6 +46,7 @@ function fakeRequest({
     query,
     body,
     cookies,
+    ip,
     get: (name) => headers[name.toLowerCase()]
   }
 }
@@ -436,7 +438,7 @@ describe('the sign-in check', () => {
       [
         [
           'error',
-          'The prototype has no password, so nobody can sign in. Set the PASSWORD secret in the CDP Portal.',
+          'The prototype has no password of 16 characters or more, so nobody can sign in. Set the PASSWORD secret in the CDP Portal.',
           { category: ['configuration'], outcome: 'failure' }
         ]
       ]
@@ -638,6 +640,191 @@ describe('signing in', () => {
 
     assert.deepEqual(posted.redirected, [303, '/'])
     assert.deepEqual(shown.redirected, ['/'])
+  })
+})
+
+describe('limiting wrong passwords', () => {
+  const TOO_MANY =
+    'You have entered the wrong password too many times. Wait 1 minute, then try again.'
+  let now
+
+  beforeEach(() => {
+    mock.method(console, 'log', () => {})
+    now = Date.parse('2026-11-05T09:00:00Z')
+  })
+
+  afterEach(() => {
+    mock.restoreAll()
+  })
+
+  function attempt(signIn, password, ip = '203.0.113.10') {
+    const response = fakeResponse()
+    signIn(
+      fakeRequest({ path: '/sign-in', method: 'POST', body: { password }, ip }),
+      response
+    )
+    return response
+  }
+
+  function attemptWrong(signIn, times, ip) {
+    return Array.from(
+      { length: times },
+      () => attempt(signIn, 'a-wrong-password', ip).statusCode
+    )
+  }
+
+  test('refuses an 11th wrong password in a minute from one address, and even the right one, with status 429', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP, clock: () => now })
+
+    assert.deepEqual(attemptWrong(signIn, 10), Array(10).fill(200))
+    for (const password of ['a-wrong-password', PASSWORD]) {
+      const response = attempt(signIn, password)
+
+      assert.equal(response.statusCode, 429)
+      assert.equal(response.rendered.view, 'sign-in')
+      assert.equal(response.rendered.locals.errorMessage, TOO_MANY)
+      assert.equal(response.cookieSet, undefined)
+    }
+  })
+
+  test('logs every refused attempt', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP, clock: () => now })
+
+    attemptWrong(signIn, 11)
+
+    const entry = logged().at(-1)
+    assert.equal(entry['log.level'], 'warn')
+    assert.equal(entry.message, 'Sign-in refused: too many wrong passwords')
+    assert.equal(entry.event.outcome, 'failure')
+    assert.equal(entry.event.reason, 'too many wrong passwords')
+  })
+
+  test('lets the address try again a minute after its first wrong password', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP, clock: () => now })
+
+    attemptWrong(signIn, 10)
+    now += 60 * 1000 - 1
+    assert.equal(attempt(signIn, PASSWORD).statusCode, 429)
+    now += 1
+
+    assert.match(attempt(signIn, PASSWORD).cookieSet.value, SIGNED_COOKIE)
+  })
+
+  test('starts counting again after a minute', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP, clock: () => now })
+
+    attemptWrong(signIn, 10)
+    now += 60 * 1000
+
+    assert.deepEqual(attemptWrong(signIn, 11), [...Array(10).fill(200), 429])
+  })
+
+  test('counts each address on its own', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP, clock: () => now })
+
+    attemptWrong(signIn, 10, '203.0.113.10')
+
+    assert.match(
+      attempt(signIn, PASSWORD, '203.0.113.20').cookieSet.value,
+      SIGNED_COOKIE
+    )
+  })
+
+  test('forgets the wrong passwords after the right one', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP, clock: () => now })
+
+    attemptWrong(signIn, 9)
+    attempt(signIn, PASSWORD)
+
+    assert.deepEqual(attemptWrong(signIn, 10), Array(10).fill(200))
+  })
+
+  test('does not count an empty password', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP, clock: () => now })
+
+    for (let count = 0; count < 15; count++) {
+      const response = attempt(signIn, '')
+
+      assert.equal(response.statusCode, 200)
+      assert.equal(response.rendered.locals.errorMessage, 'Enter the password')
+    }
+  })
+
+  test('keeps track of at most 1,000 addresses, forgetting the oldest first', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP, clock: () => now })
+    const address = (number) => `2001:db8::${number.toString(16)}`
+
+    for (let number = 0; number < 1000; number++) {
+      attemptWrong(signIn, 10, address(number))
+    }
+    attemptWrong(signIn, 1, address(1000))
+
+    assert.match(
+      attempt(signIn, PASSWORD, address(0)).cookieSet.value,
+      SIGNED_COOKIE
+    )
+    assert.equal(attempt(signIn, PASSWORD, address(1)).statusCode, 429)
+  })
+})
+
+describe('passwords shorter than 16 characters', () => {
+  beforeEach(() => {
+    mock.method(console, 'log', () => {})
+  })
+
+  afterEach(() => {
+    mock.restoreAll()
+  })
+
+  test('cannot be used to sign in, and the logs say so once', () => {
+    const { signIn } = createSignIn({
+      environment: {
+        ...ON_CDP,
+        PASSWORD_KEYS: 'PASSWORD_01',
+        PASSWORD_01: 'short-password'
+      }
+    })
+    const short = fakeResponse()
+    const long = fakeResponse()
+
+    signIn(
+      fakeRequest({ method: 'POST', body: { password: 'short-password' } }),
+      short
+    )
+    signIn(fakeRequest({ method: 'POST', body: { password: PASSWORD } }), long)
+
+    assert.equal(short.cookieSet, undefined)
+    assert.match(long.cookieSet.value, SIGNED_COOKIE)
+    assert.deepEqual(
+      logged()
+        .filter((entry) => entry.event.category[0] === 'configuration')
+        .map((entry) => [entry['log.level'], entry.message]),
+      [
+        [
+          'warn',
+          'A password is shorter than 16 characters, so it cannot be used to sign in. Set longer passwords in the CDP Portal.'
+        ]
+      ]
+    )
+  })
+
+  test('let nobody in when every password is too short', () => {
+    const { requireSignIn } = createSignIn({
+      environment: { NODE_ENV: 'production', PASSWORD: 'fifteen-letters' }
+    })
+    const response = fakeResponse()
+    const next = mock.fn()
+
+    requireSignIn(fakeRequest({ path: '/cookies' }), response, next)
+
+    assert.equal(next.mock.callCount(), 0)
+    assert.equal(response.rendered.view, 'problem-with-the-service')
+  })
+
+  test('are not reported on a developer machine, where nobody signs in', () => {
+    createSignIn({ environment: { PASSWORD: 'short-password' } })
+
+    assert.equal(console.log.mock.callCount(), 0)
   })
 })
 
