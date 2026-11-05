@@ -70,6 +70,27 @@ describe('the support and error pages', () => {
     assert.doesNotMatch(text, /does not collect personal data/)
   })
 
+  test("the privacy page says how wrong passwords are limited, and links to Defra's personal information charter", async () => {
+    const page = await app.getPage('/privacy')
+    const text = page.document
+      .querySelector('main')
+      .textContent.replace(/\s+/g, ' ')
+    const charter = [...page.document.querySelectorAll('main a')].find(
+      (link) =>
+        link.textContent.trim() === "Defra's personal information charter"
+    )
+
+    assert.match(
+      text,
+      /remembers the network address it came from for 1 minute/
+    )
+    assert.equal(
+      charter?.getAttribute('href'),
+      'https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs/about/personal-information-charter'
+    )
+    assert.match(text, /Information Commissioner's Office/)
+  })
+
   test('the accessibility statement lists the Welsh keywords that are not marked as Welsh', async () => {
     const page = await app.getPage('/accessibility-statement')
     const knownIssues = [...page.document.querySelectorAll('h2')].find(
