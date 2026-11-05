@@ -64,6 +64,16 @@ function uniqueKeyBreaches(collections) {
       (dataAsset.distributions ?? []).map((distribution) => distribution.name),
       lowerCased
     ]),
+    // A Data Custodian's key is its data asset, organisation and start date
+    // (S17), so several organisations can be custodians at once
+    ...dataAssets.map((dataAsset) => [
+      `Data Custodian in data asset ${dataAsset.identifier}`,
+      (dataAsset.custodians ?? []).map(
+        (custodian) =>
+          `${custodian.organisationName} from ${custodian.effectiveFromDate}`
+      ),
+      lowerCased
+    ]),
     [
       'data service title',
       collections.dataServices.map((dataService) => dataService.titleName),
@@ -407,9 +417,6 @@ function governanceBreaches(collections) {
           `${owner} has overlapping assignments for ${personName} <${personEmailAddressReference}> as ${governanceRoleCode}`
         )
       }
-    }
-    if (anyOverlap(dataAsset.custodians ?? [])) {
-      breaches.push(`${owner} has overlapping Data Custodians`)
     }
     return breaches
   })

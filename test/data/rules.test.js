@@ -69,6 +69,33 @@ describe('the rules that span records', () => {
       assert.deepEqual(breaches, [])
     })
 
+    test('rejects the same Data Custodian twice from the same date, ignoring case (S17)', () => {
+      const breaches = breachesAfter((collections) => {
+        dataAssetIn(collections, 'DA11115').custodians.push({
+          organisationName: 'AGRICULTURE AND HORTICULTURE DEVELOPMENT BOARD',
+          effectiveFromDate: '2022-03-01'
+        })
+      })
+
+      assertBreach(
+        breaches,
+        'Duplicate Data Custodian in data asset DA11115: AGRICULTURE AND HORTICULTURE DEVELOPMENT BOARD from 2022-03-01'
+      )
+    })
+
+    test('allows the same Data Custodian again from a different date (S17)', () => {
+      const breaches = breachesAfter((collections) => {
+        const custodians = dataAssetIn(collections, 'DA11115').custodians
+        custodians[0].effectiveToDate = '2025-12-31'
+        custodians.push({
+          organisationName: custodians[0].organisationName,
+          effectiveFromDate: '2026-01-01'
+        })
+      })
+
+      assert.deepEqual(breaches, [])
+    })
+
     test('rejects 2 people with the same name and email address, ignoring case', () => {
       const breaches = breachesAfter((collections) => {
         collections.people.push({ ...collections.people[0], name: 'JO BLOGGS' })
@@ -437,7 +464,7 @@ describe('the rules that span records', () => {
       assert.deepEqual(breaches, [])
     })
 
-    test('rejects 2 current Data Custodians', () => {
+    test('allows several organisations to be Data Custodians at once (S17)', () => {
       const breaches = breachesAfter((collections) => {
         dataAssetIn(collections, 'DA11111').custodians.push({
           organisationName: 'Rural Payments Agency',
@@ -445,10 +472,7 @@ describe('the rules that span records', () => {
         })
       })
 
-      assertBreach(
-        breaches,
-        'Data asset DA11111 has overlapping Data Custodians'
-      )
+      assert.deepEqual(breaches, [])
     })
   })
 
