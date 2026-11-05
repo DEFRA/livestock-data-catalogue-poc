@@ -32,6 +32,6 @@
   {
     "code": "HARD_COPY",
     "name": "Hard Copy",
-    "description": "Printed copies, so there is no media type"
+    "description": "No media type"
   }
 ]

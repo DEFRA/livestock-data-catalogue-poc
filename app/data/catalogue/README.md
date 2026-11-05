@@ -6,7 +6,7 @@ The prototype reads these files at start-up instead of a database. Each file hol
 
 ## Sources
 
-1. The Phase 1 logical data model V0.11, in the "Logical Data Model" diagrams and acceptance criteria of the Phase 1 Jira stories S01 to S26 ([LDAT-181](https://eaflood.atlassian.net/browse/LDAT-181)). Entities, attributes, business keys, foreign keys and reference values follow them exactly.
+1. The Phase 1 logical data model V0.11, in the "Logical Data Model" diagrams and acceptance criteria of the Phase 1 Jira stories S01 to S26 ([LDAT-181](https://eaflood.atlassian.net/browse/LDAT-181)). Entities, attributes, business keys, foreign keys and reference values follow them, except for the provisional choices below.
 2. The data architect's answers on [LDAT-235](https://eaflood.atlassian.net/browse/LDAT-235) (4 November 2026): Licence (S23), a mandatory Authentication Method (S22), the Security Classification codes (S25), and no exemptions, interim values or active states. Later that day: an optional Valid To Date and Coverage Start and End Dates (S06), distribution names unique within a data asset (S18), and Digital, Data and Technology Services as a government department.
 3. LADU-DATA-001 for names, and the draft MongoDB profile in our review of it: plural camelCase collections and camelCase fields.
 
@@ -49,8 +49,10 @@ The prototype reads these files at start-up instead of a database. Each file hol
 
 These go beyond V0.11, and stay until the data architect decides:
 
-- A relationship target inside the catalogue is held as its data asset identifier, and anything else as an `https` address (S16). The data architect wants to test this with real data assets first (LDAT-235, question 9).
+- A relationship target inside the catalogue is held as its data asset identifier, and anything else as an `https` address (S16). A relationship to another data asset holds its identifier, such as `DA11113`, not its title, such as "Livestock Holding" in S16's example. The data architect wants to test this with real data assets first (LDAT-235, question 9).
+- Relationship type names, such as "Derived from", are taken from S16's descriptions, such as "derived from the target", because V0.11 gives only codes and descriptions (doc 15, section 5).
 - A data asset with no distribution can be published when its access rights include the words "no distribution is available" (S26).
+- DA1111C is deliberately not used, because S05 uses it as its example of a deleted identifier, which is never reused.
 
 ## Changing the data
 
