@@ -1,6 +1,8 @@
 import { timingSafeEqual } from 'node:crypto'
 import { createRequire } from 'node:module'
 
+import { isDataAssetIdentifier } from './identifiers.js'
+
 // The Prototype Kit's own password encryption, so the cookie matches the one
 // the Kit sets, and the prototype adds no cryptography of its own
 const { encryptPassword } = createRequire(import.meta.url)(
@@ -8,7 +10,6 @@ const { encryptPassword } = createRequire(import.meta.url)(
 )
 
 const SIGN_IN_PATH = '/sign-in'
-const SIGN_OUT_PATH = '/sign-out'
 const SIGNED_OUT_PATH = '/signed-out'
 
 // The Kit's cookie, listed on the cookies page
@@ -58,8 +59,10 @@ export function isSignInRequired(environment) {
   )
 }
 
-// Only a page of the prototype, and never the sign-in or sign-out pages, so
-// signing in can't send anyone to another site or round in a loop
+// Only a catalogue page that needs signing in: the home page, the search
+// page or a data asset page. The check is on the address after the browser's
+// rules have tidied it, so nothing a browser would read as another site, and
+// no sign-in or sign-out page, can pass.
 export function safeReturnUrl(value) {
   if (
     typeof value !== 'string' ||
@@ -72,11 +75,23 @@ export function safeReturnUrl(value) {
   const address = new URL(value, BASE_ADDRESS)
   if (
     address.origin !== BASE_ADDRESS.origin ||
-    [SIGN_IN_PATH, SIGN_OUT_PATH, SIGNED_OUT_PATH].includes(address.pathname)
+    !isReturnPath(address.pathname)
   ) {
     return '/'
   }
   return `${address.pathname}${address.search}`
+}
+
+function isReturnPath(path) {
+  const [, page, identifier, ...rest] = path.split('/')
+  if (page === '' && identifier === undefined) {
+    return true
+  }
+  return (
+    page === 'data-assets' &&
+    rest.length === 0 &&
+    (identifier === undefined || isDataAssetIdentifier(identifier))
+  )
 }
 
 function sameText(first, second) {

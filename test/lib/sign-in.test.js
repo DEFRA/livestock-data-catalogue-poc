@@ -111,7 +111,8 @@ describe('when sign-in is needed', () => {
 })
 
 describe('the address to return to after signing in', () => {
-  test('keeps a page of the prototype, with its query', () => {
+  test('keeps a catalogue page, with its query', () => {
+    assert.equal(safeReturnUrl('/'), '/')
     assert.equal(
       safeReturnUrl('/data-assets?q=cattle&page=2'),
       '/data-assets?q=cattle&page=2'
@@ -124,6 +125,10 @@ describe('the address to return to after signing in', () => {
     '//example.com/',
     '/\\example.com/',
     '/\t/example.com/',
+    '/.//example.com/',
+    '/%2e//example.com/',
+    '/data-assets/..//example.com/',
+    '/./\\example.com/',
     'javascript:alert(1)',
     'data-assets',
     ''
@@ -132,6 +137,32 @@ describe('the address to return to after signing in', () => {
       assert.equal(safeReturnUrl(address), '/')
     })
   }
+
+  test('is the home page for any page that is not a catalogue page', () => {
+    for (const address of [
+      '/cookies',
+      '/no-such-page',
+      '/data-assets/',
+      '/data-assets/not-an-identifier',
+      '/data-assets/DA11111/more',
+      '/manage-prototype'
+    ]) {
+      assert.equal(safeReturnUrl(address), '/', address)
+    }
+  })
+
+  test('gives the same address when given its own answer', () => {
+    for (const address of [
+      '/data-assets?q=cattle',
+      '/data-assets/DA11111',
+      '/.//example.com/',
+      '/data-assets/./DA11111'
+    ]) {
+      const answer = safeReturnUrl(address)
+
+      assert.equal(safeReturnUrl(answer), answer, address)
+    }
+  })
 
   test('is the home page for a value that is not text', () => {
     assert.equal(safeReturnUrl(['/data-assets', '//example.com']), '/')

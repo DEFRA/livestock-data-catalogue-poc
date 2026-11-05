@@ -45,7 +45,7 @@ describe('signing in to the prototype on CDP', () => {
         '/sign-in?returnUrl=%2Fdata-assets%3Fq%3Dcattle'
       ],
       ['/data-assets/DA11111', '/sign-in?returnUrl=%2Fdata-assets%2FDA11111'],
-      ['/no-such-page', '/sign-in?returnUrl=%2Fno-such-page']
+      ['/no-such-page', '/sign-in']
     ]) {
       test(`${path} sends you to the sign-in page`, async () => {
         const page = await app.getPage(path)
@@ -257,6 +257,16 @@ describe('signing in to the prototype on CDP', () => {
 
       assert.equal(page.status, 302)
       assert.equal(page.headers.get('location'), '/data-assets')
+    })
+
+    test('the sign-in page never sends you to another site', async () => {
+      const page = await app.getPage(
+        `/sign-in?${new URLSearchParams({ returnUrl: '/.//example.com/' })}`,
+        { cookie: SIGNED_IN }
+      )
+
+      assert.equal(page.status, 302)
+      assert.equal(page.headers.get('location'), '/')
     })
 
     test('signing out removes the cookie and shows that you have signed out', async () => {
