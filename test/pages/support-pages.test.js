@@ -91,6 +91,22 @@ describe('the support and error pages', () => {
     assert.match(text, /Information Commissioner's Office/)
   })
 
+  test('the accessibility statement gives its compliance status and when it was last reviewed', async () => {
+    const page = await app.getPage('/accessibility-statement')
+    const text = page.document
+      .querySelector('main')
+      .textContent.replace(/\s+/g, ' ')
+
+    assert.match(
+      text,
+      /This prototype is partially compliant with the Web Content Accessibility Guidelines version 2\.2 AA standard, because of the known issue listed below\./
+    )
+    assert.match(
+      text,
+      /This statement was prepared on 4 November 2026\. It was last reviewed on 5 November 2026\./
+    )
+  })
+
   test('the accessibility statement lists the Welsh keywords that are not marked as Welsh', async () => {
     const page = await app.getPage('/accessibility-statement')
     const knownIssues = [...page.document.querySelectorAll('h2')].find(
