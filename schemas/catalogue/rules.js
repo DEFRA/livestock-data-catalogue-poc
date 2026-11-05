@@ -167,7 +167,7 @@ function referenceChecker(collections) {
       }
     },
     // A target inside the catalogue is held as its data asset identifier,
-    // and anything else as an https address (doc 15, question 9)
+    // and anything else as an https address (LDAT-235, question 9)
     relationshipTarget(owner, target) {
       if (isDataAssetIdentifier(target)) {
         check.name(owner, target, 'dataAssets', 'related data asset')
