@@ -1,0 +1,77 @@
+name: Check pull request
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Run Pull Request Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm test # fails below 90% coverage and writes coverage/lcov.info
+
+      - name: Build production image
+        run: docker build --target production --tag livestock-data-catalogue-poc:ci .
+
+  # A job of its own, because it needs to write to the pull request. It runs
+  # no code from the repository or its packages, so that token stays out of
+  # reach of the code the other jobs run.
+  dependency-review:
+    name: Review dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write # to post the summary comment
+    steps:
+      - name: Dependency review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: moderate
+          comment-summary-in-pr: always
+          # GitHub can't read the licence of an action pinned to a commit SHA.
+          # trivy-action is Apache-2.0 (checked on 5 November 2026).
+          allow-dependencies-licenses: pkg:githubactions/aquasecurity/trivy-action
+
+  scan-image:
+    name: Scan production image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build production image
+        run: docker build --target production --tag livestock-data-catalogue-poc:ci .
+
+      - name: Scan production image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: livestock-data-catalogue-poc:ci
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          trivyignores: .trivyignore # accepted findings, each with an expiry date
+          exit-code: '1'

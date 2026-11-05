@@ -1,0 +1,14 @@
+{% extends "layouts/main.html" %}
+
+{% set pageName = "You have signed out" %}
+{% set hideServiceNavigation = true %}
+{% set mainClasses = "govuk-main-wrapper--auto-spacing" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">You have signed out</h1>
+      <p class="govuk-body"><a class="govuk-link" href="/sign-in">Sign in</a> to use the prototype again.</p>
+    </div>
+  </div>
+{% endblock %}

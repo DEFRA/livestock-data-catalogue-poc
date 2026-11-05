@@ -1,0 +1,37 @@
+[
+  {
+    "code": "JSON",
+    "name": "JSON",
+    "mediaType": "application/json"
+  },
+  {
+    "code": "JSON_CLOUDEVENTS",
+    "name": "JSON CloudEvents",
+    "mediaType": "application/cloudevents+json"
+  },
+  {
+    "code": "CSV",
+    "name": "CSV",
+    "mediaType": "text/csv"
+  },
+  {
+    "code": "XML",
+    "name": "XML",
+    "mediaType": "application/xml"
+  },
+  {
+    "code": "PARQUET",
+    "name": "Parquet",
+    "mediaType": "application/vnd.apache.parquet"
+  },
+  {
+    "code": "AVRO",
+    "name": "Avro",
+    "description": "The media type is to be confirmed"
+  },
+  {
+    "code": "HARD_COPY",
+    "name": "Hard Copy",
+    "description": "No media type"
+  }
+]

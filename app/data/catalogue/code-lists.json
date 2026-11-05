@@ -1,0 +1,81 @@
+{
+  "updateFrequencies": [
+    {
+      "code": "REAL_TIME",
+      "name": "Real time"
+    },
+    {
+      "code": "DAILY",
+      "name": "Daily"
+    },
+    {
+      "code": "WEEKLY",
+      "name": "Weekly"
+    },
+    {
+      "code": "MONTHLY",
+      "name": "Monthly"
+    },
+    {
+      "code": "QUARTERLY",
+      "name": "Quarterly"
+    },
+    {
+      "code": "ANNUALLY",
+      "name": "Annually"
+    },
+    {
+      "code": "IRREGULAR",
+      "name": "Irregular"
+    },
+    {
+      "code": "NOT_UPDATED",
+      "name": "Not updated"
+    }
+  ],
+  "relationshipTypes": [
+    {
+      "code": "DERIVED_FROM",
+      "name": "Derived from",
+      "description": "The Data Asset is derived from the target"
+    },
+    {
+      "code": "RELATED_TO",
+      "name": "Related to",
+      "description": "The Data Asset is related to the target"
+    },
+    {
+      "code": "REFERENCED_BY",
+      "name": "Referenced by",
+      "description": "The Data Asset is referenced by the target"
+    },
+    {
+      "code": "REPLACES",
+      "name": "Replaces",
+      "description": "The Data Asset replaces the target"
+    },
+    {
+      "code": "REPLACED_BY",
+      "name": "Replaced by",
+      "description": "The Data Asset is replaced by the target"
+    }
+  ],
+  "securityClassifications": [
+    {
+      "code": "OFFICIAL",
+      "name": "OFFICIAL"
+    },
+    {
+      "code": "OFFICIAL_SENSITIVE",
+      "name": "OFFICIAL-SENSITIVE"
+    },
+    {
+      "code": "SECRET",
+      "name": "SECRET"
+    },
+    {
+      "code": "TOP_SECRET",
+      "name": "TOP SECRET"
+    }
+  ]
+}

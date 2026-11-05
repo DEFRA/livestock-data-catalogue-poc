@@ -1,0 +1,22 @@
+[
+  {
+    "code": "OAUTH2",
+    "name": "OAuth 2.0"
+  },
+  {
+    "code": "API_KEY",
+    "name": "API Key"
+  },
+  {
+    "code": "MUTUAL_TLS",
+    "name": "Mutual TLS"
+  },
+  {
+    "code": "BASIC",
+    "name": "Basic Authentication"
+  },
+  {
+    "code": "NONE",
+    "name": "None"
+  }
+]

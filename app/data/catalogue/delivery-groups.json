@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Animal and Plant Delivery Group",
+    "organisationName": "Digital, Data and Technology Services",
+    "description": "Outcome delivery group for animal and plant health",
+    "systemCreatedDateTime": "2026-09-03T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-03T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  },
+  {
+    "name": "Farming and Countryside Delivery Group",
+    "organisationName": "Digital, Data and Technology Services",
+    "description": "Outcome delivery group for farming and the countryside",
+    "systemCreatedDateTime": "2026-09-03T09:00:00Z",
+    "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
+    "systemUpdatedDateTime": "2026-09-03T16:30:00Z",
+    "systemUpdatedByUserId": "81b0ebdc-a2ee-4970-853f-cbcc2a506e05"
+  }
+]

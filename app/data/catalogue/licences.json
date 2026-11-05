@@ -1,0 +1,24 @@
+[
+  {
+    "code": "OGL",
+    "name": "Open Government Licence",
+    "versionNumber": "3.0",
+    "reference": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+  },
+  {
+    "code": "MOU",
+    "name": "Memorandum of Understanding"
+  },
+  {
+    "code": "OTHER",
+    "name": "Other"
+  },
+  {
+    "code": "RESTRICTED",
+    "name": "Restricted - no reuse licence"
+  },
+  {
+    "code": "NOT_APPLICABLE",
+    "name": "Not applicable"
+  }
+]

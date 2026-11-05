@@ -1,6 +1,79 @@
 {#
-For guidance on how to use layouts see:
-https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
+  Every page's layout. The catalogue is for Defra staff and isn't on
+  GOV.UK, so it follows Defra's branding guidance for services not on
+  GOV.UK (https://digital.defra.gov.uk/design/branding): the Defra header,
+  logo, footer and favicon, built from the GOV.UK Generic header, with no
+  crown or GOV.UK logotype.
 #}
 
 {% extends "govuk-prototype-kit/layouts/govuk-branded.njk" %}
+
+{% from "govuk/components/generic-header/macro.njk" import govukGenericHeader %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+
+{% block pageTitle -%}
+  {% if hasErrors %}Error: {% endif %}{% if pageName %}{{ pageName }} – {% endif %}{{ serviceName }}
+{%- endblock %}
+
+{# The same markup as GOV.UK Frontend's template, with Defra's icons #}
+{% block headIcons %}
+  <link rel="icon" sizes="48x48" href="/public/images/favicon.ico">
+  <link rel="icon" sizes="any" href="/public/images/favicon.svg" type="image/svg+xml">
+{% endblock %}
+
+{% block govukHeader %}
+  {# Screen readers skip the crest, as Defra's guidance says, and read the
+     service name followed by the department's name #}
+  {% set defraLogo %}
+    <span class="app-generic-header__brand">
+      <img class="app-generic-header__logo" src="/public/images/defra-logo.svg" alt="" width="115" height="60">
+      <span class="app-generic-header__service-name">{{ serviceName }}</span>
+    </span>
+    <span class="govuk-visually-hidden">(Department for Environment, Food and Rural Affairs)</span>
+  {% endset %}
+  {{ govukGenericHeader({
+    classes: "app-generic-header--defra",
+    logoHtml: defraLogo,
+    url: "/"
+  }) }}
+{% endblock %}
+
+{% block govukServiceNavigation %}
+  {# Pages for signing in and out have no navigation, because every page it
+     links to needs signing in. "Sign out" shows once someone has signed in. #}
+  {% if not hideServiceNavigation %}
+    {% set navigationItems = [
+      {
+        href: "/data-assets",
+        text: "Data assets",
+        current: navigationItem == "data-assets",
+        active: navigationItem == "data-asset"
+      }
+    ] %}
+    {% if signedIn %}
+      {% set navigationItems = navigationItems.concat([
+        {
+          href: "/sign-out",
+          text: "Sign out"
+        }
+      ]) %}
+    {% endif %}
+    {{ govukServiceNavigation({
+      navigation: navigationItems
+    }) }}
+  {% endif %}
+{% endblock %}
+
+{% block headerEnd %}
+  {{ govukPhaseBanner({
+    tag: {
+      text: "Alpha"
+    },
+    html: 'This is a prototype with made-up data. Your <a class="govuk-link" href="/report-a-problem">feedback</a> will help us improve it.'
+  }) }}
+{% endblock %}
+
+{% block govukFooter %}
+  {% include "partials/app-footer.html" %}
+{% endblock %}

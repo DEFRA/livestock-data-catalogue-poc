@@ -1,0 +1,30 @@
+{#
+  The value of a summary list row, built from autoescaped values for the
+  component's html option. A row has text, a list of items, a link or
+  people.
+#}
+{% macro appSummaryValue(row) -%}
+  {%- if row.items -%}
+    <ul class="govuk-list">
+      {%- for item in row.items %}
+        <li>{{ item }}</li>
+      {%- endfor %}
+    </ul>
+  {%- elif row.link -%}
+    <a class="govuk-link" href="{{ row.link.href }}">{{ row.link.text }}</a>
+  {%- elif row.people -%}
+    <ul class="govuk-list">
+      {%- for person in row.people %}
+        <li>
+          {{ person.name }}, {{ person.organisationName }}<br>
+          <a class="govuk-link" href="{{ person.emailHref }}">{{ person.emailAddress }}</a>
+        </li>
+      {%- endfor %}
+    </ul>
+  {%- elif row.source -%}
+    <p class="govuk-body">{{ row.text }}</p>
+    <p class="govuk-body-s">{{ row.source }}</p>
+  {%- else -%}
+    {{ row.text }}
+  {%- endif -%}
+{%- endmacro %}

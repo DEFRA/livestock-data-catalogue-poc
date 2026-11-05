@@ -1,0 +1,22 @@
+[
+  {
+    "code": "IN_DEVELOPMENT",
+    "name": "In Development",
+    "description": "Being designed or built; not yet authoritative"
+  },
+  {
+    "code": "ACTIVE",
+    "name": "Active",
+    "description": "Current and authoritative"
+  },
+  {
+    "code": "DEPRECATED",
+    "name": "Deprecated",
+    "description": "Still available but being replaced"
+  },
+  {
+    "code": "RETIRED",
+    "name": "Retired",
+    "description": "No longer maintained or available"
+  }
+]

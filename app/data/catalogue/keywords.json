@@ -1,0 +1,59 @@
+[
+  {
+    "name": "Address"
+  },
+  {
+    "name": "Births"
+  },
+  {
+    "name": "Bovine TB"
+  },
+  {
+    "name": "Breed"
+  },
+  {
+    "name": "Cattle"
+  },
+  {
+    "name": "CPH"
+  },
+  {
+    "name": "Deaths"
+  },
+  {
+    "name": "Fallen stock"
+  },
+  {
+    "name": "gwartheg"
+  },
+  {
+    "name": "Holding"
+  },
+  {
+    "name": "Keeper"
+  },
+  {
+    "name": "Movement"
+  },
+  {
+    "name": "Reference data"
+  },
+  {
+    "name": "Registration"
+  },
+  {
+    "name": "Restriction"
+  },
+  {
+    "name": "Species"
+  },
+  {
+    "name": "Statistics"
+  },
+  {
+    "name": "Test results"
+  },
+  {
+    "name": "UPRN"
+  }
+]

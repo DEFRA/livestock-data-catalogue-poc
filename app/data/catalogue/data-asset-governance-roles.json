@@ -1,0 +1,10 @@
+[
+  {
+    "code": "DATA_OWNER",
+    "name": "Data Owner"
+  },
+  {
+    "code": "DATA_STEWARD",
+    "name": "Data Steward"
+  }
+]
