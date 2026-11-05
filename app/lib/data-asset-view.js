@@ -168,10 +168,20 @@ function peopleRow(key, people) {
   return people.length ? { key, people } : undefined
 }
 
+function currentCustodians(dataAsset, today) {
+  return (dataAsset.custodians ?? [])
+    .filter((period) => isCurrentOn(period, today))
+    .map((period) => period.organisationName)
+}
+
+// Several organisations can be Data Custodians at once (S17)
+function custodiansRow(organisationNames) {
+  return organisationNames.length > 1
+    ? listRow('Data custodians', organisationNames)
+    : textRow('Data custodian', organisationNames[0])
+}
+
 function responsibilitySection(catalogue, dataAsset, today) {
-  const custodian = (dataAsset.custodians ?? []).find((period) =>
-    isCurrentOn(period, today)
-  )
   return {
     heading: 'Responsibility',
     rows: rows(
@@ -201,7 +211,7 @@ function responsibilitySection(catalogue, dataAsset, today) {
         'Data stewards',
         currentPeople(catalogue, dataAsset, 'DATA_STEWARD', today)
       ),
-      textRow('Data custodian', custodian?.organisationName)
+      custodiansRow(currentCustodians(dataAsset, today))
     )
   }
 }
@@ -361,7 +371,7 @@ function replacementFor(catalogue, dataAsset) {
 }
 
 // Everything the data asset page shows: names rather than codes, and only
-// the current Data Owner, Data Stewards and Data Custodian
+// the current Data Owner, Data Stewards and Data Custodians
 export function dataAssetPage(catalogue, dataAsset, { today }) {
   return {
     titleName: dataAsset.titleName,

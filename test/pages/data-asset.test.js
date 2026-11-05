@@ -106,8 +106,26 @@ describe('the data asset page', () => {
       )
       assert.equal(ownerEmail.textContent.trim(), 'jo.bloggs@example.com')
       assert.equal(
-        rows['Data custodian'],
-        'Digital, Data and Technology Services'
+        rows['Data custodians'],
+        'Digital, Data and Technology Services Livestock Information Ltd'
+      )
+    })
+
+    test('lists every current Data Custodian', () => {
+      const custodians = [
+        ...page.document.querySelectorAll('.govuk-summary-list__row')
+      ].find(
+        (summaryRow) =>
+          summaryRow
+            .querySelector('.govuk-summary-list__key')
+            .textContent.trim() === 'Data custodians'
+      )
+
+      assert.deepEqual(
+        [...custodians.querySelectorAll('.govuk-list li')].map((item) =>
+          item.textContent.trim()
+        ),
+        ['Digital, Data and Technology Services', 'Livestock Information Ltd']
       )
     })
 

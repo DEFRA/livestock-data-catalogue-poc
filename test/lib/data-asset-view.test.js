@@ -228,6 +228,25 @@ describe('the data asset page content', () => {
       )
     })
 
+    test('lists every current Data Custodian when there are several', () => {
+      const responsibility = section(pageFor('DA11111'), 'Responsibility').rows
+
+      assert.deepEqual(row(responsibility, 'Data custodians').items, [
+        'Digital, Data and Technology Services',
+        'Livestock Information Ltd'
+      ])
+      assert.equal(row(responsibility, 'Data custodian'), undefined)
+    })
+
+    test('does not show a Data Custodian whose period has not started', () => {
+      const earlier = pageFor('DA11111', { today: '2025-03-31' })
+
+      assert.equal(
+        row(section(earlier, 'Responsibility').rows, 'Data custodian').text,
+        'Digital, Data and Technology Services'
+      )
+    })
+
     test('leaves out the Data Custodian and delivery group when there are none', () => {
       const responsibility = section(pageFor('DA1111B'), 'Responsibility').rows
 
