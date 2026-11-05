@@ -126,6 +126,52 @@ describe('the rules that span records', () => {
       assertBreach(breaches, 'Duplicate domains name: animal')
     })
 
+    for (const [records, collectionName, field, name, key] of [
+      [
+        'organisations',
+        'organisations',
+        'name',
+        'Rural Payments Agency',
+        'organisation name'
+      ],
+      [
+        'delivery groups',
+        'deliveryGroups',
+        'name',
+        'Animal and Plant Delivery Group',
+        'delivery group name'
+      ],
+      [
+        'data services',
+        'dataServices',
+        'titleName',
+        'Livestock Movements API',
+        'data service title'
+      ],
+      [
+        'information assets',
+        'informationAssets',
+        'name',
+        'Animal Disease Records',
+        'information asset name'
+      ],
+      ['keywords', 'keywords', 'name', 'Cattle', 'keyword name']
+    ]) {
+      test(`rejects 2 ${records} whose names differ only in case`, () => {
+        const breaches = breachesAfter((collections) => {
+          const original = collections[collectionName].find(
+            (record) => record[field] === name
+          )
+          collections[collectionName].push({
+            ...original,
+            [field]: name.toUpperCase()
+          })
+        })
+
+        assertBreach(breaches, `Duplicate ${key}: ${name.toUpperCase()}`)
+      })
+    }
+
     test('rejects 2 code list values with the same code', () => {
       const breaches = breachesAfter((collections) => {
         collections.codeLists.securityClassifications.push({
@@ -288,6 +334,146 @@ describe('the rules that span records', () => {
         'Organisation Animal and Plant Health Agency refers to an unknown parent organisation: Department of Livestock'
       )
     })
+
+    for (const [description, change, expected] of [
+      [
+        'an organisation with a type that does not exist',
+        (collections) => {
+          collections.organisations[0].organisationTypeCode = 'CHARITY'
+        },
+        'Organisation Department for Environment, Food and Rural Affairs refers to an unknown organisationTypes code: CHARITY'
+      ],
+      [
+        'a person in an organisation that does not exist',
+        (collections) => {
+          collections.people[0].organisationName = 'Department of Livestock'
+        },
+        'Person Jo Bloggs refers to an unknown organisation: Department of Livestock'
+      ],
+      [
+        'a delivery group in an organisation that does not exist',
+        (collections) => {
+          collections.deliveryGroups[0].organisationName =
+            'Department of Livestock'
+        },
+        'Delivery group Animal and Plant Delivery Group refers to an unknown organisation: Department of Livestock'
+      ],
+      [
+        'a data asset with a delivery group that does not exist',
+        (collections) => {
+          dataAssetIn(collections, 'DA11111').deliveryGroupName =
+            'Holdings Delivery Group'
+        },
+        'Data asset DA11111 refers to an unknown delivery group: Holdings Delivery Group'
+      ],
+      [
+        'a data asset with an information asset that does not exist',
+        (collections) => {
+          dataAssetIn(collections, 'DA11111').informationAssetName =
+            'Movement Records'
+        },
+        'Data asset DA11111 refers to an unknown information asset: Movement Records'
+      ],
+      [
+        'a publication state that does not exist',
+        (collections) => {
+          dataAssetIn(collections, 'DA11111').publicationStateCode = 'ARCHIVED'
+        },
+        'Data asset DA11111 refers to an unknown publicationStates code: ARCHIVED'
+      ],
+      [
+        'a data asset type that does not exist',
+        (collections) => {
+          dataAssetIn(collections, 'DA11111').dataAssetTypeCode = 'EVENT_STREAM'
+        },
+        'Data asset DA11111 refers to an unknown dataAssetTypes code: EVENT_STREAM'
+      ],
+      [
+        'a lifecycle state that does not exist',
+        (collections) => {
+          dataAssetIn(collections, 'DA11111').lifecycleStateCode = 'ARCHIVED'
+        },
+        'Data asset DA11111 refers to an unknown dataAssetLifecycleStates code: ARCHIVED'
+      ],
+      [
+        'a category that does not exist',
+        (collections) => {
+          dataAssetIn(collections, 'DA11111').categoryCodes.push('GOATS')
+        },
+        'Data asset DA11111 refers to an unknown categories code: GOATS'
+      ],
+      [
+        'a jurisdiction that does not exist',
+        (collections) => {
+          dataAssetIn(collections, 'DA11111').jurisdictionCodes.push('IE')
+        },
+        'Data asset DA11111 refers to an unknown jurisdictions code: IE'
+      ],
+      [
+        'a relationship type that does not exist',
+        (collections) => {
+          dataAssetIn(
+            collections,
+            'DA11111'
+          ).relationships[1].relationshipTypeCode = 'SUPPLEMENTS'
+        },
+        'Data asset DA11111 refers to an unknown relationshipTypes code: SUPPLEMENTS'
+      ],
+      [
+        'a governance role that does not exist',
+        (collections) => {
+          dataAssetIn(
+            collections,
+            'DA11111'
+          ).governanceAssignments[1].governanceRoleCode = 'DATA_CUSTODIAN'
+        },
+        'Data asset DA11111 refers to an unknown dataAssetGovernanceRoles code: DATA_CUSTODIAN'
+      ],
+      [
+        'a distribution type that does not exist',
+        (collections) => {
+          dataAssetIn(
+            collections,
+            'DA11111'
+          ).distributions[0].distributionTypeCode = 'STREAM'
+        },
+        'Data asset DA11111 distribution "Movements API" refers to an unknown distributionTypes code: STREAM'
+      ],
+      [
+        'an access method that does not exist',
+        (collections) => {
+          dataAssetIn(
+            collections,
+            'DA11111'
+          ).distributions[0].accessMethodCode = 'GRAPHQL'
+        },
+        'Data asset DA11111 distribution "Movements API" refers to an unknown accessMethods code: GRAPHQL'
+      ],
+      [
+        'a format that does not exist',
+        (collections) => {
+          dataAssetIn(
+            collections,
+            'DA11111'
+          ).distributions[0].distributionFormatCode = 'PDF'
+        },
+        'Data asset DA11111 distribution "Movements API" refers to an unknown distributionFormats code: PDF'
+      ],
+      [
+        'an authentication method that does not exist',
+        (collections) => {
+          dataAssetIn(
+            collections,
+            'DA11111'
+          ).distributions[0].authenticationMethodCode = 'SAML'
+        },
+        'Data asset DA11111 distribution "Movements API" refers to an unknown authenticationMethods code: SAML'
+      ]
+    ]) {
+      test(`rejects ${description}`, () => {
+        assertBreach(breachesAfter(change), expected)
+      })
+    }
   })
 
   describe('the organisation hierarchy', () => {

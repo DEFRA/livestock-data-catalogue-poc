@@ -41,13 +41,36 @@ describe('the data contract', () => {
     assert.deepEqual(errors, [])
   })
 
-  for (const field of ['titleName', 'description', 'organisationName']) {
+  for (const field of [
+    'identifier',
+    'titleName',
+    'description',
+    'organisationName',
+    'publicationStateCode'
+  ]) {
     test(`rejects a data asset with no ${field}`, () => {
       const errors = errorsAfter((collections) => {
         delete dataAssetIn(collections, 'DA11112')[field]
       })
 
       assertRejected(errors, `"[1].${field}" is required`)
+    })
+  }
+
+  for (const field of [
+    'name',
+    'securityClassificationCode',
+    'retentionPeriodDescription'
+  ]) {
+    test(`rejects an information asset with no ${field}`, () => {
+      const errors = errorsAfter((collections) => {
+        delete collections.informationAssets[0][field]
+      })
+
+      assertRejected(
+        errors,
+        `informationAssets[0][${field}]: "[0].${field}" is required`
+      )
     })
   }
 
@@ -243,6 +266,14 @@ describe('the data contract', () => {
     assertRejected(errors, 'keywordNames[4]" contains a duplicate value')
   })
 
+  test('rejects the same jurisdiction twice on one data asset', () => {
+    const errors = errorsAfter((collections) => {
+      dataAssetIn(collections, 'DA11111').jurisdictionCodes.push('GB-ENG')
+    })
+
+    assertRejected(errors, 'jurisdictionCodes[1]" contains a duplicate value')
+  })
+
   test('rejects the same relationship twice', () => {
     const errors = errorsAfter((collections) => {
       const relationships = dataAssetIn(collections, 'DA11111').relationships
@@ -277,6 +308,17 @@ describe('the data contract', () => {
     })
 
     assertRejected(errors, 'domains[0][name]')
+  })
+
+  test('rejects a licence with a description, which S23 does not give it', () => {
+    const errors = errorsAfter((collections) => {
+      collections.licences[0].description = 'Free to reuse with attribution'
+    })
+
+    assertRejected(
+      errors,
+      'licences[0][description]: "[0].description" is not allowed'
+    )
   })
 
   test('rejects a code list with no values', () => {

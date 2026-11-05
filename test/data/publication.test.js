@@ -125,6 +125,15 @@ describe('the publication checks (S26)', () => {
     ])
   })
 
+  test('accepts NOT_APPLICABLE as the licence for every distribution (S23)', () => {
+    const dataAsset = animalMovement()
+    for (const distribution of dataAsset.distributions) {
+      distribution.licenceCode = 'NOT_APPLICABLE'
+    }
+
+    assert.deepEqual(outstanding(dataAsset), [])
+  })
+
   test('needs a type, access method and authentication method for each distribution', () => {
     const dataAsset = animalMovement()
     delete dataAsset.distributions[0].distributionTypeCode
