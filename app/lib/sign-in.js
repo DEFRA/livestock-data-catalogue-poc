@@ -146,6 +146,15 @@ function sameText(first, second) {
   )
 }
 
+// Browsers say where a request came from in Sec-Fetch-Site. Signing in or
+// out only counts from the prototype's own pages or the address bar, so
+// another site can't sign people in or out. A browser that doesn't send the
+// header can't be checked, so it is let through.
+function isFromThisSite(req) {
+  const site = req.get('sec-fetch-site')
+  return site === undefined || site === 'same-origin' || site === 'none'
+}
+
 function signInAddress(returnUrl) {
   return returnUrl === '/'
     ? SIGN_IN_PATH
@@ -298,6 +307,20 @@ export function createSignIn({
       res.redirect(303, '/')
       return
     }
+    if (!isFromThisSite(req)) {
+      logEvent({
+        level: 'warn',
+        message: 'Sign-in refused: the request came from another site',
+        event: {
+          ...SIGN_IN_EVENT,
+          outcome: 'failure',
+          reason: 'request from another site'
+        },
+        req
+      })
+      res.redirect(303, SIGN_IN_PATH)
+      return
+    }
     const now = clock()
     if (hasTooManyWrongPasswords(req.ip, now)) {
       logEvent({
@@ -354,6 +377,10 @@ export function createSignIn({
   }
 
   function signOut(req, res) {
+    if (!isFromThisSite(req)) {
+      res.redirect('/')
+      return
+    }
     res.clearCookie(COOKIE_NAME, { ...COOKIE_OPTIONS })
     logEvent({
       level: 'info',

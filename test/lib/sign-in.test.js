@@ -630,6 +630,52 @@ describe('signing in', () => {
     assert.deepEqual(response.redirected, [303, '/'])
   })
 
+  test('ignores a sign-in sent from another site, logs it, and signs nobody in', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP })
+
+    for (const site of ['cross-site', 'same-site']) {
+      const response = fakeResponse()
+      signIn(
+        fakeRequest({
+          path: '/sign-in',
+          method: 'POST',
+          body: { password: PASSWORD, returnUrl: '/data-assets' },
+          headers: { 'sec-fetch-site': site }
+        }),
+        response
+      )
+
+      assert.equal(response.cookieSet, undefined, site)
+      assert.deepEqual(response.redirected, [303, '/sign-in'], site)
+    }
+    assert.deepEqual(
+      logged().map((entry) => [entry.message, entry.event.reason]),
+      Array(2).fill([
+        'Sign-in refused: the request came from another site',
+        'request from another site'
+      ])
+    )
+  })
+
+  test("accepts a sign-in from the prototype's own page, the address bar, or a browser that doesn't say", () => {
+    const { signIn } = createSignIn({ environment: ON_CDP })
+
+    for (const site of ['same-origin', 'none', undefined]) {
+      const response = fakeResponse()
+      signIn(
+        fakeRequest({
+          path: '/sign-in',
+          method: 'POST',
+          body: { password: PASSWORD },
+          headers: { 'sec-fetch-site': site }
+        }),
+        response
+      )
+
+      assert.match(response.cookieSet.value, SIGNED_COOKIE, String(site))
+    }
+  })
+
   test('goes to the home page when sign-in is not needed', () => {
     const { signIn, showSignIn } = createSignIn({ environment: {} })
     const posted = fakeResponse()
@@ -888,6 +934,41 @@ describe('signing out', () => {
       options: { httpOnly: true, secure: true, sameSite: 'lax', path: '/' }
     })
     assert.deepEqual(response.redirected, ['/signed-out'])
+  })
+
+  test('ignores a sign-out sent from another site, so you stay signed in', () => {
+    const { signOut } = createSignIn({ environment: ON_CDP })
+
+    for (const site of ['cross-site', 'same-site']) {
+      const response = fakeResponse()
+      signOut(
+        fakeRequest({
+          path: '/sign-out',
+          headers: { 'sec-fetch-site': site }
+        }),
+        response
+      )
+
+      assert.equal(response.cookieCleared, undefined, site)
+      assert.deepEqual(response.redirected, ['/'], site)
+    }
+  })
+
+  test("signs out from the prototype's own pages, the address bar, or a browser that doesn't say", () => {
+    const { signOut } = createSignIn({ environment: ON_CDP })
+
+    for (const site of ['same-origin', 'none', undefined]) {
+      const response = fakeResponse()
+      signOut(
+        fakeRequest({
+          path: '/sign-out',
+          headers: { 'sec-fetch-site': site }
+        }),
+        response
+      )
+
+      assert.equal(response.cookieCleared.name, COOKIE, String(site))
+    }
   })
 
   test('logs signing out', () => {

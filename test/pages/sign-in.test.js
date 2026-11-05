@@ -239,6 +239,17 @@ describe('signing in to the prototype on CDP', () => {
       assert.equal(page.headers.get('location'), '/')
     })
 
+    test('a sign-in form on another site signs nobody in', async () => {
+      const page = await app.getPage('/sign-in', {
+        form: { password: PASSWORD },
+        headers: { 'sec-fetch-site': 'cross-site' }
+      })
+
+      assert.equal(page.status, 303)
+      assert.equal(page.headers.get('location'), '/sign-in')
+      assert.equal(page.headers.get('set-cookie'), null)
+    })
+
     test('never sends you outside the prototype', async () => {
       const page = await app.getPage('/sign-in', {
         form: { password: PASSWORD, returnUrl: '//example.com/' }
@@ -284,6 +295,17 @@ describe('signing in to the prototype on CDP', () => {
 
       assert.equal(page.status, 302)
       assert.equal(page.headers.get('location'), '/')
+    })
+
+    test('a sign-out link on another site does not sign you out', async () => {
+      const response = await app.getPage('/sign-out', {
+        cookie: signedIn,
+        headers: { 'sec-fetch-site': 'cross-site' }
+      })
+
+      assert.equal(response.status, 302)
+      assert.equal(response.headers.get('location'), '/')
+      assert.equal(response.headers.get('set-cookie'), null)
     })
 
     test('signing out removes the cookie and shows that you have signed out', async () => {

@@ -27,12 +27,13 @@ export async function startApp({ environment = {} } = {}) {
   return {
     baseUrl,
     // Fetches a page without following redirects. A form is posted as a
-    // browser would post it, and a cookie is sent as a browser would.
-    async getPage(path, { form, cookie } = {}) {
+    // browser would post it, and a cookie and other headers are sent as a
+    // browser would send them.
+    async getPage(path, { form, cookie, headers = {} } = {}) {
       const response = await fetch(new URL(path, baseUrl), {
         method: form ? 'POST' : 'GET',
         body: form ? new URLSearchParams(form) : undefined,
-        headers: cookie ? { cookie } : {},
+        headers: cookie ? { ...headers, cookie } : headers,
         redirect: 'manual'
       })
       const html = await response.text()
