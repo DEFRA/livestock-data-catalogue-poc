@@ -338,6 +338,13 @@ describe('signing in to the prototype on CDP', () => {
       })
     }
 
+    test("the Kit's script on every page gets an empty answer, not an error", async () => {
+      const page = await app.getPage('/manage-prototype/page-loaded')
+
+      assert.equal(page.status, 204)
+      assert.equal(page.html, '')
+    })
+
     test("the Kit's password page can't sign anyone in", async () => {
       const page = await app.getPage('/manage-prototype/password', {
         form: { password: PASSWORD, returnURL: '/data-assets' }
