@@ -359,11 +359,25 @@ describe('the search page', () => {
     assert.doesNotMatch(page.html, /<script>alert\(1\)<\/script>/)
   })
 
-  test('shows page 1 when the page number or a filter value is not valid', async () => {
+  test('sends a page number that is out of range or not valid to page 1 of the same search, as the Pagination guidance says', async () => {
+    for (const [address, location] of [
+      ['/data-assets?page=9', '/data-assets'],
+      ['/data-assets?q=cattle&page=2', '/data-assets?q=cattle'],
+      ['/data-assets?domain=HOLDING&page=0', '/data-assets?domain=HOLDING'],
+      ['/data-assets?page=abc&type=WEATHER', '/data-assets'],
+      ['/data-assets?page[]=2', '/data-assets']
+    ]) {
+      const page = await app.getPage(address)
+
+      assert.equal(page.status, 302, address)
+      assert.equal(page.headers.get('location'), location, address)
+    }
+  })
+
+  test('shows page 1 for page=1, and for a filter value that is not valid', async () => {
     for (const address of [
-      '/data-assets?page=9',
-      '/data-assets?page=abc&type=WEATHER',
-      '/data-assets?page[]=2'
+      '/data-assets?page=1',
+      '/data-assets?type=WEATHER'
     ]) {
       const page = await app.getPage(address)
 

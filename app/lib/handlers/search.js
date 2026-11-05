@@ -42,8 +42,7 @@ function pagination(found, search) {
   }
 }
 
-function resultsFor(search) {
-  const found = findDataAssets(catalogue, search)
+function resultsFor(found, search) {
   return {
     pageName:
       found.totalPages > 1
@@ -57,9 +56,26 @@ function resultsFor(search) {
   }
 }
 
+// A page number that is out of range or not valid goes to page 1 of the
+// same search, as the GOV.UK Pagination guidance says
+function isPageToCorrect(query, found) {
+  return query.page !== undefined && query.page !== String(found.page)
+}
+
 export function searchDataAssets(req, res) {
   const filters = filterOptions(catalogue)
   const search = readSearchQuery(req.query, filters)
+  const found = search.error ? undefined : findDataAssets(catalogue, search)
+  if (found !== undefined && isPageToCorrect(req.query, found)) {
+    res.redirect(
+      searchHref({
+        terms: search.terms,
+        selected: search.selected,
+        page: found.page
+      })
+    )
+    return
+  }
   const hasSelectedFilters = Object.values(search.selected).some(
     (values) => values.length > 0
   )
@@ -73,6 +89,6 @@ export function searchDataAssets(req, res) {
     clearFiltersHref: hasSelectedFilters
       ? searchHref({ terms: search.terms })
       : undefined,
-    ...(search.error ? {} : resultsFor(search))
+    ...(found === undefined ? {} : resultsFor(found, search))
   })
 }
