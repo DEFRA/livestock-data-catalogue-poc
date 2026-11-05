@@ -1,4 +1,5 @@
 import { isCurrentOn } from '../../app/lib/periods.js'
+import { anyAddress } from './common.js'
 
 // S06, S08 to S12: needed before a data asset can be published. Valid To
 // Date is optional: without one, a data asset is valid with no end date.
@@ -22,6 +23,13 @@ const DISTRIBUTION_PUBLISH_ATTRIBUTES = [
   ['distributionTypeCode', 'Distribution Type Code'],
   ['accessMethodCode', 'Access Method Code'],
   ['authenticationMethodCode', 'Authentication Method Code']
+]
+
+// S18 and S26: each address a distribution has must be a valid URI
+const DISTRIBUTION_REFERENCES = [
+  ['accessReference', 'Access Reference'],
+  ['downloadReference', 'Download Reference'],
+  ['brokerReference', 'Broker Reference']
 ]
 
 // S06: the later date cannot be before the earlier one
@@ -103,6 +111,14 @@ function saysNoDistributionIsAvailable(dataAsset) {
   )
 }
 
+function invalidReferences(distribution) {
+  return DISTRIBUTION_REFERENCES.filter(
+    ([field]) =>
+      distribution[field] !== undefined &&
+      anyAddress.validate(distribution[field]).error !== undefined
+  ).map(([, name]) => name)
+}
+
 function distributionChecks(dataAsset) {
   const distributions = dataAsset.distributions ?? []
   if (distributions.length === 0) {
@@ -122,6 +138,11 @@ function distributionChecks(dataAsset) {
     }
     if (!distribution.licenceCode) {
       outstanding.push(`Distribution "${distribution.name}" needs a Licence`)
+    }
+    for (const name of invalidReferences(distribution)) {
+      outstanding.push(
+        `Distribution "${distribution.name}": ${name} is not a valid URI`
+      )
     }
     return outstanding
   })

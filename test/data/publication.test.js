@@ -138,6 +138,28 @@ describe('the publication checks (S26)', () => {
     ])
   })
 
+  test('accepts distribution references that are valid URIs, with any scheme', () => {
+    const dataAsset = animalMovement()
+    dataAsset.distributions[0].downloadReference =
+      'sftp://files.example.org/movements.csv'
+
+    assert.deepEqual(outstanding(dataAsset), [])
+  })
+
+  test('lists each distribution reference that is not a valid URI', () => {
+    const dataAsset = animalMovement()
+    dataAsset.distributions[0].accessReference = 'api.example.org/movements'
+    dataAsset.distributions[0].downloadReference =
+      'https://files.example.org/animal movements.csv'
+    dataAsset.distributions[1].brokerReference = 'broker.example.org'
+
+    assert.deepEqual(outstanding(dataAsset), [
+      'Distribution "Movements API": Access Reference is not a valid URI',
+      'Distribution "Movements API": Download Reference is not a valid URI',
+      'Distribution "Movement events": Broker Reference is not a valid URI'
+    ])
+  })
+
   test('needs an information asset for the security classification and retention period', () => {
     const dataAsset = animalMovement()
     delete dataAsset.informationAssetName
