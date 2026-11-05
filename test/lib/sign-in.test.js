@@ -35,9 +35,23 @@ function fakeRequest({
   method = 'GET',
   query = {},
   body,
-  cookies = {}
+  cookies = {},
+  headers = {}
 } = {}) {
-  return { path, originalUrl: path, method, query, body, cookies }
+  return {
+    path,
+    originalUrl: path,
+    method,
+    query,
+    body,
+    cookies,
+    get: (name) => headers[name.toLowerCase()]
+  }
+}
+
+// The ECS JSON lines the prototype has logged
+function logged() {
+  return console.log.mock.calls.map((call) => JSON.parse(call.arguments[0]))
 }
 
 function fakeResponse() {
@@ -196,8 +210,7 @@ describe('the address to return to after signing in', () => {
 
 describe('the sign-in check', () => {
   beforeEach(() => {
-    mock.method(console, 'error', () => {})
-    mock.method(console, 'warn', () => {})
+    mock.method(console, 'log', () => {})
   })
 
   afterEach(() => {
@@ -419,10 +432,12 @@ describe('the sign-in check', () => {
       assert.equal(response.rendered.view, 'problem-with-the-service')
     }
     assert.deepEqual(
-      console.error.mock.calls.map((call) => call.arguments),
+      logged().map((entry) => [entry['log.level'], entry.message, entry.event]),
       [
         [
-          'The prototype has no password, so nobody can sign in. Set the PASSWORD secret in the CDP Portal.'
+          'error',
+          'The prototype has no password, so nobody can sign in. Set the PASSWORD secret in the CDP Portal.',
+          { category: ['configuration'], outcome: 'failure' }
         ]
       ]
     )
@@ -431,7 +446,7 @@ describe('the sign-in check', () => {
 
 describe('signing in', () => {
   beforeEach(() => {
-    mock.method(console, 'warn', () => {})
+    mock.method(console, 'log', () => {})
   })
 
   afterEach(() => {
@@ -528,9 +543,56 @@ describe('signing in', () => {
     )
     assert.equal(response.rendered.locals.returnUrl, '/data-assets')
     assert.deepEqual(
-      console.warn.mock.calls.map((call) => call.arguments),
-      [['Sign-in failed: the password was not correct']]
+      logged().map((entry) => [entry['log.level'], entry.message, entry.event]),
+      [
+        [
+          'warn',
+          'Sign-in failed: the password was not correct',
+          {
+            category: ['authentication'],
+            type: ['start'],
+            action: 'sign-in',
+            outcome: 'failure',
+            reason: 'wrong password'
+          }
+        ]
+      ]
     )
+    assert.ok(
+      !console.log.mock.calls[0].arguments[0].includes('a-wrong-password')
+    )
+  })
+
+  test('logs a sign-in that works, with the request ID and without the password or cookie', () => {
+    const { signIn } = createSignIn({ environment: ON_CDP })
+    const response = fakeResponse()
+
+    signIn(
+      fakeRequest({
+        path: '/sign-in',
+        method: 'POST',
+        body: { password: PASSWORD },
+        headers: { 'x-cdp-request-id': 'made-up-request-id' }
+      }),
+      response
+    )
+
+    const [entry] = logged()
+    const [line] = console.log.mock.calls[0].arguments
+    assert.equal(entry['log.level'], 'info')
+    assert.equal(entry.message, 'Signed in')
+    assert.deepEqual(entry.event, {
+      category: ['authentication'],
+      type: ['start'],
+      action: 'sign-in',
+      outcome: 'success'
+    })
+    assert.equal(
+      entry.http.request.headers['x-cdp-request-id'],
+      'made-up-request-id'
+    )
+    assert.ok(!line.includes(PASSWORD))
+    assert.ok(!line.includes(response.cookieSet.value))
   })
 
   test('treats a password that is not text as empty', () => {
@@ -580,6 +642,14 @@ describe('signing in', () => {
 })
 
 describe('the sign-in page', () => {
+  beforeEach(() => {
+    mock.method(console, 'log', () => {})
+  })
+
+  afterEach(() => {
+    mock.restoreAll()
+  })
+
   test('shows the form, with the page to return to', () => {
     const { showSignIn } = createSignIn({ environment: ON_CDP })
     const response = fakeResponse()
@@ -612,6 +682,14 @@ describe('the sign-in page', () => {
 })
 
 describe('signing out', () => {
+  beforeEach(() => {
+    mock.method(console, 'log', () => {})
+  })
+
+  afterEach(() => {
+    mock.restoreAll()
+  })
+
   test('removes the cookie and shows that you have signed out', () => {
     const { signOut } = createSignIn({ environment: ON_CDP })
     const response = fakeResponse()
@@ -623,5 +701,27 @@ describe('signing out', () => {
       options: { httpOnly: true, secure: true, sameSite: 'lax', path: '/' }
     })
     assert.deepEqual(response.redirected, ['/signed-out'])
+  })
+
+  test('logs signing out', () => {
+    const { signOut } = createSignIn({ environment: ON_CDP })
+
+    signOut(fakeRequest({ path: '/sign-out' }), fakeResponse())
+
+    assert.deepEqual(
+      logged().map((entry) => [entry['log.level'], entry.message, entry.event]),
+      [
+        [
+          'info',
+          'Signed out',
+          {
+            category: ['authentication'],
+            type: ['end'],
+            action: 'sign-out',
+            outcome: 'success'
+          }
+        ]
+      ]
+    )
   })
 })

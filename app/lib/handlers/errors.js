@@ -1,3 +1,5 @@
+import { logEvent } from '../log.js'
+
 export function pageNotFound(req, res) {
   res.status(404).render('page-not-found')
 }
@@ -19,8 +21,13 @@ export function problemWithTheService(error, req, res, next) {
     pageNotFound(req, res)
     return
   }
-  console.error(
-    `Unexpected error: ${String(error.message).replace(/[\p{Cc}\u2028\u2029]+/gu, ' ')}`
-  )
+  logEvent({
+    level: 'error',
+    message: 'Unexpected error',
+    error: {
+      message: String(error.message).replace(/[\p{Cc}\u2028\u2029]+/gu, ' ')
+    },
+    req
+  })
   res.status(500).render('problem-with-the-service')
 }

@@ -7,6 +7,7 @@ import {
 } from 'node:crypto'
 
 import { isDataAssetIdentifier } from './identifiers.js'
+import { logEvent } from './log.js'
 
 const SIGN_IN_PATH = '/sign-in'
 const SIGNED_OUT_PATH = '/signed-out'
@@ -42,6 +43,14 @@ const SCRYPT_OPTIONS = Object.freeze({
   maxmem: 64 * 1024 * 1024
 })
 const signingKeys = new Map()
+
+// Sign-ins and sign-outs are logged as ECS authentication events, so CDP's
+// logs show when people sign in, and any run of wrong passwords
+const SIGN_IN_EVENT = Object.freeze({
+  category: ['authentication'],
+  type: ['start'],
+  action: 'sign-in'
+})
 
 // Anyone can sign in or out, and read the support pages, which the footer
 // links to from the sign-in page
@@ -201,9 +210,13 @@ export function createSignIn({
     }
     if (key === undefined) {
       if (!reportedNoPassword) {
-        console.error(
-          'The prototype has no password, so nobody can sign in. Set the PASSWORD secret in the CDP Portal.'
-        )
+        logEvent({
+          level: 'error',
+          message:
+            'The prototype has no password, so nobody can sign in. Set the PASSWORD secret in the CDP Portal.',
+          event: { category: ['configuration'], outcome: 'failure' },
+          req
+        })
         reportedNoPassword = true
       }
       res.status(503).render('problem-with-the-service')
@@ -242,7 +255,16 @@ export function createSignIn({
     }
     const given = digest(password)
     if (!passwordDigests.some((known) => timingSafeEqual(given, known))) {
-      console.warn('Sign-in failed: the password was not correct')
+      logEvent({
+        level: 'warn',
+        message: 'Sign-in failed: the password was not correct',
+        event: {
+          ...SIGN_IN_EVENT,
+          outcome: 'failure',
+          reason: 'wrong password'
+        },
+        req
+      })
       showSignInPage(res, {
         returnUrl,
         errorMessage: 'The password is not correct'
@@ -253,11 +275,28 @@ export function createSignIn({
       ...COOKIE_OPTIONS,
       maxAge: SIGNED_IN_FOR
     })
+    logEvent({
+      level: 'info',
+      message: 'Signed in',
+      event: { ...SIGN_IN_EVENT, outcome: 'success' },
+      req
+    })
     res.redirect(303, returnUrl)
   }
 
   function signOut(req, res) {
     res.clearCookie(COOKIE_NAME, { ...COOKIE_OPTIONS })
+    logEvent({
+      level: 'info',
+      message: 'Signed out',
+      event: {
+        category: ['authentication'],
+        type: ['end'],
+        action: 'sign-out',
+        outcome: 'success'
+      },
+      req
+    })
     res.redirect(SIGNED_OUT_PATH)
   }
 

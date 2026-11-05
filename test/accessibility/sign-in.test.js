@@ -8,7 +8,7 @@ describe('accessibility of signing in and out', () => {
   let app
 
   before(async () => {
-    mock.method(console, 'warn', () => {})
+    mock.method(console, 'log', () => {})
     app = await startApp({
       environment: {
         NODE_ENV: 'production',

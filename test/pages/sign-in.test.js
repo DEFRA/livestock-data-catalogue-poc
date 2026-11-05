@@ -21,7 +21,7 @@ describe('signing in to the prototype on CDP', () => {
   let signedIn
 
   before(async () => {
-    mock.method(console, 'warn', () => {})
+    mock.method(console, 'log', () => {})
     app = await startApp({
       environment: {
         NODE_ENV: 'production',

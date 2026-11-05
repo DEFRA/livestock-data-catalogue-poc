@@ -3,6 +3,10 @@ import { afterEach, beforeEach, describe, mock, test } from 'node:test'
 
 import { problemWithTheService } from '../../app/lib/handlers/errors.js'
 
+function fakeRequest(query = {}) {
+  return { query, get: () => undefined }
+}
+
 function fakeResponse({ headersSent = false } = {}) {
   const response = {
     headersSent,
@@ -21,7 +25,7 @@ function fakeResponse({ headersSent = false } = {}) {
 
 describe('handling an unexpected error', () => {
   beforeEach(() => {
-    mock.method(console, 'error', () => {})
+    mock.method(console, 'log', () => {})
   })
 
   afterEach(() => {
@@ -33,7 +37,7 @@ describe('handling an unexpected error', () => {
 
     problemWithTheService(
       new Error('No domains value has the code WEATHER'),
-      {},
+      fakeRequest(),
       response,
       () => {}
     )
@@ -42,32 +46,34 @@ describe('handling an unexpected error', () => {
     assert.equal(response.view, 'problem-with-the-service')
   })
 
-  test('logs the error message on one line, without the request', () => {
+  test('logs the error message as ECS JSON on one line, without the request', () => {
     problemWithTheService(
       new Error('first line\r\nforged line'),
-      { query: { q: 'secret' } },
+      fakeRequest({ q: 'secret' }),
       fakeResponse(),
       () => {}
     )
 
-    assert.deepEqual(
-      console.error.mock.calls.map((call) => call.arguments),
-      [['Unexpected error: first line forged line']]
-    )
+    const [[line]] = console.log.mock.calls.map((call) => call.arguments)
+    const entry = JSON.parse(line)
+
+    assert.equal(entry['log.level'], 'error')
+    assert.equal(entry.message, 'Unexpected error')
+    assert.deepEqual(entry.error, { message: 'first line forged line' })
+    assert.doesNotMatch(line, /secret/)
   })
 
   test('replaces every control character in the message, so it cannot forge or colour log lines', () => {
     problemWithTheService(
       new Error('first\u001b[31m red\u2028second\tthird'),
-      {},
+      fakeRequest(),
       fakeResponse(),
       () => {}
     )
 
-    assert.deepEqual(
-      console.error.mock.calls.map((call) => call.arguments),
-      [['Unexpected error: first [31m red second third']]
-    )
+    const [[line]] = console.log.mock.calls.map((call) => call.arguments)
+
+    assert.equal(JSON.parse(line).error.message, 'first [31m red second third')
   })
 
   test('shows Page not found for a request error, without logging it', () => {
@@ -76,18 +82,23 @@ describe('handling an unexpected error', () => {
       status: 400
     })
 
-    problemWithTheService(error, {}, response, () => {})
+    problemWithTheService(error, fakeRequest(), response, () => {})
 
     assert.equal(response.statusCode, 404)
     assert.equal(response.view, 'page-not-found')
-    assert.equal(console.error.mock.callCount(), 0)
+    assert.equal(console.log.mock.callCount(), 0)
   })
 
   test('passes the error on when the response has already started', () => {
     const error = new Error('Too late')
     const next = mock.fn()
 
-    problemWithTheService(error, {}, fakeResponse({ headersSent: true }), next)
+    problemWithTheService(
+      error,
+      fakeRequest(),
+      fakeResponse({ headersSent: true }),
+      next
+    )
 
     assert.deepEqual(next.mock.calls[0].arguments, [error])
   })
