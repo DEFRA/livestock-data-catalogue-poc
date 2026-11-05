@@ -51,6 +51,9 @@ jobs:
         with:
           fail-on-severity: moderate
           comment-summary-in-pr: always
+          # GitHub can't read the licence of an action pinned to a commit SHA.
+          # trivy-action is Apache-2.0 (checked on 5 November 2026).
+          allow-dependencies-licenses: pkg:githubactions/aquasecurity/trivy-action
 
   scan-image:
     name: Scan production image
