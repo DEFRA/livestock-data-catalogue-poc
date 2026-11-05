@@ -66,7 +66,8 @@ On CDP, where `NODE_ENV` is `production`, every page asks you to sign in first, 
   NODE_ENV=production USE_HTTPS=false PASSWORD=made-up-local-password npm start
   ```
 
-- `USE_AUTH=false` turns signing in off, as CDP documents. Don't set `USE_AUTH=true` on CDP: it brings back the Kit's own password page in front of ours.
+- **The Kit's management pages** (`/manage-prototype`) show Page not found when `NODE_ENV` is `production`. There they only say to run the prototype locally, but the Kit's password page and its clear-data page still worked without our sign-in. Our router can't run before the Kit's, so [app/filters.js](./app/filters.js), which the Kit loads first, closes them with [app/lib/kit-pages.js](./app/lib/kit-pages.js). They still work on your computer.
+- `USE_AUTH=false` turns signing in off, as CDP documents. Don't set `USE_AUTH=true` on CDP: the Kit's own check would send everyone to its password page, which is closed, so nobody could sign in.
 
 The real catalogue will use Microsoft Entra ID for staff sign-in, as Defra's security standard requires. That is for the frontend service, not this prototype.
 

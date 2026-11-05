@@ -297,6 +297,44 @@ describe('signing in to the prototype on CDP', () => {
     })
   })
 
+  describe("the Kit's management pages", () => {
+    for (const path of [
+      '/manage-prototype',
+      '/manage-prototype/password',
+      '/manage-prototype/clear-data',
+      '/manage-prototype/plugins'
+    ]) {
+      test(`${path} shows Page not found, with the Defra layout`, async () => {
+        const page = await app.getPage(path)
+
+        assert.equal(page.status, 404)
+        assert.equal(
+          page.document.title,
+          'Page not found – Livestock Data Catalogue'
+        )
+        assert.doesNotMatch(page.html, /GOV\.UK Prototype Kit/)
+      })
+    }
+
+    test("the Kit's password page can't sign anyone in", async () => {
+      const page = await app.getPage('/manage-prototype/password', {
+        form: { password: PASSWORD, returnURL: '/data-assets' }
+      })
+
+      assert.equal(page.status, 404)
+      assert.equal(page.headers.get('set-cookie'), null)
+    })
+
+    test("the Kit's clear-data page saves nothing", async () => {
+      const page = await app.getPage('/manage-prototype/clear-data', {
+        form: { returnUrl: '/' }
+      })
+
+      assert.equal(page.status, 404)
+      assert.equal(page.headers.get('set-cookie'), null)
+    })
+  })
+
   describe('the signed-out page', () => {
     test('says you have signed out, with a link to sign in again', async () => {
       const page = await app.getPage('/signed-out')
