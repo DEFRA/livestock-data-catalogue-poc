@@ -430,7 +430,7 @@ describe('the sign-in check', () => {
 
     assert.equal(next.mock.callCount(), 0)
     for (const response of responses) {
-      assert.equal(response.statusCode, 503)
+      assert.equal(response.statusCode, 500)
       assert.equal(response.rendered.view, 'problem-with-the-service')
     }
     assert.deepEqual(

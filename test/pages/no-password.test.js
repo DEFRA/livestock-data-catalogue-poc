@@ -24,6 +24,19 @@ describe('the prototype on CDP with no password set', () => {
     mock.restoreAll()
   })
 
+  test('lets nobody in, showing the problem page', async () => {
+    for (const path of ['/', '/sign-in', '/cookies']) {
+      const page = await app.getPage(path)
+
+      assert.equal(page.status, 500, path)
+      assert.equal(
+        page.document.title,
+        'Sorry, there is a problem with the service – Livestock Data Catalogue',
+        path
+      )
+    }
+  })
+
   test("still answers CDP's health check, because the container is alive", async () => {
     const page = await app.getPage('/health')
 

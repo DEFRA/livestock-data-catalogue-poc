@@ -279,7 +279,7 @@ export function createSignIn({
         })
         reportedNoPassword = true
       }
-      res.status(503).render('problem-with-the-service')
+      res.status(500).render('problem-with-the-service')
       return
     }
     res.locals.signedIn = isSignedIn(req)
