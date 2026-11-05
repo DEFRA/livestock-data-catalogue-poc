@@ -171,6 +171,35 @@ describe('the layout of every page', () => {
         assert.equal(page.headers.get('x-powered-by'), null)
       })
 
+      test('sends the security headers, and is never stored by the browser', () => {
+        assert.equal(page.headers.get('x-content-type-options'), 'nosniff')
+        assert.equal(page.headers.get('x-frame-options'), 'DENY')
+        assert.equal(
+          page.headers.get('referrer-policy'),
+          'strict-origin-when-cross-origin'
+        )
+        assert.equal(page.headers.get('cache-control'), 'no-store')
+        assert.equal(
+          page.headers.get('strict-transport-security'),
+          'max-age=31536000'
+        )
+      })
+
+      test("has a Content Security Policy for the prototype's own files and the template's inline script", () => {
+        const scripts = [...page.document.querySelectorAll('script:not([src])')]
+        const nonce = scripts[0]?.getAttribute('nonce')
+
+        assert.match(nonce, /^[A-Za-z0-9+/]{22}==$/)
+        assert.equal(
+          page.headers.get('content-security-policy'),
+          `default-src 'self'; script-src 'self' 'nonce-${nonce}'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'`
+        )
+        for (const script of scripts) {
+          assert.equal(script.getAttribute('nonce'), nonce)
+        }
+        assert.equal(page.document.querySelectorAll('[style], style').length, 0)
+      })
+
       test('has exactly one main heading', () => {
         assert.equal(page.document.querySelectorAll('h1').length, 1)
       })
@@ -193,6 +222,16 @@ describe('the layout of every page', () => {
       )
     })
   }
+
+  test('uses a new Content Security Policy nonce for every page it sends', async () => {
+    const nonces = new Set()
+    for (let count = 0; count < 3; count++) {
+      const page = await app.getPage('/')
+      nonces.add(page.headers.get('content-security-policy'))
+    }
+
+    assert.equal(nonces.size, 3)
+  })
 
   test('stops files the Kit serves itself saying which web framework it runs on, once it has served a page', async () => {
     await app.getPage('/')
