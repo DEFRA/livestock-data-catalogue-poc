@@ -196,8 +196,12 @@ describe('the data asset page', () => {
     const page = await app.getPage('/data-assets/DA11118')
     const main = page.document.querySelector('main')
 
-    assert.equal(main.querySelectorAll('.govuk-summary-card').length, 1)
-    assert.doesNotMatch(main.textContent, /There are no distributions/)
+    assert.deepEqual(
+      [...main.querySelectorAll('.govuk-summary-card__title')].map((title) =>
+        title.textContent.trim()
+      ),
+      ['Movement restrictions daily file']
+    )
   })
 
   test('shows a deprecated data asset with a warning that links to its replacement', async () => {
