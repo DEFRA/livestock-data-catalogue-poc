@@ -53,6 +53,8 @@ The prototype reads these files at start-up instead of a database. Each file hol
 These go beyond V0.11, and stay until the data architect decides:
 
 - A relationship target inside the catalogue is held as its data asset identifier, and anything else as an `https` address (S16). A relationship to another data asset holds its identifier, such as `DA11113`, not its title, such as "Livestock Holding" in S16's example. The data architect wants to test this with real data assets first (LDAT-235, question 9).
+- A Memorandum of Understanding is held as the licence `MOU` (S23). The data architect is asking the data governance team whether an MOU is a licence, or an agreement that Phase 1a would record as an Access and Sharing Arrangement (LDAT-235, question 17).
+- A data service's `serviceType` is free text, such as "REST API", as in V0.11 (S24). The data architect will decide later whether it becomes a code list (LDAT-235, question 10).
 - DA1111C is deliberately not used, because S05 uses it as its example of a deleted identifier, which is never reused.
 
 ## Changing the data
