@@ -1,6 +1,6 @@
 {
   "name": "livestock-data-catalogue-poc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "livestock-data-catalogue-poc. GOV.UK Prototype Kit with CDP Platform running capabilities",
   "author": "Defra DDTS",
   "license": "(OGL-UK-3, MIT) see licenses in /LICENSES",
