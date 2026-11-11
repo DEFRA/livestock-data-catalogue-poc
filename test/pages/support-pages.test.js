@@ -99,7 +99,7 @@ describe('the support and error pages', () => {
 
     assert.match(
       text,
-      /We do not know of any part of this prototype that fails the Web Content Accessibility Guidelines version 2\.2 AA standard, but we cannot yet say it is fully compliant\. We check every page with automated tests\. We have not yet finished checking it by hand or with assistive technologies/
+      /This prototype is partially compliant with the Web Content Accessibility Guidelines version 2\.2 AA standard, because we have not yet finished testing it\. We do not know of any part of it that fails the standard\. We check every page with automated tests\. We have not yet finished checking it by hand or with assistive technologies/
     )
     assert.match(
       text,
