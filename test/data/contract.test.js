@@ -266,6 +266,24 @@ describe('the data contract', () => {
     assertRejected(errors, 'keywordNames[4]" contains a duplicate value')
   })
 
+  test('rejects a keyword with no language code', () => {
+    const errors = errorsAfter((collections) => {
+      delete collections.keywords[0].languageCode
+    })
+
+    assertRejected(errors, '"[0].languageCode" is required')
+  })
+
+  for (const languageCode of ['EN', 'eng', 'en-GB', '']) {
+    test(`rejects the keyword language code "${languageCode}", which is not a 2-letter ISO 639-1 code`, () => {
+      const errors = errorsAfter((collections) => {
+        collections.keywords[0].languageCode = languageCode
+      })
+
+      assertRejected(errors, '"[0].languageCode"')
+    })
+  }
+
   test('rejects the same jurisdiction twice on one data asset', () => {
     const errors = errorsAfter((collections) => {
       dataAssetIn(collections, 'DA11111').jurisdictionCodes.push('GB-ENG')

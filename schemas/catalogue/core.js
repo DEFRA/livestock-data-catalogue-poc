@@ -47,6 +47,11 @@ export const informationAssetSchema = Joi.object({
   ...systemAttributes
 })
 
+// An ISO 639-1 code, such as "cy" for Welsh, so the page can mark a
+// keyword in another language for screen readers (WCAG 2.2 SC 3.1.2)
 export const keywordSchema = Joi.object({
-  name: text.required()
+  name: text.required(),
+  languageCode: Joi.string()
+    .pattern(/^[a-z]{2}$/)
+    .required()
 })

@@ -99,24 +99,23 @@ describe('the support and error pages', () => {
 
     assert.match(
       text,
-      /This prototype is partially compliant with the Web Content Accessibility Guidelines version 2\.2 AA standard, because of the known issue listed below\./
+      /We do not know of any part of this prototype that fails the Web Content Accessibility Guidelines version 2\.2 AA standard\. We cannot say it is fully compliant until we have finished checking it by hand and with assistive technologies\./
     )
     assert.match(
       text,
-      /This statement was prepared on 4 November 2026\. It was last reviewed on 5 November 2026\./
+      /This statement was prepared on 4 November 2026\. It was last reviewed on 11 November 2026\./
     )
   })
 
-  test('the accessibility statement lists the Welsh keywords that are not marked as Welsh', async () => {
+  test('the accessibility statement has no known issues now that Welsh keywords are marked as Welsh', async () => {
     const page = await app.getPage('/accessibility-statement')
     const knownIssues = [...page.document.querySelectorAll('h2')].find(
       (heading) => heading.textContent.trim() === 'Known issues'
     ).nextElementSibling
 
-    assert.match(knownIssues.textContent, /WCAG 2\.2 success criterion 3\.1\.2/)
     assert.equal(
-      knownIssues.querySelector('[lang="cy"]').textContent,
-      'gwartheg'
+      knownIssues.textContent.trim(),
+      'We do not know of any problems at the moment. We will list any we find here.'
     )
   })
 
