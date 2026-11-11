@@ -303,7 +303,7 @@ describe('the data asset page content', () => {
 
       assert.match(
         row(access, 'Access rights').text,
-        /^No distribution is available yet/
+        /^Restricted to Defra and its agencies/
       )
       assert.equal(
         row(access, 'Provenance').text,
@@ -445,16 +445,6 @@ describe('the data asset page content', () => {
         })
       })
     }
-
-    test('has no distributions when the data asset has none', () => {
-      const page = pageFor('DA11118')
-
-      assert.deepEqual(page.distributions, [])
-      assert.match(
-        page.accessRightsDescription,
-        /^No distribution is available yet/
-      )
-    })
   })
 
   describe('related data assets and resources (S16)', () => {

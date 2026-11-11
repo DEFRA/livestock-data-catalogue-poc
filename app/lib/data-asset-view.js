@@ -389,7 +389,6 @@ export function dataAssetPage(catalogue, dataAsset, { today }) {
   return {
     titleName: dataAsset.titleName,
     description: dataAsset.description,
-    accessRightsDescription: dataAsset.accessRightsDescription,
     isDeprecated: dataAsset.publicationStateCode === 'DEPRECATED',
     replacement: replacementFor(catalogue, dataAsset),
     sections: [

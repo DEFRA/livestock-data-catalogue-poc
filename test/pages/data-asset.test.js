@@ -192,19 +192,12 @@ describe('the data asset page', () => {
     )
   })
 
-  test('shows the access rights when a data asset has no distributions', async () => {
+  test('shows the distribution of a data asset still in development', async () => {
     const page = await app.getPage('/data-assets/DA11118')
     const main = page.document.querySelector('main')
 
-    assert.equal(main.querySelectorAll('.govuk-summary-card').length, 0)
-    assert.match(
-      main.textContent,
-      /There are no distributions for this data asset\./
-    )
-    assert.match(
-      main.textContent,
-      /No distribution is available yet\. Ask the Data Owner for access/
-    )
+    assert.equal(main.querySelectorAll('.govuk-summary-card').length, 1)
+    assert.doesNotMatch(main.textContent, /There are no distributions/)
   })
 
   test('shows a deprecated data asset with a warning that links to its replacement', async () => {

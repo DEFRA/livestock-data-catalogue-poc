@@ -421,7 +421,7 @@
     "description": "Restrictions on moving animals on or off a holding, for example during a disease outbreak, with the reason and the dates they apply.",
     "organisationName": "Animal and Plant Health Agency",
     "publicationStateCode": "PUBLISHED",
-    "accessRightsDescription": "No distribution is available yet. Ask the Data Owner for access while the data asset is being developed.",
+    "accessRightsDescription": "Restricted to Defra and its agencies. Ask the Data Owner for access.",
     "provenanceDescription": "Recorded by APHA when it places or lifts a restriction",
     "creatorReference": "APHA",
     "creationDate": "2026-06-01",
@@ -457,6 +457,18 @@
         "personEmailAddressReference": "jo.bloggs@example.com",
         "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2026-06-01"
+      }
+    ],
+    "distributions": [
+      {
+        "name": "Movement restrictions daily file",
+        "description": "A file of the restrictions in force, sent every morning.",
+        "distributionTypeCode": "FILE",
+        "accessMethodCode": "FILE_TRANSFER",
+        "distributionFormatCode": "CSV",
+        "authenticationMethodCode": "MUTUAL_TLS",
+        "licenceCode": "RESTRICTED",
+        "accessReference": "https://files.example.org/restrictions/"
       }
     ],
     "systemCreatedDateTime": "2026-09-13T09:00:00Z",

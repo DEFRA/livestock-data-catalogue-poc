@@ -51,26 +51,21 @@
       {% endfor %}
 
       <h2 class="govuk-heading-m">Ways to get this data</h2>
-      {% if distributions | length %}
-        {% for distribution in distributions %}
-          {% set distributionRows = [] %}
-          {% for row in distribution.rows %}
-            {% set distributionRows = distributionRows.concat([{
-              key: { text: row.key },
-              value: { html: appSummaryValue(row) }
-            }]) %}
-          {% endfor %}
-          {{ govukSummaryList({
-            card: {
-              title: { text: distribution.name, headingLevel: 3 }
-            },
-            rows: distributionRows
-          }) }}
+      {% for distribution in distributions %}
+        {% set distributionRows = [] %}
+        {% for row in distribution.rows %}
+          {% set distributionRows = distributionRows.concat([{
+            key: { text: row.key },
+            value: { html: appSummaryValue(row) }
+          }]) %}
         {% endfor %}
-      {% else %}
-        <p class="govuk-body">There are no distributions for this data asset.</p>
-        <p class="govuk-body">{{ accessRightsDescription }}</p>
-      {% endif %}
+        {{ govukSummaryList({
+          card: {
+            title: { text: distribution.name, headingLevel: 3 }
+          },
+          rows: distributionRows
+        }) }}
+      {% endfor %}
 
       {% if relatedGroups | length %}
         <h2 class="govuk-heading-m">Related data assets and resources</h2>

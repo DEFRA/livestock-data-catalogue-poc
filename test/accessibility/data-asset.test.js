@@ -6,7 +6,7 @@ import { startApp } from '../helpers/app.js'
 
 const PAGE_STATES = [
   ['a data asset with a Welsh keyword', '/data-assets/DA11111'],
-  ['a data asset with no distributions', '/data-assets/DA11118'],
+  ['a data asset still in development', '/data-assets/DA11118'],
   ['a deprecated data asset', '/data-assets/DA11114'],
   ['a data asset with a hard copy distribution', '/data-assets/DA1111F']
 ]
