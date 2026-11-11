@@ -693,5 +693,13 @@ describe('the rules that span records', () => {
 
       assert.deepEqual(breaches, [])
     })
+
+    test('lets a draft be retired without ever being published', () => {
+      const breaches = breachesAfter((collections) => {
+        dataAssetIn(collections, 'DA11112').publicationStateCode = 'RETIRED'
+      })
+
+      assert.deepEqual(breaches, [])
+    })
   })
 })

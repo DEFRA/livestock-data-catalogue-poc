@@ -80,6 +80,19 @@ function namesFor(catalogue, listName, codes) {
   return (codes ?? []).map((code) => nameFor(catalogue, listName, code))
 }
 
+// Pages are in English, so only a keyword in another language needs a
+// lang attribute (WCAG 2.2 success criterion 3.1.2)
+const PAGE_LANGUAGE_CODE = 'en'
+
+function keywordItems(catalogue, keywordNames) {
+  return (keywordNames ?? []).map((name) => {
+    const languageCode = catalogue.keywordsByName.get(name)?.languageCode
+    return languageCode && languageCode !== PAGE_LANGUAGE_CODE
+      ? { text: name, lang: languageCode }
+      : { text: name }
+  })
+}
+
 function aboutSection(catalogue, dataAsset) {
   return {
     heading: 'About this data asset',
@@ -93,7 +106,7 @@ function aboutSection(catalogue, dataAsset) {
         'Categories',
         namesFor(catalogue, 'categories', dataAsset.categoryCodes)
       ),
-      listRow('Keywords', dataAsset.keywordNames),
+      listRow('Keywords', keywordItems(catalogue, dataAsset.keywordNames)),
       textRow('Identifier', dataAsset.identifier),
       textRow('Version', dataAsset.versionNumber)
     )
@@ -376,7 +389,6 @@ export function dataAssetPage(catalogue, dataAsset, { today }) {
   return {
     titleName: dataAsset.titleName,
     description: dataAsset.description,
-    accessRightsDescription: dataAsset.accessRightsDescription,
     isDeprecated: dataAsset.publicationStateCode === 'DEPRECATED',
     replacement: replacementFor(catalogue, dataAsset),
     sections: [

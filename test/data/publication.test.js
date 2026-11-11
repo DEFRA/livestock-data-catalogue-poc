@@ -105,13 +105,15 @@ describe('the publication checks (S26)', () => {
     ])
   })
 
-  test('allows no distribution when the access rights say none is available', () => {
+  test('needs a distribution even when the access rights say none is available', () => {
     const dataAsset = animalMovement()
     dataAsset.distributions = []
     dataAsset.accessRightsDescription =
       'No distribution is available. Ask the Data Owner for access.'
 
-    assert.deepEqual(outstanding(dataAsset), [])
+    assert.deepEqual(outstanding(dataAsset), [
+      'At least one Distribution is required'
+    ])
   })
 
   test('needs a format and a licence for each distribution', () => {

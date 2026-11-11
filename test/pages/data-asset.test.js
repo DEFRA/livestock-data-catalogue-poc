@@ -170,18 +170,37 @@ describe('the data asset page', () => {
     })
   })
 
-  test('shows the access rights when a data asset has no distributions', async () => {
+  test('marks a Welsh keyword as Welsh, and leaves English keywords unmarked', async () => {
+    const page = await app.getPage('/data-assets/DA11111')
+    const keywords = [
+      ...page.document.querySelectorAll('main .govuk-summary-list__row')
+    ]
+      .find((row) => row.querySelector('dt').textContent.trim() === 'Keywords')
+      .querySelectorAll('li')
+
+    assert.deepEqual(
+      [...keywords].map((keyword) => [
+        keyword.textContent.trim(),
+        keyword.getAttribute('lang')
+      ]),
+      [
+        ['Cattle', null],
+        ['gwartheg', 'cy'],
+        ['Holding', null],
+        ['Movement', null]
+      ]
+    )
+  })
+
+  test('shows the distribution of a data asset still in development', async () => {
     const page = await app.getPage('/data-assets/DA11118')
     const main = page.document.querySelector('main')
 
-    assert.equal(main.querySelectorAll('.govuk-summary-card').length, 0)
-    assert.match(
-      main.textContent,
-      /There are no distributions for this data asset\./
-    )
-    assert.match(
-      main.textContent,
-      /No distribution is available yet\. Ask the Data Owner for access/
+    assert.deepEqual(
+      [...main.querySelectorAll('.govuk-summary-card__title')].map((title) =>
+        title.textContent.trim()
+      ),
+      ['Movement restrictions daily file']
     )
   })
 

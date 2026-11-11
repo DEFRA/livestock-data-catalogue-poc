@@ -51,10 +51,6 @@ const DATE_PAIRS = [
   ]
 ]
 
-// S26 lets a data asset with no distribution be published when its access
-// rights say none is available. The prototype looks for this phrase.
-const NO_DISTRIBUTION_STATEMENT = 'no distribution is available'
-
 export function dateConflicts(dataAsset) {
   return DATE_PAIRS.filter(
     ([later, , earlier]) =>
@@ -103,14 +99,6 @@ function governanceChecks(dataAsset, date) {
   return outstanding
 }
 
-function saysNoDistributionIsAvailable(dataAsset) {
-  return (
-    dataAsset.accessRightsDescription
-      ?.toLowerCase()
-      .includes(NO_DISTRIBUTION_STATEMENT) ?? false
-  )
-}
-
 function invalidReferences(distribution) {
   return DISTRIBUTION_REFERENCES.filter(
     ([field]) =>
@@ -122,9 +110,7 @@ function invalidReferences(distribution) {
 function distributionChecks(dataAsset) {
   const distributions = dataAsset.distributions ?? []
   if (distributions.length === 0) {
-    return saysNoDistributionIsAvailable(dataAsset)
-      ? []
-      : ['At least one Distribution is required']
+    return ['At least one Distribution is required']
   }
   return distributions.flatMap((distribution) => {
     const outstanding = missingAttributes(

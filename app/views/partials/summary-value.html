@@ -1,13 +1,18 @@
 {#
   The value of a summary list row, built from autoescaped values for the
   component's html option. A row has text, a list of items, a link or
-  people.
+  people. An item is text, or an object with text and, for text in
+  another language, its lang code.
 #}
 {% macro appSummaryValue(row) -%}
   {%- if row.items -%}
     <ul class="govuk-list">
       {%- for item in row.items %}
+        {%- if item.text is defined %}
+        <li{% if item.lang %} lang="{{ item.lang }}"{% endif %}>{{ item.text }}</li>
+        {%- else %}
         <li>{{ item }}</li>
+        {%- endif %}
       {%- endfor %}
     </ul>
   {%- elif row.link -%}

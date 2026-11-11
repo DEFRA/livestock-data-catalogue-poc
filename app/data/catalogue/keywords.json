@@ -1,59 +1,78 @@
 [
   {
-    "name": "Address"
+    "name": "Address",
+    "languageCode": "en"
   },
   {
-    "name": "Births"
+    "name": "Births",
+    "languageCode": "en"
   },
   {
-    "name": "Bovine TB"
+    "name": "Bovine TB",
+    "languageCode": "en"
   },
   {
-    "name": "Breed"
+    "name": "Breed",
+    "languageCode": "en"
   },
   {
-    "name": "Cattle"
+    "name": "Cattle",
+    "languageCode": "en"
   },
   {
-    "name": "CPH"
+    "name": "CPH",
+    "languageCode": "en"
   },
   {
-    "name": "Deaths"
+    "name": "Deaths",
+    "languageCode": "en"
   },
   {
-    "name": "Fallen stock"
+    "name": "Fallen stock",
+    "languageCode": "en"
   },
   {
-    "name": "gwartheg"
+    "name": "gwartheg",
+    "languageCode": "cy"
   },
   {
-    "name": "Holding"
+    "name": "Holding",
+    "languageCode": "en"
   },
   {
-    "name": "Keeper"
+    "name": "Keeper",
+    "languageCode": "en"
   },
   {
-    "name": "Movement"
+    "name": "Movement",
+    "languageCode": "en"
   },
   {
-    "name": "Reference data"
+    "name": "Reference data",
+    "languageCode": "en"
   },
   {
-    "name": "Registration"
+    "name": "Registration",
+    "languageCode": "en"
   },
   {
-    "name": "Restriction"
+    "name": "Restriction",
+    "languageCode": "en"
   },
   {
-    "name": "Species"
+    "name": "Species",
+    "languageCode": "en"
   },
   {
-    "name": "Statistics"
+    "name": "Statistics",
+    "languageCode": "en"
   },
   {
-    "name": "Test results"
+    "name": "Test results",
+    "languageCode": "en"
   },
   {
-    "name": "UPRN"
+    "name": "UPRN",
+    "languageCode": "en"
   }
 ]

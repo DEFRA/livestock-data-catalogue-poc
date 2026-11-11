@@ -50,13 +50,26 @@ describe('the data asset page content', () => {
 
     test('shows the keywords, identifier and version', () => {
       assert.deepEqual(row(about, 'Keywords').items, [
-        'Cattle',
-        'gwartheg',
-        'Holding',
-        'Movement'
+        { text: 'Cattle' },
+        { text: 'gwartheg', lang: 'cy' },
+        { text: 'Holding' },
+        { text: 'Movement' }
       ])
       assert.equal(row(about, 'Identifier').text, 'DA11111')
       assert.equal(row(about, 'Version').text, '2.3')
+    })
+
+    test('marks a keyword in another language with its language code (WCAG 2.2 success criterion 3.1.2)', () => {
+      const page = pageAfter('DA11111', (dataAsset, collections) => {
+        collections.keywords.find(
+          (keyword) => keyword.name === 'Holding'
+        ).languageCode = 'ga'
+      })
+
+      assert.deepEqual(
+        row(section(page, 'About this data asset').rows, 'Keywords').items[2],
+        { text: 'Holding', lang: 'ga' }
+      )
     })
 
     test('leaves out rows without a value', () => {
@@ -290,7 +303,7 @@ describe('the data asset page content', () => {
 
       assert.match(
         row(access, 'Access rights').text,
-        /^No distribution is available yet/
+        /^Restricted to Defra and its agencies/
       )
       assert.equal(
         row(access, 'Provenance').text,
@@ -432,16 +445,6 @@ describe('the data asset page content', () => {
         })
       })
     }
-
-    test('has no distributions when the data asset has none', () => {
-      const page = pageFor('DA11118')
-
-      assert.deepEqual(page.distributions, [])
-      assert.match(
-        page.accessRightsDescription,
-        /^No distribution is available yet/
-      )
-    })
   })
 
   describe('related data assets and resources (S16)', () => {

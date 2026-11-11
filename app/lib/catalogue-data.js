@@ -114,6 +114,7 @@ export function buildCatalogue(collections) {
       collections.informationAssets,
       (informationAsset) => informationAsset.name
     ),
+    keywordsByName: byKey(collections.keywords, (keyword) => keyword.name),
     referenceLists: referenceLists(collections)
   })
 }
