@@ -46,7 +46,7 @@ The prototype reads these files at start-up instead of a database. Each file hol
 - **System attributes:** every record in the 6 core collections has `systemCreatedDateTime`, `systemCreatedByUserId`, `systemUpdatedDateTime` and `systemUpdatedByUserId` (LADU-DATA-001). The user IDs are made-up UUIDs.
 - **Visibility:** only Published and Deprecated data assets are shown to catalogue users (S11). The files also hold a Draft (DA11112) and a Retired (DA11116) data asset, to test that they stay hidden.
 - **Publication checks:** every Published and Deprecated data asset passes the S26 checks, including at least 1 distribution. Draft and Retired data assets are not checked, because a draft can be retired without ever being published (LDAT-235, answer 22).
-- **Keyword language:** each keyword has a `languageCode`, a 2-letter ISO 639-1 code such as `en` for English or `cy` for Welsh (LDAT-235, answer 18). The data asset page marks a keyword in any language other than English, so screen readers pronounce it correctly (WCAG 2.2 success criterion 3.1.2).
+- **Keyword language:** every keyword has a `languageCode`, an ISO 639-1 code: `en` (English), `cy` (Welsh), `gd` (Scottish Gaelic) or `ga` (Irish) (LDAT-235, answer 18). English is the default: whatever creates a keyword sets `en` when no language is given, so a stored keyword always has a code. To allow another language, add its code to `KEYWORD_LANGUAGE_CODES` in [`schemas/catalogue/core.js`](../../../schemas/catalogue/core.js). The data asset page marks a keyword in any language other than English, so screen readers pronounce it correctly (WCAG 2.2 success criterion 3.1.2).
 
 ## Provisional choices
 

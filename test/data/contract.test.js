@@ -274,8 +274,8 @@ describe('the data contract', () => {
     assertRejected(errors, '"[0].languageCode" is required')
   })
 
-  for (const languageCode of ['EN', 'eng', 'en-GB', '']) {
-    test(`rejects the keyword language code "${languageCode}", which is not a 2-letter ISO 639-1 code`, () => {
+  for (const languageCode of ['EN', 'eng', 'en-GB', '', 'xx', 'fr']) {
+    test(`rejects the keyword language code "${languageCode}", which is not on the list of allowed languages`, () => {
       const errors = errorsAfter((collections) => {
         collections.keywords[0].languageCode = languageCode
       })

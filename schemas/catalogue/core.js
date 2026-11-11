@@ -47,11 +47,15 @@ export const informationAssetSchema = Joi.object({
   ...systemAttributes
 })
 
-// An ISO 639-1 code, such as "cy" for Welsh, so the page can mark a
-// keyword in another language for screen readers (WCAG 2.2 SC 3.1.2)
+// ISO 639-1 codes for the languages of the UK and Ireland: English, Welsh,
+// Scottish Gaelic and Irish. An allow-list, so a page never gets a lang
+// attribute that screen readers can't use (WCAG 2.2 SC 3.1.2). Add a code
+// here when a keyword needs another language.
+export const KEYWORD_LANGUAGE_CODES = ['en', 'cy', 'gd', 'ga']
+
 export const keywordSchema = Joi.object({
   name: text.required(),
   languageCode: Joi.string()
-    .pattern(/^[a-z]{2}$/)
+    .valid(...KEYWORD_LANGUAGE_CODES)
     .required()
 })
