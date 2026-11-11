@@ -6,7 +6,11 @@
 
 # Bundled inside GOV.UK Prototype Kit 14.0.2, so only a Kit release fixes them
 
-# body-parser 2.3.0, fixed in 2.4.0 (GHSA-27r3-jxmh-p828)
+# body-parser 2.3.0, fixed in 2.4.0 (GHSA-27r3-jxmh-p828). The Kit parses
+# request bodies before our sign-in runs, so one crafted compressed request
+# can stop the process without signing in. CDP then restarts it. Nothing in
+# app/ runs early enough to block it, and npm overrides can't reach a
+# bundled package, so only a Kit release fixes it.
 CVE-2026-111181 exp:2026-12-04
 # follow-redirects 1.16.0, fixed in 1.16.1 (GHSA-8r9p-f939-6h3c)
 CVE-2026-111755 exp:2026-12-04
