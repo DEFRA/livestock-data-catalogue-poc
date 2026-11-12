@@ -115,7 +115,7 @@ describe('the layout of every page', () => {
         )
       })
 
-      test('has the Defra footer: support links and the Open Government Licence', () => {
+      test('has the Defra footer: support links, prototype settings and the Open Government Licence', () => {
         const footer = page.document.querySelector('footer .app-footer')
         const links = [...footer.querySelectorAll('a')].map((link) => [
           link.textContent.trim(),
@@ -127,6 +127,7 @@ describe('the layout of every page', () => {
           ['Accessibility statement', '/accessibility-statement'],
           ['Cookies', '/cookies'],
           ['Privacy', '/privacy'],
+          ['Prototype settings', '/prototype-settings'],
           [
             'Open Government Licence v3.0',
             'https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/'

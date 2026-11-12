@@ -1,6 +1,6 @@
 import { browseLists } from '../browse.js'
-import { catalogue } from '../catalogue-data.js'
+import { catalogueFor } from '../working-copy.js'
 
 export function showHome(req, res) {
-  res.render('index', browseLists(catalogue))
+  res.render('index', browseLists(catalogueFor(req)))
 }

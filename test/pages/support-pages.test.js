@@ -49,6 +49,21 @@ describe('the support and error pages', () => {
     ])
   })
 
+  test("the cookies page lists the session cookie that keeps a participant's changes", async () => {
+    const page = await app.getPage('/cookies')
+    const cells = [
+      ...page.document.querySelectorAll(
+        'tbody tr:nth-child(2) th, tbody tr:nth-child(2) td'
+      )
+    ].map((cell) => cell.textContent.trim())
+
+    assert.deepEqual(cells, [
+      'prototype-session',
+      'Remembers who you are in a research session, and the changes you make to data assets',
+      '4 hours after your last change'
+    ])
+  })
+
   test('the cookies table uses smaller text on small screens, so it fits 320 pixels', async () => {
     const page = await app.getPage('/cookies')
 
@@ -68,6 +83,18 @@ describe('the support and error pages', () => {
     assert.match(text, /Your search words are part of the web address/)
     assert.match(text, /may keep logs of the web addresses/)
     assert.doesNotMatch(text, /does not collect personal data/)
+  })
+
+  test('the privacy page says where changes to data assets are kept and when they are deleted', async () => {
+    const page = await app.getPage('/privacy')
+    const text = page.document
+      .querySelector('main')
+      .textContent.replace(/\s+/g, ' ')
+
+    assert.match(
+      text,
+      /your changes are kept in the prototype's memory, not saved to its data, and only your browser can see them\. They are deleted 4 hours after your last change, when you reset the prototype in Prototype settings, or when the prototype restarts\./
+    )
   })
 
   test("the privacy page says how wrong passwords are limited, and links to Defra's personal information charter", async () => {
@@ -103,7 +130,16 @@ describe('the support and error pages', () => {
     )
     assert.match(
       text,
-      /This statement was prepared on 4 November 2026\. It was last reviewed on 11 November 2026\./
+      /This statement was prepared on 4 November 2026\. It was last reviewed on 12 November 2026\./
+    )
+  })
+
+  test('the accessibility statement says how long changes are kept, as there is no way to ask for more time', async () => {
+    const page = await app.getPage('/accessibility-statement')
+
+    assert.match(
+      page.document.querySelector('main').textContent,
+      /Changes you make to data assets are kept for 4 hours after your last change\. This is a research prototype, so there is no way to ask for more time\./
     )
   })
 

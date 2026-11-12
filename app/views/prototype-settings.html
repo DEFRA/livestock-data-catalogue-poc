@@ -1,0 +1,41 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "partials/form-fields.html" import appField %}
+
+{% set mainClasses = "govuk-main-wrapper--auto-spacing" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorList | length %}
+        {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
+      {% endif %}
+      {% if notice %}
+        {{ govukNotificationBanner({ type: "success", text: notice }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l">Prototype settings</h1>
+      {{ govukInsetText({
+        text: "This page is not part of the service. Researchers use it to set up a session."
+      }) }}
+
+      <form method="post" action="/prototype-settings" novalidate>
+        <input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+        {{ appField(field, values, errorTexts, false) }}
+        {{ govukButton({ text: "Save settings" }) }}
+      </form>
+
+      <h2 class="govuk-heading-m">Reset the prototype</h2>
+      <p class="govuk-body">This removes every change you have made in this session. Who you are stays the same.</p>
+      <p class="govuk-body">Changes are only kept in this browser, and are deleted 4 hours after your last change.</p>
+      <form method="post" action="/prototype-settings/reset" novalidate>
+        <input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+        {{ govukButton({ text: "Reset the prototype", classes: "govuk-button--warning" }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

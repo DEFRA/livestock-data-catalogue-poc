@@ -1,6 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
@@ -19,8 +20,18 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {% if isPreview %}
+        {% set previewHtml %}
+          <p class="govuk-notification-banner__heading">This is a preview. Catalogue users cannot see draft or retired data assets.</p>
+          <p class="govuk-body"><a class="govuk-notification-banner__link" href="{{ overviewHref }}">Return to {{ titleName }}</a></p>
+        {% endset %}
+        {{ govukNotificationBanner({ html: previewHtml }) }}
+      {% endif %}
       <span class="govuk-caption-l">Data asset</span>
       <h1 class="govuk-heading-l">{{ titleName }}</h1>
+      {% if manageHref %}
+        <p class="govuk-body"><a class="govuk-link" href="{{ manageHref }}">Manage this data asset</a></p>
+      {% endif %}
 
       {% if isDeprecated %}
         <p class="govuk-body">

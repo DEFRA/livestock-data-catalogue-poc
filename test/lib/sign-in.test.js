@@ -150,6 +150,30 @@ describe('the address to return to after signing in', () => {
     assert.equal(safeReturnUrl('/data-assets/DA11111'), '/data-assets/DA11111')
   })
 
+  test("keeps Your data assets, a data asset's overview and the prototype settings", () => {
+    for (const address of [
+      '/manage/data-assets',
+      '/manage/data-assets/DA11111',
+      '/prototype-settings'
+    ]) {
+      assert.equal(safeReturnUrl(address), address)
+    }
+  })
+
+  test('goes home instead of to a page deeper in the manage pages, or one that is not an address the prototype has', () => {
+    for (const address of [
+      '/manage',
+      '/manage/data-assets/DA11111/about',
+      '/manage/data-assets/DA11111/publish',
+      '/manage/data-assets/create',
+      '/manage/data-assets/not-an-identifier',
+      '/manage/manage/data-assets',
+      '/prototype-settings/reset'
+    ]) {
+      assert.equal(safeReturnUrl(address), '/', address)
+    }
+  })
+
   for (const address of [
     'https://example.com/',
     '//example.com/',

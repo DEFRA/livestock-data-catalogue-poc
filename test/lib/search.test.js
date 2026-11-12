@@ -3,7 +3,11 @@ import { describe, test } from 'node:test'
 
 import { browseLists } from '../../app/lib/browse.js'
 import { buildCatalogue, catalogue } from '../../app/lib/catalogue-data.js'
-import { countOf, formatDate } from '../../app/lib/formatting.js'
+import {
+  countOf,
+  formatDate,
+  formatDateTime
+} from '../../app/lib/formatting.js'
 import {
   FILTERS,
   RESULTS_PER_PAGE,
@@ -471,6 +475,22 @@ describe('browsing on the home page', () => {
 })
 
 describe('formatting', () => {
+  test('gives a date and time in UK time, in the GOV.UK style', () => {
+    assert.equal(
+      formatDateTime('2026-11-12T10:38:00Z'),
+      '12 November 2026, 10:38am'
+    )
+    assert.equal(formatDateTime('2026-07-01T13:05:00Z'), '1 July 2026, 2:05pm')
+    assert.equal(
+      formatDateTime('2026-11-12T12:00:00Z'),
+      '12 November 2026, midday'
+    )
+    assert.equal(
+      formatDateTime('2026-11-12T00:00:00Z'),
+      '12 November 2026, midnight'
+    )
+  })
+
   test('shows dates the GOV.UK way', () => {
     assert.equal(formatDate('2026-05-20'), '20 May 2026')
     assert.equal(formatDate('2026-03-29'), '29 March 2026')

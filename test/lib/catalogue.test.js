@@ -7,7 +7,10 @@ import {
   personKey
 } from '../../app/lib/catalogue-data.js'
 import { today } from '../../app/lib/clock.js'
-import { isDataAssetIdentifier } from '../../app/lib/identifiers.js'
+import {
+  isDataAssetIdentifier,
+  nextDataAssetIdentifier
+} from '../../app/lib/identifiers.js'
 import {
   nameFor,
   referenceValue,
@@ -195,6 +198,28 @@ describe('data asset identifiers (S05)', () => {
     ]) {
       assert.equal(isDataAssetIdentifier(identifier), false, String(identifier))
     }
+  })
+
+  test('issues the identifier after the highest one, counting 1 to 9 then A to Z without I or L', () => {
+    assert.equal(nextDataAssetIdentifier(['DA11111']), 'DA11112')
+    assert.equal(nextDataAssetIdentifier(['DA11119']), 'DA1111A')
+    assert.equal(nextDataAssetIdentifier(['DA1111H']), 'DA1111J')
+    assert.equal(nextDataAssetIdentifier(['DA1111K']), 'DA1111M')
+    assert.equal(nextDataAssetIdentifier(['DA1111Z']), 'DA11121')
+  })
+
+  test('never reuses an identifier, even when lower ones are free', () => {
+    assert.equal(
+      nextDataAssetIdentifier(['DA11111', 'DA1111C', 'DA11115']),
+      'DA1111D'
+    )
+  })
+
+  test('starts at DA11111, ignores anything that is not an identifier, and stops after DAZZZZZ', () => {
+    assert.equal(nextDataAssetIdentifier([]), 'DA11111')
+    assert.equal(nextDataAssetIdentifier(['DB99999', 'DA1111I']), 'DA11111')
+    assert.equal(nextDataAssetIdentifier(['DAZZZZY']), 'DAZZZZZ')
+    assert.equal(nextDataAssetIdentifier(['DAZZZZZ']), undefined)
   })
 })
 

@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-import { DATA_ASSET_IDENTIFIER_PATTERN } from '../../app/lib/identifiers.js'
+import { DATA_ASSET_IDENTIFIER_PATTERN } from '../../lib/identifiers.js'
 import {
   anyAddress,
   code,

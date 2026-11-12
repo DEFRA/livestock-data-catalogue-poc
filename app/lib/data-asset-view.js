@@ -83,6 +83,12 @@ function lastReviewed(catalogue, dataAsset) {
   return reviewer ? `${date} by ${reviewer}` : date
 }
 
+// A draft can be previewed before every code is set, so a missing code
+// shows nothing rather than failing
+function optionalName(catalogue, listName, code) {
+  return code === undefined ? undefined : nameFor(catalogue, listName, code)
+}
+
 function namesFor(catalogue, listName, codes) {
   return (codes ?? []).map((code) => nameFor(catalogue, listName, code))
 }
@@ -106,9 +112,12 @@ function aboutSection(catalogue, dataAsset) {
     rows: rows(
       textRow(
         'Data asset type',
-        nameFor(catalogue, 'dataAssetTypes', dataAsset.dataAssetTypeCode)
+        optionalName(catalogue, 'dataAssetTypes', dataAsset.dataAssetTypeCode)
       ),
-      textRow('Domain', nameFor(catalogue, 'domains', dataAsset.domainCode)),
+      textRow(
+        'Domain',
+        optionalName(catalogue, 'domains', dataAsset.domainCode)
+      ),
       listRow(
         'Categories',
         namesFor(catalogue, 'categories', dataAsset.categoryCodes)
@@ -143,7 +152,11 @@ function coverageSection(catalogue, dataAsset) {
       ),
       textRow(
         'Update frequency',
-        nameFor(catalogue, 'updateFrequencies', dataAsset.updateFrequencyCode)
+        optionalName(
+          catalogue,
+          'updateFrequencies',
+          dataAsset.updateFrequencyCode
+        )
       ),
       dateRow('Created', dataAsset.creationDate),
       dateRow('Accepted', dataAsset.acceptanceDate),
@@ -274,7 +287,7 @@ function accessSection(catalogue, dataAsset) {
       ...informationAssetRows(catalogue, dataAsset),
       textRow(
         'Lifecycle state',
-        nameFor(
+        optionalName(
           catalogue,
           'dataAssetLifecycleStates',
           dataAsset.lifecycleStateCode
@@ -285,11 +298,17 @@ function accessSection(catalogue, dataAsset) {
 }
 
 function formatName(catalogue, code) {
+  if (code === undefined) {
+    return undefined
+  }
   const format = referenceValue(catalogue, 'distributionFormats', code)
   return format.mediaType ? `${format.name} (${format.mediaType})` : format.name
 }
 
 function licenceRow(catalogue, code) {
+  if (code === undefined) {
+    return undefined
+  }
   const licence = referenceValue(catalogue, 'licences', code)
   const text = licence.versionNumber
     ? `${licence.name} ${licence.versionNumber}`
@@ -306,7 +325,7 @@ function distributionCard(catalogue, distribution) {
       textRow('Description', distribution.description),
       textRow(
         'Type',
-        nameFor(
+        optionalName(
           catalogue,
           'distributionTypes',
           distribution.distributionTypeCode
@@ -314,7 +333,7 @@ function distributionCard(catalogue, distribution) {
       ),
       textRow(
         'Access method',
-        nameFor(catalogue, 'accessMethods', distribution.accessMethodCode)
+        optionalName(catalogue, 'accessMethods', distribution.accessMethodCode)
       ),
       textRow(
         'Format',
@@ -322,7 +341,7 @@ function distributionCard(catalogue, distribution) {
       ),
       textRow(
         'Authentication',
-        nameFor(
+        optionalName(
           catalogue,
           'authenticationMethods',
           distribution.authenticationMethodCode

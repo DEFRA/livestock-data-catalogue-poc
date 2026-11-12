@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-import { findRuleBreaches } from '../../schemas/catalogue/rules.js'
+import { findRuleBreaches } from '../../app/schemas/catalogue/rules.js'
 import { TODAY, catalogueCopy, dataAssetIn } from '../helpers/catalogue.js'
 
 function breachesAfter(change, today = TODAY) {

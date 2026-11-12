@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-import { findSchemaErrors } from '../../schemas/catalogue/index.js'
+import { findSchemaErrors } from '../../app/schemas/catalogue/index.js'
 import { catalogueCopy, dataAssetIn } from '../helpers/catalogue.js'
 
 function errorsAfter(change) {

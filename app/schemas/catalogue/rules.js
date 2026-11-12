@@ -2,9 +2,9 @@ import {
   CODE_LISTS,
   REFERENCE_COLLECTIONS,
   personKey
-} from '../../app/lib/catalogue-data.js'
-import { isDataAssetIdentifier } from '../../app/lib/identifiers.js'
-import { isVisible } from '../../app/lib/visibility.js'
+} from '../../lib/catalogue-data.js'
+import { isDataAssetIdentifier } from '../../lib/identifiers.js'
+import { isVisible } from '../../lib/visibility.js'
 import { dateConflicts, outstandingForPublication } from './publication.js'
 
 const LATEST_DATE = '9999-12-31'

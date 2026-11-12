@@ -1,4 +1,3 @@
-import { catalogue } from '../catalogue-data.js'
 import { countOf } from '../formatting.js'
 import {
   filterOptions,
@@ -7,6 +6,7 @@ import {
   searchHref
 } from '../search.js'
 import { dataAssetSummary } from '../summaries.js'
+import { catalogueFor } from '../working-copy.js'
 
 const PAGE_NAME = 'Search data assets'
 
@@ -42,7 +42,7 @@ function pagination(found, search) {
   }
 }
 
-function resultsFor(found, search) {
+function resultsFor(catalogue, found, search) {
   return {
     pageName:
       found.totalPages > 1
@@ -63,6 +63,7 @@ function isPageToCorrect(query, found) {
 }
 
 export function searchDataAssets(req, res) {
+  const catalogue = catalogueFor(req)
   const filters = filterOptions(catalogue)
   const search = readSearchQuery(req.query, filters)
   const found = search.error ? undefined : findDataAssets(catalogue, search)
@@ -89,6 +90,6 @@ export function searchDataAssets(req, res) {
     clearFiltersHref: hasSelectedFilters
       ? searchHref({ terms: search.terms })
       : undefined,
-    ...(found === undefined ? {} : resultsFor(found, search))
+    ...(found === undefined ? {} : resultsFor(catalogue, found, search))
   })
 }

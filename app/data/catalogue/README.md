@@ -2,7 +2,7 @@
 
 **Every value in these files is made up**, except organisation names, their websites and the licence addresses, which are real and public. People, email addresses, data assets, distributions and their web addresses are made up. Made-up addresses use only domains reserved for examples: `example.com` for email addresses and `example.org` for web addresses, so they can never reach anyone.
 
-The prototype reads these files at start-up instead of a database. Each file holds one future MongoDB collection, shaped like the planned documents, so the backend can reuse it as seed data and test fixtures.
+The prototype reads these files at start-up instead of a database. Each file holds one future MongoDB collection, shaped like the planned documents, so the backend can reuse it as seed data and test fixtures. The prototype never writes them: changes made on the manage pages are kept in each browser's session, over this data (see [Personas and changes](../../../README.md#personas-and-changes)).
 
 ## Sources
 
@@ -49,7 +49,7 @@ The prototype reads these files at start-up instead of a database. Each file hol
 - **System attributes:** every record in the 6 core collections has `systemCreatedDateTime`, `systemCreatedByUserId`, `systemUpdatedDateTime` and `systemUpdatedByUserId` (LADU-DATA-001). The user IDs are made-up UUIDs.
 - **Visibility:** only Published and Deprecated data assets are shown to catalogue users (S11). The files also hold a Draft (DA11112) and a Retired (DA11116) data asset, to test that they stay hidden.
 - **Publication checks:** every Published and Deprecated data asset passes the S26 checks, including at least 1 distribution. Draft and Retired data assets are not checked, because a draft can be retired without ever being published (LDAT-235, answer 22).
-- **Keyword language:** every keyword has a `languageCode`, an ISO 639-1 code: `en` (English), `cy` (Welsh), `gd` (Scottish Gaelic) or `ga` (Irish) (LDAT-235, answer 18). English is the default: whatever creates a keyword sets `en` when no language is given, so a stored keyword always has a code. To allow another language, add its code to `KEYWORD_LANGUAGE_CODES` in [`schemas/catalogue/core.js`](../../../schemas/catalogue/core.js). The data asset page marks a keyword in any language other than English, so screen readers pronounce it correctly (WCAG 2.2 success criterion 3.1.2).
+- **Keyword language:** every keyword has a `languageCode`, an ISO 639-1 code: `en` (English), `cy` (Welsh), `gd` (Scottish Gaelic) or `ga` (Irish) (LDAT-235, answer 18). English is the default: whatever creates a keyword sets `en` when no language is given, so a stored keyword always has a code. To allow another language, add its code to `KEYWORD_LANGUAGE_CODES` in [`app/schemas/catalogue/core.js`](../../schemas/catalogue/core.js). The data asset page marks a keyword in any language other than English, so screen readers pronounce it correctly (WCAG 2.2 success criterion 3.1.2).
 
 ## Provisional choices
 
@@ -64,5 +64,5 @@ These go beyond V0.11, and stay until the data architect decides:
 ## Changing the data
 
 1. Edit the JSON. Use only codes and names from the stories, and only made-up people, with `example.com` email addresses and `example.org` web addresses.
-2. Run `npm test`. The tests check every record against the data contract in [`schemas/catalogue`](../../../schemas/catalogue): each collection's schema, the rules that span records (unique keys, foreign keys, the organisation hierarchy, coherent dates and governance), and the publication checks in S26 for every Published and Deprecated data asset. They also check that every made-up address uses a domain reserved for examples.
+2. Run `npm test`. The tests check every record against the data contract in [`app/schemas/catalogue`](../../schemas/catalogue): each collection's schema, the rules that span records (unique keys, foreign keys, the organisation hierarchy, coherent dates and governance), and the publication checks in S26 for every Published and Deprecated data asset. They also check that every made-up address uses a domain reserved for examples.
 3. Run `npm run format` before committing.
