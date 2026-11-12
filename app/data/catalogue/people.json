@@ -2,6 +2,7 @@
   {
     "name": "Jo Bloggs",
     "emailAddressReference": "jo.bloggs@example.com",
+    "entraObjectId": "8d8f18d7-ef4f-4188-b706-90c58a9d0fb3",
     "organisationName": "Animal and Plant Health Agency",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -11,6 +12,7 @@
   {
     "name": "Sam Specimen",
     "emailAddressReference": "sam.specimen@example.com",
+    "entraObjectId": "7bff5498-dd64-4e3b-949b-e6c6e8b1c023",
     "organisationName": "Animal and Plant Health Agency",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -20,6 +22,7 @@
   {
     "name": "Alex Example",
     "emailAddressReference": "alex.example@example.com",
+    "entraObjectId": "87701706-bbda-4745-b73e-462eaab66f2d",
     "organisationName": "Rural Payments Agency",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -29,6 +32,7 @@
   {
     "name": "Chris Sample",
     "emailAddressReference": "chris.sample@example.com",
+    "entraObjectId": "37a86c7c-1b1d-4810-a8b5-b4fe6a170627",
     "organisationName": "Livestock Information Ltd",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -38,6 +42,7 @@
   {
     "name": "Taylor Test",
     "emailAddressReference": "taylor.test@example.com",
+    "entraObjectId": "a36b00c9-f804-4936-a773-d6fe0059890d",
     "organisationName": "Welsh Government",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -47,6 +52,7 @@
   {
     "name": "Morgan Demo",
     "emailAddressReference": "morgan.demo@example.com",
+    "entraObjectId": "64e83da2-acbb-4623-8f58-1920dea6c1fc",
     "organisationName": "Scottish Government",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",
@@ -56,6 +62,7 @@
   {
     "name": "Jamie Placeholder",
     "emailAddressReference": "jamie.placeholder@example.com",
+    "entraObjectId": "40044d45-47b9-47bc-9e16-ab6cbf0baf31",
     "organisationName": "Department for Environment, Food and Rural Affairs",
     "systemCreatedDateTime": "2026-09-02T09:00:00Z",
     "systemCreatedByUserId": "16e64526-ea71-45bd-8748-e96c8cfb85da",

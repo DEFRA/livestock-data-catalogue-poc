@@ -111,7 +111,9 @@ describe('the rules that span records', () => {
       const breaches = breachesAfter((collections) => {
         collections.people.push({
           ...collections.people[0],
-          emailAddressReference: 'jo.bloggs2@example.com'
+          emailAddressReference: 'jo.bloggs2@example.com',
+          // Another person, so another Entra ID
+          entraObjectId: 'c3d1f0a2-4b5e-4f60-8a71-92b3c4d5e6f7'
         })
       })
 
@@ -637,7 +639,8 @@ describe('the rules that span records', () => {
         )
         collections.people.push({
           ...samSpecimen,
-          emailAddressReference: 'sam.specimen2@example.com'
+          emailAddressReference: 'sam.specimen2@example.com',
+          entraObjectId: 'd4e2a1b3-5c6f-4a71-9b82-a3c4d5e6f708'
         })
         dataAssetIn(collections, 'DA11111').governanceAssignments.push({
           personName: 'Sam Specimen',
@@ -700,6 +703,43 @@ describe('the rules that span records', () => {
       })
 
       assert.deepEqual(breaches, [])
+    })
+  })
+
+  describe('people held by their Entra ID (LDAT-252, questions 34 and 38)', () => {
+    test('rejects 2 people with the same Entra ID', () => {
+      const breaches = breachesAfter((collections) => {
+        collections.people[1].entraObjectId =
+          collections.people[0].entraObjectId
+      })
+
+      assertBreach(
+        breaches,
+        `Duplicate person Entra ID: ${catalogueCopy().people[0].entraObjectId}`
+      )
+    })
+
+    test('rejects a creator, reviewer or approver who is not a person in the catalogue', () => {
+      const unknown = '0b9ef3f6-5c56-4e4e-9d0f-1a2b3c4d5e6f'
+      const breaches = breachesAfter((collections) => {
+        const dataAsset = dataAssetIn(collections, 'DA11111')
+        dataAsset.creatorReference = unknown
+        dataAsset.lastReviewedByName = unknown
+        dataAsset.approvedByName = unknown
+      })
+
+      assertBreach(
+        breaches,
+        `Data asset DA11111 refers to an unknown creator: ${unknown}`
+      )
+      assertBreach(
+        breaches,
+        `Data asset DA11111 refers to an unknown last reviewer: ${unknown}`
+      )
+      assertBreach(
+        breaches,
+        `Data asset DA11111 refers to an unknown approver: ${unknown}`
+      )
     })
   })
 })

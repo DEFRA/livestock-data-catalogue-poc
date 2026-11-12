@@ -3,12 +3,13 @@ import { anyAddress } from './common.js'
 
 // S06, S08 to S12: needed before a data asset can be published. Valid To
 // Date is optional: without one, a data asset is valid with no end date.
+// The catalogue sets the Acceptance Date when a data asset is first
+// published, so it isn't needed before (LDAT-252, question 29).
 const PUBLISH_ATTRIBUTES = [
   ['accessRightsDescription', 'Access Rights Description'],
   ['provenanceDescription', 'Provenance Description'],
   ['creatorReference', 'Creator Reference'],
   ['creationDate', 'Creation Date'],
-  ['acceptanceDate', 'Acceptance Date'],
   ['modificationDate', 'Modification Date'],
   ['validFromDate', 'Valid From Date'],
   ['metadataDate', 'Metadata Date'],

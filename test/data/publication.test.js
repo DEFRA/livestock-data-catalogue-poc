@@ -192,6 +192,13 @@ describe('the publication checks (S26)', () => {
     ])
   })
 
+  test('does not need an Acceptance Date, which the catalogue sets when it is first published (LDAT-252, question 29)', () => {
+    const dataAsset = animalMovement()
+    delete dataAsset.acceptanceDate
+
+    assert.deepEqual(outstanding(dataAsset), [])
+  })
+
   test('does not need a Data Custodian', () => {
     const dataAsset = animalMovement()
     delete dataAsset.custodians

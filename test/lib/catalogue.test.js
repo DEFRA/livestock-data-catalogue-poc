@@ -38,8 +38,13 @@ describe('reading the catalogue', () => {
       'Animal and Plant Health Agency'
     )
     assert.equal(
-      catalogue.dataServicesByTitle.get('Breed Codes API').serviceType,
-      'REST API'
+      catalogue.dataServicesByTitle.get('Breed Codes API').endpointReference,
+      'https://api.example.org/breeds'
+    )
+    assert.equal(
+      catalogue.peopleByEntraId.get('8d8f18d7-ef4f-4188-b706-90c58a9d0fb3')
+        .name,
+      'Jo Bloggs'
     )
     assert.equal(
       catalogue.informationAssetsByName.get('Animal Disease Records')

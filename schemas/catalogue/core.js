@@ -4,44 +4,48 @@ import {
   anyAddress,
   code,
   emailAddress,
+  entraObjectId,
+  name,
   systemAttributes,
   text
 } from './common.js'
 
 export const organisationSchema = Joi.object({
-  name: text.required(),
-  abbreviatedName: text,
+  name: name.required(),
+  abbreviatedName: name,
   description: text,
   websiteReference: anyAddress,
-  parentOrganisationName: text,
+  parentOrganisationName: name,
   organisationTypeCode: code.required(),
   ...systemAttributes
 })
 
 export const personSchema = Joi.object({
-  name: text.required(),
+  name: name.required(),
   emailAddressReference: emailAddress.required(),
-  organisationName: text.required(),
+  entraObjectId: entraObjectId.required(),
+  organisationName: name.required(),
   ...systemAttributes
 })
 
 export const deliveryGroupSchema = Joi.object({
-  name: text.required(),
-  organisationName: text.required(),
+  name: name.required(),
+  organisationName: name.required(),
   description: text,
   ...systemAttributes
 })
 
+// S24, without the Service Type the data architect dropped (LDAT-252,
+// question 33)
 export const dataServiceSchema = Joi.object({
-  titleName: text.required(),
+  titleName: name.required(),
   description: text,
   endpointReference: anyAddress,
-  serviceType: text,
   ...systemAttributes
 })
 
 export const informationAssetSchema = Joi.object({
-  name: text.required(),
+  name: name.required(),
   securityClassificationCode: code.required(),
   retentionPeriodDescription: text.required(),
   ...systemAttributes
@@ -54,7 +58,7 @@ export const informationAssetSchema = Joi.object({
 export const KEYWORD_LANGUAGE_CODES = ['en', 'cy', 'gd', 'ga']
 
 export const keywordSchema = Joi.object({
-  name: text.required(),
+  name: name.required(),
   languageCode: Joi.string()
     .valid(...KEYWORD_LANGUAGE_CODES)
     .required()

@@ -66,14 +66,21 @@ function timePeriod(start, end) {
   return end ? `Until ${formatDate(end)}` : undefined
 }
 
-function lastReviewed(dataAsset) {
+// People are held by their Entra ID, so pages show their name instead
+// (LDAT-252, question 38)
+export function personName(catalogue, entraObjectId) {
+  return entraObjectId === undefined
+    ? undefined
+    : catalogue.peopleByEntraId.get(entraObjectId)?.name
+}
+
+function lastReviewed(catalogue, dataAsset) {
   if (!dataAsset.lastReviewedDate) {
     return undefined
   }
   const date = formatDate(dataAsset.lastReviewedDate)
-  return dataAsset.lastReviewedByName
-    ? `${date} by ${dataAsset.lastReviewedByName}`
-    : date
+  const reviewer = personName(catalogue, dataAsset.lastReviewedByName)
+  return reviewer ? `${date} by ${reviewer}` : date
 }
 
 function namesFor(catalogue, listName, codes) {
@@ -142,7 +149,7 @@ function coverageSection(catalogue, dataAsset) {
       dateRow('Accepted', dataAsset.acceptanceDate),
       dateRow('Last updated', dataAsset.modificationDate),
       dateRow('Metadata last updated', dataAsset.metadataDate),
-      textRow('Last reviewed', lastReviewed(dataAsset)),
+      textRow('Last reviewed', lastReviewed(catalogue, dataAsset)),
       dateRow('Next review', dataAsset.nextReviewDate)
     )
   }
@@ -263,7 +270,7 @@ function accessSection(catalogue, dataAsset) {
     rows: rows(
       textRow('Access rights', dataAsset.accessRightsDescription),
       textRow('Provenance', dataAsset.provenanceDescription),
-      textRow('Creator', dataAsset.creatorReference),
+      textRow('Creator', personName(catalogue, dataAsset.creatorReference)),
       ...informationAssetRows(catalogue, dataAsset),
       textRow(
         'Lifecycle state',

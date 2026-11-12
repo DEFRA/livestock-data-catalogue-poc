@@ -102,6 +102,10 @@ export function buildCatalogue(collections) {
     peopleByKey: byKey(collections.people, (person) =>
       personKey(person.name, person.emailAddressReference)
     ),
+    peopleByEntraId: byKey(
+      collections.people,
+      (person) => person.entraObjectId
+    ),
     deliveryGroupsByName: byKey(
       collections.deliveryGroups,
       (deliveryGroup) => deliveryGroup.name
