@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-import { outstandingForPublication } from '../../schemas/catalogue/publication.js'
+import { outstandingForPublication } from '../../app/schemas/catalogue/publication.js'
 import { TODAY, catalogueCopy, dataAssetIn } from '../helpers/catalogue.js'
 
 function animalMovement() {
@@ -190,6 +190,13 @@ describe('the publication checks (S26)', () => {
       'Exactly one current Data Owner is required',
       'At least one current Data Steward is required'
     ])
+  })
+
+  test('does not need an Acceptance Date, which the catalogue sets when it is first published (LDAT-252, question 29)', () => {
+    const dataAsset = animalMovement()
+    delete dataAsset.acceptanceDate
+
+    assert.deepEqual(outstanding(dataAsset), [])
   })
 
   test('does not need a Data Custodian', () => {

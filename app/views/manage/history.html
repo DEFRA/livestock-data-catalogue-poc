@@ -1,0 +1,34 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+
+{% block containerStart %}
+  {{ govukBackLink({ href: overviewHref }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <span class="govuk-caption-l">{{ titleName }}</span>
+      <h1 class="govuk-heading-l">Change history</h1>
+      <p class="govuk-body">Material changes only: anything needed to publish, who is responsible, the data asset's states and its distributions.</p>
+
+      {% if rows | length %}
+        {{ govukTable({
+          caption: "Changes made in this prototype session",
+          captionClasses: "govuk-table__caption--m",
+          classes: "govuk-table--small-text-until-tablet",
+          head: [{ text: "Date and time" }, { text: "Change" }, { text: "Made by" }],
+          rows: rows
+        }) }}
+      {% else %}
+        <p class="govuk-body">No changes have been made in this prototype session.</p>
+      {% endif %}
+
+      {% if createdText %}
+        <p class="govuk-body">{{ createdText }}. Changes made before this session are not shown.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-import { findSchemaErrors } from '../../schemas/catalogue/index.js'
+import { findSchemaErrors } from '../../app/schemas/catalogue/index.js'
 import { catalogueCopy, dataAssetIn } from '../helpers/catalogue.js'
 
 function errorsAfter(change) {
@@ -353,5 +353,110 @@ describe('the data contract', () => {
     })
 
     assertRejected(errors, 'licences: "value" is required')
+  })
+})
+
+describe('the data contract after the answers on LDAT-252', () => {
+  test('rejects a data service with a service type, which the data architect dropped (question 33)', () => {
+    const errors = errorsAfter((collections) => {
+      collections.dataServices[0].serviceType = 'REST API'
+    })
+
+    assertRejected(errors, '"[0].serviceType" is not allowed')
+  })
+
+  test('rejects a person with no Entra ID (question 34)', () => {
+    const errors = errorsAfter((collections) => {
+      delete collections.people[0].entraObjectId
+    })
+
+    assertRejected(errors, '"[0].entraObjectId" is required')
+  })
+
+  test('rejects a creator that is a name rather than an Entra ID (question 38)', () => {
+    const errors = errorsAfter((collections) => {
+      dataAssetIn(collections, 'DA11111').creatorReference = 'APHA'
+    })
+
+    assertRejected(errors, '"[0].creatorReference" must be a valid GUID')
+  })
+
+  test('rejects a reviewer and an approver that are names rather than Entra IDs (question 38)', () => {
+    const errors = errorsAfter((collections) => {
+      const dataAsset = dataAssetIn(collections, 'DA11111')
+      dataAsset.lastReviewedByName = 'Jo Bloggs'
+      dataAsset.approvedByName = 'Sam Specimen'
+    })
+
+    assertRejected(errors, '"[0].lastReviewedByName" must be a valid GUID')
+    assertRejected(errors, '"[0].approvedByName" must be a valid GUID')
+  })
+
+  test('accepts a title of 200 characters, but not 201 (question 31)', () => {
+    const accepted = errorsAfter((collections) => {
+      dataAssetIn(collections, 'DA11111').titleName = 'A'.repeat(200)
+    })
+    const rejected = errorsAfter((collections) => {
+      dataAssetIn(collections, 'DA11111').titleName = 'A'.repeat(201)
+    })
+
+    assert.deepEqual(accepted, [])
+    assertRejected(
+      rejected,
+      '"[0].titleName" length must be less than or equal to 200'
+    )
+  })
+
+  test('accepts a description of 2,000 characters, but not 2,001 (question 31)', () => {
+    const accepted = errorsAfter((collections) => {
+      dataAssetIn(collections, 'DA11111').description = 'A'.repeat(2000)
+    })
+    const rejected = errorsAfter((collections) => {
+      dataAssetIn(collections, 'DA11111').description = 'A'.repeat(2001)
+    })
+
+    assert.deepEqual(accepted, [])
+    assertRejected(
+      rejected,
+      '"[0].description" length must be less than or equal to 2000'
+    )
+  })
+
+  test('rejects an address longer than 2,048 characters (question 31)', () => {
+    const errors = errorsAfter((collections) => {
+      dataAssetIn(collections, 'DA11111').distributions[0].accessReference =
+        `https://api.example.org/${'a'.repeat(2030)}`
+    })
+
+    assertRejected(errors, 'length must be less than or equal to 2048')
+  })
+
+  test('rejects a reference value name or licence version longer than 200 characters (question 31)', () => {
+    const errors = errorsAfter((collections) => {
+      collections.domains[0].name = 'd'.repeat(201)
+      collections.licences[0].versionNumber = '3'.repeat(201)
+      collections.codeLists.updateFrequencies[0].name = 'u'.repeat(201)
+    })
+
+    assert.equal(
+      errors.filter((error) =>
+        error.endsWith(
+          'length must be less than or equal to 200 characters long'
+        )
+      ).length,
+      3,
+      errors.join('\n')
+    )
+  })
+
+  test('rejects a keyword name longer than 200 characters (question 31)', () => {
+    const errors = errorsAfter((collections) => {
+      collections.keywords[0].name = 'k'.repeat(201)
+    })
+
+    assertRejected(
+      errors,
+      '"[0].name" length must be less than or equal to 200'
+    )
   })
 })

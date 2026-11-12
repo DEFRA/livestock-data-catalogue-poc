@@ -2,13 +2,14 @@
 
 **Every value in these files is made up**, except organisation names, their websites and the licence addresses, which are real and public. People, email addresses, data assets, distributions and their web addresses are made up. Made-up addresses use only domains reserved for examples: `example.com` for email addresses and `example.org` for web addresses, so they can never reach anyone.
 
-The prototype reads these files at start-up instead of a database. Each file holds one future MongoDB collection, shaped like the planned documents, so the backend can reuse it as seed data and test fixtures.
+The prototype reads these files at start-up instead of a database. Each file holds one future MongoDB collection, shaped like the planned documents, so the backend can reuse it as seed data and test fixtures. The prototype never writes them: changes made on the manage pages are kept in each browser's session, over this data (see [Personas and changes](../../../README.md#personas-and-changes)).
 
 ## Sources
 
 1. The Phase 1 logical data model V0.11, in the "Logical Data Model" diagrams and acceptance criteria of the Phase 1 Jira stories S01 to S26 ([LDAT-181](https://eaflood.atlassian.net/browse/LDAT-181)). Entities, attributes, business keys, foreign keys and reference values follow them, except for the provisional choices below.
 2. The data architect's answers on [LDAT-235](https://eaflood.atlassian.net/browse/LDAT-235) (4 November 2026): Licence (S23), a mandatory Authentication Method (S22), the Security Classification codes (S25), and no exemptions, interim values or active states. Later that day: an optional Valid To Date and Coverage Start and End Dates (S06), distribution names unique within a data asset (S18), and Digital, Data and Technology Services as a government department. By 11 November 2026: a Language Code on Keyword again (S14), keyword names unique ignoring case (S14), a Name on each Relationship Type (S16), at least 1 distribution before publishing (S26), and a draft can be retired without being published (S26).
-3. LADU-DATA-001 for names, and the draft MongoDB profile in our review of it: plural camelCase collections and camelCase fields.
+3. The data architect's answers on [LDAT-252](https://eaflood.atlassian.net/browse/LDAT-252) (by 12 November 2026): the catalogue sets the Acceptance Date when a data asset is first published, so it isn't needed before (question 29); data services have no Service Type (question 33); people are held by their Microsoft Entra ID (question 34), and so are the creator, last reviewer and approver (question 38); and the maximum lengths (question 31).
+4. LADU-DATA-001 for names, and the draft MongoDB profile in our review of it: plural camelCase collections and camelCase fields.
 
 ## Files
 
@@ -43,10 +44,12 @@ The prototype reads these files at start-up instead of a database. Each file hol
 - **Keys** are V0.11's business keys: names, codes, and the data asset identifier, which matches `^DA[1-9A-HJKM-Z]{5}$` (S05). A distribution's key is its data asset and its name, so its name is unique within the data asset (S18). There are no internal identifiers: the backend adds them and links records by them (LDAT-235, answer 4).
 - **Dates** are `YYYY-MM-DD` and date-times are `YYYY-MM-DDThh:mm:ssZ`, in UTC (ISO 8601). Files are UTF-8. A data asset with no `validToDate` is valid with no end date (S06).
 - **Addresses** follow V0.11, which asks only for a valid URI (S01, S13, S15, S18, S23 and S24). Any scheme is allowed, such as `amqps` for an event broker, but an address must be absolute, with no spaces or control characters. The prototype only turns `https` addresses into links, so an address with any other scheme, such as `javascript:`, never becomes a link. Relationship targets are a provisional choice, described below.
+- **Lengths:** titles and names are at most 200 characters, other text 2,000, and addresses 2,048 (LDAT-252, question 31).
+- **People** each have an `entraObjectId`, a made-up UUID standing in for their Microsoft Entra ID, which is unique. `creatorReference`, `lastReviewedByName` and `approvedByName` hold a person's `entraObjectId`, and pages show the person's name (LDAT-252, questions 34 and 38).
 - **System attributes:** every record in the 6 core collections has `systemCreatedDateTime`, `systemCreatedByUserId`, `systemUpdatedDateTime` and `systemUpdatedByUserId` (LADU-DATA-001). The user IDs are made-up UUIDs.
 - **Visibility:** only Published and Deprecated data assets are shown to catalogue users (S11). The files also hold a Draft (DA11112) and a Retired (DA11116) data asset, to test that they stay hidden.
 - **Publication checks:** every Published and Deprecated data asset passes the S26 checks, including at least 1 distribution. Draft and Retired data assets are not checked, because a draft can be retired without ever being published (LDAT-235, answer 22).
-- **Keyword language:** every keyword has a `languageCode`, an ISO 639-1 code: `en` (English), `cy` (Welsh), `gd` (Scottish Gaelic) or `ga` (Irish) (LDAT-235, answer 18). English is the default: whatever creates a keyword sets `en` when no language is given, so a stored keyword always has a code. To allow another language, add its code to `KEYWORD_LANGUAGE_CODES` in [`schemas/catalogue/core.js`](../../../schemas/catalogue/core.js). The data asset page marks a keyword in any language other than English, so screen readers pronounce it correctly (WCAG 2.2 success criterion 3.1.2).
+- **Keyword language:** every keyword has a `languageCode`, an ISO 639-1 code: `en` (English), `cy` (Welsh), `gd` (Scottish Gaelic) or `ga` (Irish) (LDAT-235, answer 18). English is the default: whatever creates a keyword sets `en` when no language is given, so a stored keyword always has a code. To allow another language, add its code to `KEYWORD_LANGUAGE_CODES` in [`app/schemas/catalogue/core.js`](../../schemas/catalogue/core.js). The data asset page marks a keyword in any language other than English, so screen readers pronounce it correctly (WCAG 2.2 success criterion 3.1.2).
 
 ## Provisional choices
 
@@ -54,11 +57,12 @@ These go beyond V0.11, and stay until the data architect decides:
 
 - A relationship target inside the catalogue is held as its data asset identifier, and anything else as an `https` address (S16). A relationship to another data asset holds its identifier, such as `DA11113`, not its title, such as "Livestock Holding" in S16's example. The data architect wants to test this with real data assets first (LDAT-235, question 9).
 - A Memorandum of Understanding is held as the licence `MOU` (S23). The data architect is asking the data governance team whether an MOU is a licence, or an agreement that Phase 1a would record as an Access and Sharing Arrangement (LDAT-235, question 17).
-- A data service's `serviceType` is free text, such as "REST API", as in V0.11 (S24). The data architect will decide later whether it becomes a code list (LDAT-235, question 10).
+- The field names `entraObjectId`, and `creatorReference`, `lastReviewedByName` and `approvedByName` holding Entra IDs, wait for the model to catch up with answers 34 and 38 (LDAT-252, question 44). Governance assignments still use V0.11's key, the person's name and email address, until then.
+- Sam Specimen is a current Data Steward of the draft DA11112, so research can test finishing a draft (decision D36 in the journeys 2 and 3 plan).
 - DA1111C is deliberately not used, because S05 uses it as its example of a deleted identifier, which is never reused.
 
 ## Changing the data
 
 1. Edit the JSON. Use only codes and names from the stories, and only made-up people, with `example.com` email addresses and `example.org` web addresses.
-2. Run `npm test`. The tests check every record against the data contract in [`schemas/catalogue`](../../../schemas/catalogue): each collection's schema, the rules that span records (unique keys, foreign keys, the organisation hierarchy, coherent dates and governance), and the publication checks in S26 for every Published and Deprecated data asset. They also check that every made-up address uses a domain reserved for examples.
+2. Run `npm test`. The tests check every record against the data contract in [`app/schemas/catalogue`](../../schemas/catalogue): each collection's schema, the rules that span records (unique keys, foreign keys, the organisation hierarchy, coherent dates and governance), and the publication checks in S26 for every Published and Deprecated data asset. They also check that every made-up address uses a domain reserved for examples.
 3. Run `npm run format` before committing.

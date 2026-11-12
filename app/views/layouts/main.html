@@ -51,6 +51,16 @@
         active: navigationItem == "data-asset"
       }
     ] %}
+    {% if managesDataAssets %}
+      {% set navigationItems = navigationItems.concat([
+        {
+          href: "/manage/data-assets",
+          text: "Your data assets",
+          current: navigationItem == "manage-list",
+          active: navigationItem == "manage"
+        }
+      ]) %}
+    {% endif %}
     {% if signedIn %}
       {% set navigationItems = navigationItems.concat([
         {

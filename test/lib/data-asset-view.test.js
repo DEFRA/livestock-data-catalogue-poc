@@ -309,7 +309,8 @@ describe('the data asset page content', () => {
         row(access, 'Provenance').text,
         'Recorded by APHA when it places or lifts a restriction'
       )
-      assert.equal(row(access, 'Creator').text, 'APHA')
+      // The creator is held by their Entra ID, and shown by name
+      assert.equal(row(access, 'Creator').text, 'Jo Bloggs')
       assert.equal(row(access, 'Lifecycle state').text, 'In Development')
     })
 

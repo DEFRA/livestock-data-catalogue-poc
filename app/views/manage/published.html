@@ -1,0 +1,31 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+
+{% set mainClasses = "govuk-main-wrapper--auto-spacing" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% set panelHtml %}Its identifier is<br><strong>{{ identifier }}</strong>{% endset %}
+      {{ govukPanel({
+        titleText: "Data asset published",
+        html: panelHtml
+      }) }}
+
+      <h2 class="govuk-heading-m">What happens next</h2>
+      <p class="govuk-body">Catalogue users can now find {{ titleName }} by searching and browsing. It stays published until you deprecate or retire it.</p>
+      <p class="govuk-body">If you change it, it goes back to draft, and catalogue users cannot see it until you publish it again.</p>
+
+      <ul class="govuk-list">
+        <li><a class="govuk-link" href="{{ catalogueHref }}">View {{ titleName }} in the catalogue</a></li>
+        <li><a class="govuk-link" href="/manage/data-assets">Go to your data assets</a></li>
+        {% if canCreate %}
+          <li><a class="govuk-link" href="/manage/data-assets/create">Create another data asset</a></li>
+        {% endif %}
+      </ul>
+
+      <p class="govuk-body"><a class="govuk-link" href="/report-a-problem">What did you think of this service?</a></p>
+    </div>
+  </div>
+{% endblock %}

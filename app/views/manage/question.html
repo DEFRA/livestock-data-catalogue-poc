@@ -1,0 +1,66 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "partials/form-fields.html" import appField %}
+
+{% block containerStart %}
+  {{ govukBackLink({ href: backHref }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorList | length %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: errorList
+        }) }}
+      {% endif %}
+
+      {% if caption %}
+        <span class="govuk-caption-l">{{ caption }}</span>
+      {% endif %}
+      {% if not isQuestionHeading %}
+        <h1 class="govuk-heading-l">{{ heading }}</h1>
+      {% endif %}
+
+      {% for paragraph in paragraphs %}
+        <p class="govuk-body">{{ paragraph }}</p>
+      {% endfor %}
+      {% if warning %}
+        {{ govukWarningText({ text: warning }) }}
+      {% endif %}
+      {% if inset %}
+        {{ govukInsetText({ text: inset }) }}
+      {% endif %}
+
+      {% if readOnly %}
+        <ul class="govuk-list govuk-list--bullet">
+          {% for item in list %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% for paragraph in after %}
+          <p class="govuk-body">{{ paragraph }}</p>
+        {% endfor %}
+        <ul class="govuk-list">
+          {% for link in links %}
+            <li><a class="govuk-link" href="{{ link.href }}">{{ link.text }}</a></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <form method="post" novalidate>
+          <input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+          {% for field in fields %}
+            {{ appField(field, values, errorTexts, isQuestionHeading) }}
+          {% endfor %}
+          {{ govukButton({ text: buttonText, classes: buttonClasses }) }}
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

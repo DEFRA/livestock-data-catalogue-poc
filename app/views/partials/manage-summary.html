@@ -1,0 +1,59 @@
+{#
+  Summary lists for the manage pages, built from autoescaped values. A row
+  has a key, text or items (an item may have a lang code), and an optional
+  Change link with hidden text for screen readers.
+#}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "partials/summary-value.html" import appSummaryValue %}
+
+{% macro appSummaryList(rows) %}
+  {% set summaryRows = [] %}
+  {% for row in rows %}
+    {% set summaryRows = summaryRows.concat([{
+      key: { text: row.key },
+      value: { html: appSummaryValue(row) },
+      actions: {
+        items: [{
+          href: row.changeHref,
+          text: row.changeText or "Change",
+          visuallyHiddenText: row.hiddenText
+        }]
+      } if row.changeHref
+    }]) %}
+  {% endfor %}
+  {{ govukSummaryList({ rows: summaryRows }) }}
+{% endmacro %}
+
+{% macro appSummaryCard(card) %}
+  {% set summaryRows = [] %}
+  {% for row in card.rows %}
+    {% set summaryRows = summaryRows.concat([{
+      key: { text: row.key },
+      value: { html: appSummaryValue(row) },
+      actions: {
+        items: [{
+          href: row.changeHref,
+          text: row.changeText or "Change",
+          visuallyHiddenText: row.hiddenText
+        }]
+      } if row.changeHref
+    }]) %}
+  {% endfor %}
+  {% set actionItems = [] %}
+  {% for action in card.actions %}
+    {% set actionItems = actionItems.concat([{
+      href: action.href,
+      text: action.text,
+      visuallyHiddenText: action.hiddenText
+    }]) %}
+  {% endfor %}
+  {% set titleHtml %}{{ card.title }}{% if card.isIncomplete %} {{ govukTag({ text: "Incomplete", classes: "govuk-tag--yellow" }) }}{% endif %}{% endset %}
+  {{ govukSummaryList({
+    card: {
+      title: { html: titleHtml, headingLevel: 2 },
+      actions: { items: actionItems } if actionItems | length
+    },
+    rows: summaryRows
+  }) }}
+{% endmacro %}

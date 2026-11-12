@@ -1,0 +1,131 @@
+{#
+  Renders a field from its definition in app/lib/manage, with the GOV.UK
+  Frontend macro for its type. values and errors are keyed by field name.
+  On a page with one question, the label or legend is the page heading.
+#}
+{% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% macro appTextInput(field, values, errors, isPageHeading) %}
+  {{ govukInput({
+    id: field.name,
+    name: field.name,
+    label: {
+      text: field.label,
+      classes: "govuk-label--l" if isPageHeading else "govuk-label--s",
+      isPageHeading: isPageHeading
+    },
+    hint: { text: field.hint } if field.hint,
+    value: values[field.name],
+    classes: field.classes,
+    spellcheck: field.spellcheck,
+    inputmode: field.inputmode,
+    suffix: { text: field.suffix } if field.suffix,
+    errorMessage: { text: errors[field.name] } if errors[field.name]
+  }) }}
+{% endmacro %}
+
+{% macro appDateInput(field, values, errors, isPageHeading) %}
+  {% set parts = values[field.name] or {} %}
+  {# Only the boxes that are wrong, or all 3 for an error about the whole date #}
+  {% set errorParts = errors[field.name + "-parts"] or (["day", "month", "year"] if errors[field.name] else []) %}
+  {{ govukDateInput({
+    id: field.name,
+    namePrefix: field.name,
+    fieldset: {
+      legend: {
+        text: field.label,
+        classes: "govuk-fieldset__legend--l" if isPageHeading else "govuk-fieldset__legend--s",
+        isPageHeading: isPageHeading
+      }
+    },
+    hint: { text: field.hint } if field.hint,
+    errorMessage: { text: errors[field.name] } if errors[field.name],
+    items: [
+      { name: "day", classes: "govuk-input--width-2" + (" govuk-input--error" if "day" in errorParts else ""), value: parts.day },
+      { name: "month", classes: "govuk-input--width-2" + (" govuk-input--error" if "month" in errorParts else ""), value: parts.month },
+      { name: "year", classes: "govuk-input--width-4" + (" govuk-input--error" if "year" in errorParts else ""), value: parts.year }
+    ]
+  }) }}
+{% endmacro %}
+
+{# A conditional question under a radio: a text input or a date #}
+{% macro appConditional(field, values, errors) %}
+  {% if field.type == "date" %}
+    {{ appDateInput(field, values, errors, false) }}
+  {% else %}
+    {{ appTextInput(field, values, errors, false) }}
+  {% endif %}
+{% endmacro %}
+
+{% macro appChoices(field, values, errors, isPageHeading) %}
+  {% set items = [] %}
+  {% for option in field.options %}
+    {% if option.divider %}
+      {% set items = items.concat([{ divider: option.divider }]) %}
+    {% else %}
+      {% set conditionalHtml %}{% if option.conditional %}{{ appConditional(option.conditional, values, errors) }}{% endif %}{% endset %}
+      {% set items = items.concat([{
+        value: option.value,
+        text: option.text,
+        hint: { text: option.hint } if option.hint,
+        checked: (option.value in (values[field.name] or [])) if field.type == "checkboxes" else (values[field.name] == option.value),
+        conditional: { html: conditionalHtml } if option.conditional
+      }]) %}
+    {% endif %}
+  {% endfor %}
+  {% set settings = {
+    idPrefix: field.name,
+    name: field.name,
+    fieldset: {
+      legend: {
+        text: field.label,
+        classes: "govuk-fieldset__legend--l" if isPageHeading else "govuk-fieldset__legend--s",
+        isPageHeading: isPageHeading
+      }
+    },
+    hint: { text: field.hint } if field.hint,
+    classes: field.classes,
+    errorMessage: { text: errors[field.name] } if errors[field.name],
+    items: items
+  } %}
+  {% if field.type == "checkboxes" %}
+    {{ govukCheckboxes(settings) }}
+  {% else %}
+    {{ govukRadios(settings) }}
+  {% endif %}
+{% endmacro %}
+
+{% macro appField(field, values, errors, isPageHeading) %}
+  {% if field.type == "text" %}
+    {{ appTextInput(field, values, errors, isPageHeading) }}
+  {% elif field.type == "date" %}
+    {{ appDateInput(field, values, errors, isPageHeading) }}
+  {% elif field.type == "radios" or field.type == "checkboxes" %}
+    {{ appChoices(field, values, errors, isPageHeading) }}
+  {% else %}
+    {% set settings = {
+      id: field.name,
+      name: field.name,
+      label: {
+        text: field.label,
+        classes: "govuk-label--l" if isPageHeading else "govuk-label--s",
+        isPageHeading: isPageHeading
+      },
+      hint: { text: field.hint } if field.hint,
+      value: values[field.name],
+      rows: field.rows,
+      maxlength: field.maxLength if field.type == "characterCount",
+      errorMessage: { text: errors[field.name] } if errors[field.name]
+    } %}
+    {% if field.type == "characterCount" %}
+      {{ govukCharacterCount(settings) }}
+    {% else %}
+      {{ govukTextarea(settings) }}
+    {% endif %}
+  {% endif %}
+{% endmacro %}

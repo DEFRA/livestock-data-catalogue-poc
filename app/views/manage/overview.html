@@ -1,0 +1,73 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/task-list/macro.njk" import govukTaskList %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% block containerStart %}
+  {{ govukBackLink({ href: "/manage/data-assets", text: "Your data assets" }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if notice %}
+        {{ govukNotificationBanner({ type: "success", text: notice }) }}
+      {% endif %}
+
+      <span class="govuk-caption-l">Data asset {{ identifier }}</span>
+      <h1 class="govuk-heading-l">{{ titleName }}</h1>
+      <p class="govuk-body">
+        Catalogue entry: {{ govukTag(stateTag) }}
+      </p>
+      <p class="govuk-body">Data: {{ lifecycleName }}</p>
+
+      {% if state == "DRAFT" %}
+        <p class="govuk-body">You can publish this data asset when every required section is complete.</p>
+        <p class="govuk-body">You have completed {{ completedCount }} of {{ requiredCount }} required sections.</p>
+      {% elif state == "PUBLISHED" %}
+        {{ govukWarningText({
+          text: "Saving a change will take this data asset out of the catalogue until you publish it again."
+        }) }}
+      {% elif state == "DEPRECATED" %}
+        <p class="govuk-body">This data asset is deprecated. You can retire it, but you cannot change it.</p>
+      {% else %}
+        <p class="govuk-body">This data asset is retired. It cannot be changed or published again.</p>
+        {% if deletionDate %}
+          <p class="govuk-body">Its data was deleted on {{ deletionDate }}.</p>
+        {% endif %}
+      {% endif %}
+
+      {% for group in taskGroups %}
+        <h2 class="govuk-heading-m">{{ group.heading }}</h2>
+        {{ govukTaskList({ idPrefix: group.heading | lower | replace(" ", "-"), items: group.items }) }}
+      {% endfor %}
+
+      <h2 class="govuk-heading-m">Manage this data asset</h2>
+      <ul class="govuk-list">
+        {% if isEditable %}
+          <li><a class="govuk-link" href="{{ links.review }}">Record a review</a></li>
+        {% endif %}
+        {% if state == "PUBLISHED" %}
+          <li><a class="govuk-link" href="{{ links.deprecate }}">Deprecate this data asset</a></li>
+          <li><a class="govuk-link" href="{{ links.catalogue }}">View in the catalogue</a></li>
+        {% endif %}
+        {% if state == "DEPRECATED" %}
+          <li><a class="govuk-link" href="{{ links.catalogue }}">View in the catalogue</a></li>
+        {% endif %}
+        {% if state == "DRAFT" %}
+          <li><a class="govuk-link" href="{{ links.retire }}">Retire this draft</a></li>
+          {% if canDelete %}
+            <li><a class="govuk-link" href="{{ links.delete }}">Delete this draft</a></li>
+          {% endif %}
+        {% elif state != "RETIRED" %}
+          <li><a class="govuk-link" href="{{ links.retire }}">Retire this data asset</a></li>
+        {% endif %}
+        <li><a class="govuk-link" href="{{ links.history }}">View change history</a></li>
+        <li><a class="govuk-link" href="{{ links.preview }}">Preview the catalogue page</a></li>
+      </ul>
+    </div>
+  </div>
+{% endblock %}

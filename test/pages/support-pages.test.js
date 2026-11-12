@@ -49,6 +49,21 @@ describe('the support and error pages', () => {
     ])
   })
 
+  test("the cookies page lists the session cookie that keeps a participant's changes", async () => {
+    const page = await app.getPage('/cookies')
+    const cells = [
+      ...page.document.querySelectorAll(
+        'tbody tr:nth-child(2) th, tbody tr:nth-child(2) td'
+      )
+    ].map((cell) => cell.textContent.trim())
+
+    assert.deepEqual(cells, [
+      'prototype-session',
+      'Remembers who you are in a research session, and the changes you make to data assets',
+      '4 hours after your last change'
+    ])
+  })
+
   test('the cookies table uses smaller text on small screens, so it fits 320 pixels', async () => {
     const page = await app.getPage('/cookies')
 
@@ -68,6 +83,18 @@ describe('the support and error pages', () => {
     assert.match(text, /Your search words are part of the web address/)
     assert.match(text, /may keep logs of the web addresses/)
     assert.doesNotMatch(text, /does not collect personal data/)
+  })
+
+  test('the privacy page says where changes to data assets are kept and when they are deleted', async () => {
+    const page = await app.getPage('/privacy')
+    const text = page.document
+      .querySelector('main')
+      .textContent.replace(/\s+/g, ' ')
+
+    assert.match(
+      text,
+      /your changes are kept in the prototype's memory, not saved to its data, and only your browser can see them\. They are deleted 4 hours after your last change, when you sign out, when you reset the prototype in Prototype settings, or when the prototype restarts\./
+    )
   })
 
   test("the privacy page says how wrong passwords are limited, and links to Defra's personal information charter", async () => {
@@ -99,23 +126,23 @@ describe('the support and error pages', () => {
 
     assert.match(
       text,
-      /This prototype is partially compliant with the Web Content Accessibility Guidelines version 2\.2 AA standard, because we have not yet finished testing it\. We do not know of any part of it that fails the standard\. We check every page with automated tests\. We have not yet finished checking it by hand or with assistive technologies/
+      /This prototype is partially compliant with the Web Content Accessibility Guidelines version 2\.2 AA standard, because of the issue listed under Known issues, and because we have not yet finished testing it\. We check every page with automated tests\. We have not yet finished checking it by hand or with assistive technologies/
     )
     assert.match(
       text,
-      /This statement was prepared on 4 November 2026\. It was last reviewed on 11 November 2026\./
+      /This statement was prepared on 4 November 2026\. It was last reviewed on 12 November 2026\./
     )
   })
 
-  test('the accessibility statement has no known issues now that Welsh keywords are marked as Welsh', async () => {
+  test('the accessibility statement lists the 4-hour limit on changes as a known WCAG 2.2.1 failure', async () => {
     const page = await app.getPage('/accessibility-statement')
     const knownIssues = [...page.document.querySelectorAll('h2')].find(
       (heading) => heading.textContent.trim() === 'Known issues'
     ).nextElementSibling
 
-    assert.equal(
+    assert.match(
       knownIssues.textContent.trim(),
-      'We do not know of any problems at the moment. We will list any we find here.'
+      /^Changes you make to data assets are deleted 4 hours after your last change\. The prototype does not warn you first, and there is no way to ask for more time\. This fails WCAG 2\.2 success criterion 2\.2\.1 \(timing adjustable\)\./
     )
   })
 

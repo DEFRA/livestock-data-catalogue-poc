@@ -2,9 +2,9 @@ import {
   CODE_LISTS,
   REFERENCE_COLLECTIONS,
   personKey
-} from '../../app/lib/catalogue-data.js'
-import { isDataAssetIdentifier } from '../../app/lib/identifiers.js'
-import { isVisible } from '../../app/lib/visibility.js'
+} from '../../lib/catalogue-data.js'
+import { isDataAssetIdentifier } from '../../lib/identifiers.js'
+import { isVisible } from '../../lib/visibility.js'
 import { dateConflicts, outstandingForPublication } from './publication.js'
 
 const LATEST_DATE = '9999-12-31'
@@ -50,6 +50,11 @@ function uniqueKeyBreaches(collections) {
       collections.people.map(
         (person) => `${person.name} <${person.emailAddressReference}>`
       ),
+      lowerCased
+    ],
+    [
+      'person Entra ID',
+      collections.people.map((person) => person.entraObjectId),
       lowerCased
     ],
     [
@@ -144,6 +149,9 @@ function referenceChecker(collections) {
       collections.people.map((person) =>
         personKey(person.name, person.emailAddressReference)
       )
+    ),
+    peopleByEntraId: new Set(
+      collections.people.map((person) => person.entraObjectId)
     ),
     deliveryGroups: new Set(
       collections.deliveryGroups.map((deliveryGroup) => deliveryGroup.name)
@@ -241,6 +249,15 @@ function checkDataAssetAttributes(check, owner, dataAsset) {
     'informationAssets',
     'information asset'
   )
+  // People are held by their Entra ID (LDAT-252, question 38)
+  check.name(owner, dataAsset.creatorReference, 'peopleByEntraId', 'creator')
+  check.name(
+    owner,
+    dataAsset.lastReviewedByName,
+    'peopleByEntraId',
+    'last reviewer'
+  )
+  check.name(owner, dataAsset.approvedByName, 'peopleByEntraId', 'approver')
   check.code(owner, dataAsset.publicationStateCode, 'publicationStates')
   check.code(owner, dataAsset.dataAssetTypeCode, 'dataAssetTypes')
   check.code(owner, dataAsset.domainCode, 'domains')

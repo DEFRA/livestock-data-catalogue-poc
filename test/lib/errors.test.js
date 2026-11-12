@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, mock, test } from 'node:test'
 
+import { TamperedFormError } from '../../app/lib/forms.js'
 import { problemWithTheService } from '../../app/lib/handlers/errors.js'
 
 function fakeRequest(query = {}) {
@@ -30,6 +31,29 @@ describe('handling an unexpected error', () => {
 
   afterEach(() => {
     mock.restoreAll()
+  })
+
+  test('a refused form shows Page not found, and is logged as a warning without its values', () => {
+    const response = fakeResponse()
+
+    problemWithTheService(
+      new TamperedFormError('The form has fields no page sends'),
+      fakeRequest(),
+      response,
+      () => {}
+    )
+
+    assert.equal(response.statusCode, 404)
+    assert.equal(response.view, 'page-not-found')
+    const [line] = console.log.mock.calls.map((call) =>
+      JSON.parse(call.arguments[0])
+    )
+    assert.equal(line['log.level'], 'warn')
+    assert.equal(
+      line.message,
+      'Form refused: it had fields the page does not send'
+    )
+    assert.deepEqual(line.event.type, ['denied'])
   })
 
   test('shows the generic problem page with status 500', () => {

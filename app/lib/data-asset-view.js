@@ -66,14 +66,27 @@ function timePeriod(start, end) {
   return end ? `Until ${formatDate(end)}` : undefined
 }
 
-function lastReviewed(dataAsset) {
+// People are held by their Entra ID, so pages show their name instead
+// (LDAT-252, question 38)
+export function personName(catalogue, entraObjectId) {
+  return entraObjectId === undefined
+    ? undefined
+    : catalogue.peopleByEntraId.get(entraObjectId)?.name
+}
+
+function lastReviewed(catalogue, dataAsset) {
   if (!dataAsset.lastReviewedDate) {
     return undefined
   }
   const date = formatDate(dataAsset.lastReviewedDate)
-  return dataAsset.lastReviewedByName
-    ? `${date} by ${dataAsset.lastReviewedByName}`
-    : date
+  const reviewer = personName(catalogue, dataAsset.lastReviewedByName)
+  return reviewer ? `${date} by ${reviewer}` : date
+}
+
+// A draft can be previewed before every code is set, so a missing code
+// shows nothing rather than failing
+function optionalName(catalogue, listName, code) {
+  return code === undefined ? undefined : nameFor(catalogue, listName, code)
 }
 
 function namesFor(catalogue, listName, codes) {
@@ -99,9 +112,12 @@ function aboutSection(catalogue, dataAsset) {
     rows: rows(
       textRow(
         'Data asset type',
-        nameFor(catalogue, 'dataAssetTypes', dataAsset.dataAssetTypeCode)
+        optionalName(catalogue, 'dataAssetTypes', dataAsset.dataAssetTypeCode)
       ),
-      textRow('Domain', nameFor(catalogue, 'domains', dataAsset.domainCode)),
+      textRow(
+        'Domain',
+        optionalName(catalogue, 'domains', dataAsset.domainCode)
+      ),
       listRow(
         'Categories',
         namesFor(catalogue, 'categories', dataAsset.categoryCodes)
@@ -136,13 +152,17 @@ function coverageSection(catalogue, dataAsset) {
       ),
       textRow(
         'Update frequency',
-        nameFor(catalogue, 'updateFrequencies', dataAsset.updateFrequencyCode)
+        optionalName(
+          catalogue,
+          'updateFrequencies',
+          dataAsset.updateFrequencyCode
+        )
       ),
       dateRow('Created', dataAsset.creationDate),
       dateRow('Accepted', dataAsset.acceptanceDate),
       dateRow('Last updated', dataAsset.modificationDate),
       dateRow('Metadata last updated', dataAsset.metadataDate),
-      textRow('Last reviewed', lastReviewed(dataAsset)),
+      textRow('Last reviewed', lastReviewed(catalogue, dataAsset)),
       dateRow('Next review', dataAsset.nextReviewDate)
     )
   }
@@ -263,11 +283,11 @@ function accessSection(catalogue, dataAsset) {
     rows: rows(
       textRow('Access rights', dataAsset.accessRightsDescription),
       textRow('Provenance', dataAsset.provenanceDescription),
-      textRow('Creator', dataAsset.creatorReference),
+      textRow('Creator', personName(catalogue, dataAsset.creatorReference)),
       ...informationAssetRows(catalogue, dataAsset),
       textRow(
         'Lifecycle state',
-        nameFor(
+        optionalName(
           catalogue,
           'dataAssetLifecycleStates',
           dataAsset.lifecycleStateCode
@@ -278,11 +298,17 @@ function accessSection(catalogue, dataAsset) {
 }
 
 function formatName(catalogue, code) {
+  if (code === undefined) {
+    return undefined
+  }
   const format = referenceValue(catalogue, 'distributionFormats', code)
   return format.mediaType ? `${format.name} (${format.mediaType})` : format.name
 }
 
 function licenceRow(catalogue, code) {
+  if (code === undefined) {
+    return undefined
+  }
   const licence = referenceValue(catalogue, 'licences', code)
   const text = licence.versionNumber
     ? `${licence.name} ${licence.versionNumber}`
@@ -299,7 +325,7 @@ function distributionCard(catalogue, distribution) {
       textRow('Description', distribution.description),
       textRow(
         'Type',
-        nameFor(
+        optionalName(
           catalogue,
           'distributionTypes',
           distribution.distributionTypeCode
@@ -307,7 +333,7 @@ function distributionCard(catalogue, distribution) {
       ),
       textRow(
         'Access method',
-        nameFor(catalogue, 'accessMethods', distribution.accessMethodCode)
+        optionalName(catalogue, 'accessMethods', distribution.accessMethodCode)
       ),
       textRow(
         'Format',
@@ -315,7 +341,7 @@ function distributionCard(catalogue, distribution) {
       ),
       textRow(
         'Authentication',
-        nameFor(
+        optionalName(
           catalogue,
           'authenticationMethods',
           distribution.authenticationMethodCode

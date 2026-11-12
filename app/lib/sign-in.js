@@ -125,11 +125,16 @@ export function safeReturnUrl(value) {
   return `${address.pathname}${address.search}`
 }
 
+// After signing in, a visitor goes back to a page they could have
+// bookmarked: the home page, search, a data asset, Your data assets, a data
+// asset's overview or the prototype settings. Anything else goes home.
 function isReturnPath(path) {
-  const [, page, identifier, ...rest] = path.split('/')
-  if (page === '' && identifier === undefined) {
+  if (path === '/' || path === '/prototype-settings') {
     return true
   }
+  const parts = path.split('/').slice(1)
+  const [page, identifier, ...rest] =
+    parts[0] === 'manage' ? parts.slice(1) : parts
   return (
     page === 'data-assets' &&
     rest.length === 0 &&
@@ -201,7 +206,8 @@ function isSignedCookie(key, cookie, now) {
 // app/config.json, and the passwords are CDP secrets.
 export function createSignIn({
   environment = process.env,
-  clock = Date.now
+  clock = Date.now,
+  onSignOut = () => {}
 } = {}) {
   const required = isSignInRequired(environment)
   const allPasswords = passwordsFrom(environment)
@@ -382,6 +388,7 @@ export function createSignIn({
       return
     }
     res.clearCookie(COOKIE_NAME, { ...COOKIE_OPTIONS })
+    onSignOut(req, res)
     logEvent({
       level: 'info',
       message: 'Signed out',
