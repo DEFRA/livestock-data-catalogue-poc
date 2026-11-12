@@ -209,39 +209,63 @@ describe('dates (the GOV.UK Dates pattern)', () => {
     }
   })
 
-  test('says which parts are missing, and links to the first', () => {
+  test('says which parts are missing, and highlights only those', () => {
     assert.deepEqual(parseDate(parts('', '2', ''), STARTED), {
       error: 'The start date must include a day and year',
-      part: 'day'
+      parts: ['day', 'year']
     })
     assert.deepEqual(parseDate(parts('1', '', '2025'), STARTED), {
       error: 'The start date must include a month',
-      part: 'month'
+      parts: ['month']
     })
   })
 
-  test('says a date must be real', () => {
+  test('says a date that does not exist must be real, highlighting the whole date', () => {
     for (const [day, month, year] of [
       ['29', '2', '2025'],
-      ['31', '4', '2025'],
-      ['1', '13', '2025'],
-      ['1', 'fe', '2025'],
-      ['1', '2', '25'],
-      ['x', '2', '2025'],
-      ['0', '2', '2025']
+      ['31', '4', '2025']
     ]) {
       assert.deepEqual(
         parseDate(parts(day, month, year), STARTED),
-        { error: 'The start date must be a real date', part: 'day' },
+        {
+          error: 'The start date must be a real date',
+          parts: ['day', 'month', 'year']
+        },
         `${day} ${month} ${year}`
       )
+    }
+  })
+
+  test('says a date must be real, highlighting only the parts that cannot be right', () => {
+    for (const [day, month, year, wrong] of [
+      ['1', '13', '2025', ['month']],
+      ['1', 'fe', '2025', ['month']],
+      ['x', '2', '2025', ['day']],
+      ['0', '2', '2025', ['day']],
+      ['32', '2', '2025', ['day']],
+      ['32', '13', 'year', ['day', 'month', 'year']]
+    ]) {
+      assert.deepEqual(
+        parseDate(parts(day, month, year), STARTED),
+        { error: 'The start date must be a real date', parts: wrong },
+        `${day} ${month} ${year}`
+      )
+    }
+  })
+
+  test('says the year must have 4 numbers', () => {
+    for (const year of ['25', '20255']) {
+      assert.deepEqual(parseDate(parts('1', '2', year), STARTED), {
+        error: 'Year must include 4 numbers',
+        parts: ['year']
+      })
     }
   })
 
   test('asks for a required date, and allows an optional one to be empty', () => {
     assert.deepEqual(parseDate(parts('', '', ''), STARTED), {
       error: 'Enter the start date',
-      part: 'day'
+      parts: ['day', 'month', 'year']
     })
     assert.deepEqual(
       parseDate(parts('', '', ''), { ...STARTED, required: undefined }),
@@ -260,7 +284,8 @@ describe('dates (the GOV.UK Dates pattern)', () => {
         {
           name: 'startDate',
           text: 'The start date must include a month',
-          href: '#startDate-month'
+          href: '#startDate-month',
+          parts: ['month']
         }
       ]
     )

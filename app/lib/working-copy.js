@@ -7,9 +7,35 @@ import { describeChanges } from './history.js'
 import { logEvent } from './log.js'
 import { DEFAULT_PERSONA_ID, personFor, personaFor } from './personas.js'
 
-// Limits that keep each session small (decision D33)
+// Limits that keep each session small (decision D33). The size limit,
+// times the 500 sessions the store keeps, must fit in the container's
+// memory.
 export const MOST_NEW_DATA_ASSETS = 20
 const MOST_HISTORY_ENTRIES = 1000
+const MOST_ADDED = Object.freeze({
+  keywords: 300,
+  informationAssets: 20,
+  dataServices: 20
+})
+const MOST_SESSION_CHARACTERS = 500_000
+
+// Publishing, deprecating, retiring and deleting add little or nothing,
+// so only these are checked
+const GROWING_ACTIONS = new Set(['create', 'edit'])
+
+// A change that would take the session over its limits. The page says so,
+// and nothing is saved.
+export class SessionFullError extends Error {}
+
+function isTooBig(changes) {
+  return (
+    Object.entries(MOST_ADDED).some(
+      ([listName, most]) => changes[listName].length > most
+    ) ||
+    JSON.stringify({ ...changes, history: undefined }).length >
+      MOST_SESSION_CHARACTERS
+  )
+}
 
 function emptyChanges(
   personaId = DEFAULT_PERSONA_ID,
@@ -35,7 +61,7 @@ export function sessionChanges(req) {
 // Pages with forms need a session for their CSRF token
 export function ensureSessionChanges(req) {
   if (sessionChanges(req) === undefined) {
-    req.prototypeSession.save(emptyChanges())
+    req.prototypeSession.save(emptyChanges(), { isDisposable: true })
   }
   return sessionChanges(req)
 }
@@ -48,8 +74,14 @@ export function currentPersona(req) {
   return personaFor(sessionChanges(req)?.personaId)
 }
 
+// Choosing who you are gives the session a new ID and form token, so an
+// ID or token known before can't be used to act as this persona
 export function choosePersona(req, personaId) {
-  req.prototypeSession.save({ ...ensureSessionChanges(req), personaId })
+  req.prototypeSession.renew({
+    ...ensureSessionChanges(req),
+    personaId,
+    csrfToken: newCsrfToken()
+  })
 }
 
 // Removes every change, but keeps the persona and the form token
@@ -187,6 +219,9 @@ export function commitChange(req, change) {
   const changes = sessionChanges(req)
   const before = catalogueFor(req)
   const candidate = withChange(changes, change)
+  if (GROWING_ACTIONS.has(change.action) && isTooBig(candidate)) {
+    throw new SessionFullError('The change would make the session too big')
+  }
   const after = buildWorkingCatalogue(baseCatalogue, candidate)
   const today = todayInLondon()
   const known = new Set(problemsIn(before, today))

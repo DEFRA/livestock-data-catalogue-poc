@@ -486,6 +486,7 @@ function removeDistribution(context) {
         required: `Select yes if you want to remove ${item.name}`
       })
     ],
+    buttonText: 'Continue',
     values: {},
     backHref: summaryHref(context),
     save(answers) {

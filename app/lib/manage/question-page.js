@@ -1,6 +1,5 @@
-import { TamperedFormError, checkAnswers, readAnswers } from '../forms.js'
-import { logEvent } from '../log.js'
-import { commitChange } from '../working-copy.js'
+import { checkAnswers, readAnswers } from '../forms.js'
+import { SessionFullError, commitChange } from '../working-copy.js'
 import { NotFoundError, isEditable } from './context.js'
 
 // A question page is defined by a function of the page's context, which
@@ -11,6 +10,11 @@ import { NotFoundError, isEditable } from './context.js'
 //   (checks that need more than one answer or other records), and allowed
 //   (whether the page exists for this data asset and persona; by default
 //   only drafts and published data assets can be changed)
+// - or readOnly, with a list, more paragraphs after it and links, for a
+//   page that explains why something can't be done. It has no form.
+
+const SESSION_FULL =
+  'This prototype session cannot hold any more changes. Reset the prototype in Prototype settings to start again'
 
 function pageFor(definePage, req) {
   const page = definePage(req.manage)
@@ -35,8 +39,12 @@ function render(res, context, page, values, errors) {
       text: error.text,
       href: error.href ?? errorHref(page, error)
     })),
+    // A date's error also says which of its boxes to highlight
     errorTexts: Object.fromEntries(
-      errors.map((error) => [error.name, error.text])
+      errors.flatMap((error) => [
+        [error.name, error.text],
+        ...(error.parts ? [[`${error.name}-parts`, error.parts]] : [])
+      ])
     ),
     values,
     heading: page.heading,
@@ -52,24 +60,11 @@ function render(res, context, page, values, errors) {
     buttonText: page.buttonText ?? 'Save and continue',
     buttonClasses: page.buttonClasses,
     backHref: page.backHref,
-    cancelHref: page.cancelHref
+    readOnly: page.readOnly,
+    list: page.list ?? [],
+    after: page.after ?? [],
+    links: page.links ?? []
   })
-}
-
-function readForm(req, page) {
-  try {
-    return readAnswers(req.body, page.fields)
-  } catch (error) {
-    if (error instanceof TamperedFormError) {
-      logEvent({
-        level: 'warn',
-        message: 'Form refused: it had fields the page does not send',
-        event: { category: ['web'], type: ['denied'], outcome: 'failure' },
-        req
-      })
-    }
-    throw error
-  }
 }
 
 export function questionPage(definePage) {
@@ -80,7 +75,10 @@ export function questionPage(definePage) {
     },
     save(req, res) {
       const page = pageFor(definePage, req)
-      const raw = readForm(req, page)
+      if (page.readOnly) {
+        throw new NotFoundError()
+      }
+      const raw = readAnswers(req.body, page.fields)
       const { values, errors } = checkAnswers(page.fields, raw, req)
       const problems =
         errors.length > 0 ? errors : (page.validate?.(values) ?? [])
@@ -89,8 +87,18 @@ export function questionPage(definePage) {
         return
       }
       const { change, redirect } = page.save(values)
-      if (change) {
-        commitChange(req, change)
+      try {
+        if (change) {
+          commitChange(req, change)
+        }
+      } catch (error) {
+        if (!(error instanceof SessionFullError)) {
+          throw error
+        }
+        render(res, req.manage, page, raw, [
+          { name: page.fields[0].name, text: SESSION_FULL }
+        ])
+        return
       }
       res.redirect(303, redirect)
     }

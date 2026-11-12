@@ -38,18 +38,29 @@
         {{ govukInsetText({ text: inset }) }}
       {% endif %}
 
-      <form method="post" novalidate>
-        <input type="hidden" name="csrfToken" value="{{ csrfToken }}">
-        {% for field in fields %}
-          {{ appField(field, values, errorTexts, isQuestionHeading) }}
+      {% if readOnly %}
+        <ul class="govuk-list govuk-list--bullet">
+          {% for item in list %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% for paragraph in after %}
+          <p class="govuk-body">{{ paragraph }}</p>
         {% endfor %}
-        <div class="govuk-button-group">
+        <ul class="govuk-list">
+          {% for link in links %}
+            <li><a class="govuk-link" href="{{ link.href }}">{{ link.text }}</a></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <form method="post" novalidate>
+          <input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+          {% for field in fields %}
+            {{ appField(field, values, errorTexts, isQuestionHeading) }}
+          {% endfor %}
           {{ govukButton({ text: buttonText, classes: buttonClasses }) }}
-          {% if cancelHref %}
-            <a class="govuk-link" href="{{ cancelHref }}">Cancel</a>
-          {% endif %}
-        </div>
-      </form>
+        </form>
+      {% endif %}
     </div>
   </div>
 {% endblock %}

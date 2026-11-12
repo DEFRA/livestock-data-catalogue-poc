@@ -110,26 +110,49 @@ function twoDigits(number) {
   return String(number).padStart(2, '0')
 }
 
+function isInRange(number, lowest, highest) {
+  return number >= lowest && number <= highest
+}
+
+// The parts that can't be right in any date, such as day 32 or month 13
+function invalidParts(parts) {
+  const day = /^\d{1,2}$/.test(parts.day) ? Number(parts.day) : 0
+  return [
+    ...(isInRange(day, 1, 31) ? [] : ['day']),
+    ...(isInRange(monthNumber(parts.month), 1, 12) ? [] : ['month']),
+    ...(/^\d+$/.test(parts.year) ? [] : ['year'])
+  ]
+}
+
 // The GOV.UK Dates pattern: missing information first, then impossible
-// dates. Month names, in full or shortened, are accepted.
+// dates. Month names, in full or shortened, are accepted. parts says which
+// boxes to highlight: only those that are wrong, or all 3 when the date as
+// a whole isn't real.
 export function parseDate(parts, field) {
   const missing = DATE_PARTS.filter((part) => parts[part] === '')
   if (missing.length === DATE_PARTS.length) {
     return field.required
-      ? { error: field.required, part: 'day' }
+      ? { error: field.required, parts: DATE_PARTS }
       : { value: undefined }
   }
   if (missing.length > 0) {
     return {
       error: `${field.dateName} must include a ${missing.join(' and ')}`,
-      part: missing[0]
+      parts: missing
     }
   }
-  const day = /^\d{1,2}$/.test(parts.day) ? Number(parts.day) : NaN
+  const invalid = invalidParts(parts)
+  if (invalid.length > 0) {
+    return { error: `${field.dateName} must be a real date`, parts: invalid }
+  }
+  if (!/^\d{4}$/.test(parts.year)) {
+    return { error: 'Year must include 4 numbers', parts: ['year'] }
+  }
+  const day = Number(parts.day)
   const month = monthNumber(parts.month)
-  const year = /^\d{4}$/.test(parts.year) ? Number(parts.year) : NaN
+  const year = Number(parts.year)
   if (!isRealDate(year, month, day)) {
-    return { error: `${field.dateName} must be a real date`, part: 'day' }
+    return { error: `${field.dateName} must be a real date`, parts: DATE_PARTS }
   }
   return { value: `${year}-${twoDigits(month)}-${twoDigits(day)}` }
 }
@@ -189,7 +212,7 @@ function checkField(field, raw, req) {
 
 function errorHref(field, result) {
   return field.type === 'date'
-    ? `#${field.name}-${result.part}`
+    ? `#${field.name}-${result.parts[0]}`
     : `#${field.name}`
 }
 
@@ -213,7 +236,8 @@ export function checkAnswers(fields, raw, req) {
       errors.push({
         name: field.name,
         text: result.error,
-        href: errorHref(field, result)
+        href: errorHref(field, result),
+        ...(result.parts ? { parts: result.parts } : {})
       })
     } else {
       values[field.name] = result.value

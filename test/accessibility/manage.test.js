@@ -175,6 +175,10 @@ describe('accessibility of the manage pages', () => {
     ],
     ['delete a draft', get(asAdministrator, () => `${draft}/delete`)],
     [
+      'a draft that cannot be deleted',
+      get(asAdministrator, fixed('/manage/data-assets/DA11112/delete'))
+    ],
+    [
       'remove a distribution',
       get(asAdministrator, fixed(`${MOVEMENT}/distributions/0/remove`))
     ],

@@ -8,6 +8,7 @@ import {
   canManage,
   managesDataAssets
 } from '../personas.js'
+import { isVisible } from '../visibility.js'
 import { catalogueFor, currentPersona } from '../working-copy.js'
 
 // Thrown when a page, or an item on it, doesn't exist for this persona.
@@ -69,6 +70,25 @@ export function requireManagedDataAsset(req, res, next) {
   req.manage.dataAsset = dataAsset
   req.manage.identifier = identifier
   next()
+}
+
+// A persona sees a data asset's title only if catalogue users can see it,
+// or the persona manages it
+export function canSee(context, dataAsset) {
+  return (
+    isVisible(dataAsset) ||
+    canManage(context.catalogue, context.persona, dataAsset, context.today)
+  )
+}
+
+// The other data assets whose relationships point to this one
+export function linkingDataAssets(context) {
+  return context.catalogue.collections.dataAssets.filter((dataAsset) =>
+    (dataAsset.relationships ?? []).some(
+      (relationship) =>
+        relationship.targetResourceIdentifier === context.identifier
+    )
+  )
 }
 
 export function isEditable(context) {

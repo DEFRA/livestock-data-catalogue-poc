@@ -4,6 +4,7 @@ import { describe, test } from 'node:test'
 import { buildCatalogue, catalogue } from '../../app/lib/catalogue-data.js'
 import { describeChanges } from '../../app/lib/history.js'
 import {
+  SessionFullError,
   buildWorkingCatalogue,
   catalogueFor,
   choosePersona,
@@ -25,6 +26,9 @@ function sessionRequest() {
         return saved
       },
       save(data) {
+        saved = structuredClone(data)
+      },
+      renew(data) {
         saved = structuredClone(data)
       }
     }
@@ -166,6 +170,52 @@ describe('the working copy of the catalogue', () => {
       historyFor(req, 'DA1111G').map((entry) => entry.description),
       ['Data asset created']
     )
+  })
+
+  test('refuses a change that would make the session too big, and saves nothing', () => {
+    const req = administratorRequest()
+    const before = req.prototypeSession.data
+
+    assert.throws(
+      () =>
+        commitChange(req, {
+          action: 'edit',
+          identifier: 'DA11111',
+          dataAsset: editedCopy('DA11111', (dataAsset) => {
+            dataAsset.description = 'x'.repeat(500_001)
+          })
+        }),
+      SessionFullError
+    )
+    assert.deepEqual(req.prototypeSession.data, before)
+  })
+
+  test('refuses more than 300 new keywords in a session', () => {
+    const req = administratorRequest()
+    const keywords = Array.from({ length: 301 }, (_, index) => ({
+      name: `made-up keyword ${index}`,
+      languageCode: 'en'
+    }))
+
+    assert.throws(
+      () =>
+        commitChange(req, {
+          action: 'edit',
+          identifier: 'DA11111',
+          dataAsset: editedCopy('DA11111', () => {}),
+          keywords
+        }),
+      SessionFullError
+    )
+  })
+
+  test('choosing a persona gives the session a new form token', () => {
+    const req = administratorRequest()
+    const { csrfToken } = req.prototypeSession.data
+    choosePersona(req, 'data-steward')
+
+    assert.notEqual(req.prototypeSession.data.csrfToken, csrfToken)
+    assert.equal(req.prototypeSession.data.personaId, 'data-steward')
   })
 
   test('removes every change when reset, but keeps the persona and form token', () => {

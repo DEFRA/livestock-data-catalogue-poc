@@ -58,29 +58,66 @@ export function createPrototypeSessions({
     return { id, data: structuredClone(session.data) }
   }
 
-  function write(res, current, data) {
+  // When the store is full, a session that has only been looked at goes
+  // first, so loading a page many times can't push out real sessions.
+  // Sessions are kept in the order they last changed.
+  function sessionToDrop() {
+    for (const [id, session] of sessions) {
+      if (session.isDisposable) {
+        return id
+      }
+    }
+    return sessions.keys().next().value
+  }
+
+  function write(res, id, data, isDisposable) {
     const now = clock()
     removeExpired(now)
-    const id = current?.id ?? randomBytes(32).toString('base64url')
     sessions.delete(id)
     if (sessions.size >= MOST_SESSIONS) {
-      sessions.delete(sessions.keys().next().value)
+      sessions.delete(sessionToDrop())
     }
-    sessions.set(id, { data: structuredClone(data), changedAt: now })
+    sessions.set(id, {
+      data: structuredClone(data),
+      changedAt: now,
+      isDisposable
+    })
     res.cookie(COOKIE_NAME, id, { ...cookieOptions, maxAge: SESSION_LIFETIME })
     return { id, data: structuredClone(data) }
   }
 
+  function newId() {
+    return randomBytes(32).toString('base64url')
+  }
+
   // Gives each request req.prototypeSession, with the data saved for this
-  // browser (or undefined) and a save function
+  // browser (or undefined) and functions to save it:
+  // - save(data, { isDisposable }): isDisposable marks a session nobody
+  //   has changed yet
+  // - renew(data): saves under a new ID, so an ID known before, for
+  //   example one set by another site, stops working
+  // - end(): deletes the session and its cookie
   function middleware(req, res, next) {
     let current = read(req)
     req.prototypeSession = {
       get data() {
         return current?.data
       },
-      save(data) {
-        current = write(res, current, data)
+      save(data, { isDisposable = false } = {}) {
+        current = write(res, current?.id ?? newId(), data, isDisposable)
+      },
+      renew(data) {
+        if (current) {
+          sessions.delete(current.id)
+        }
+        current = write(res, newId(), data, false)
+      },
+      end() {
+        if (current) {
+          sessions.delete(current.id)
+        }
+        current = undefined
+        res.clearCookie(COOKIE_NAME, cookieOptions)
       }
     }
     next()

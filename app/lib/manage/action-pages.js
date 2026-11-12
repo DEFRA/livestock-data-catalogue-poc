@@ -6,8 +6,11 @@ import {
   newDataAssetCount
 } from '../working-copy.js'
 import {
+  NotFoundError,
+  canSee,
   editChange,
   editedDataAsset,
+  linkingDataAssets,
   manageHref,
   systemDateTime
 } from './context.js'
@@ -278,19 +281,57 @@ function retire(context) {
   }
 }
 
+// Deleting a draft that other data assets link to would break their
+// links, so the page says why it can't be deleted instead
+function deleteBlocked(context, linking) {
+  const { titleName } = context.dataAsset
+  return {
+    heading: `You cannot delete ${titleName}`,
+    allowed: () => true,
+    readOnly: true,
+    fields: [],
+    paragraphs: [
+      `Other data assets link to ${titleName}, so deleting it would break their links:`
+    ],
+    list: linking.map((dataAsset) =>
+      canSee(context, dataAsset)
+        ? dataAsset.titleName
+        : 'a data asset you do not manage'
+    ),
+    after: [
+      'You can retire it instead. A catalogue administrator can remove the links.'
+    ],
+    links: [
+      {
+        href: manageHref(context.identifier, 'retire'),
+        text: `Retire ${titleName}`
+      },
+      { href: overviewHref(context), text: `Return to ${titleName}` }
+    ],
+    backHref: overviewHref(context)
+  }
+}
+
 // Drafts can be deleted (LDAT-252, question 26). Their identifier is never
 // issued again (S05).
 function deleteDraft(context) {
+  if (context.dataAsset.publicationStateCode !== 'DRAFT') {
+    throw new NotFoundError()
+  }
+  const linking = linkingDataAssets(context)
+  if (linking.length > 0) {
+    return deleteBlocked(context, linking)
+  }
   const heading = `Are you sure you want to delete ${context.dataAsset.titleName}?`
   return {
     heading,
-    allowed: () => context.dataAsset.publicationStateCode === 'DRAFT',
     fields: [
       radiosField('confirm', heading, YES_NO_OPTIONS, {
         classes: 'govuk-radios--inline',
         required: `Select yes if you want to delete ${context.dataAsset.titleName}`
       })
     ],
+    buttonText: 'Continue',
     values: {},
     backHref: overviewHref(context),
     save(answers) {

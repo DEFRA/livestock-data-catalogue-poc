@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { after, before, beforeEach, describe, test } from 'node:test'
 
 import { startApp } from '../helpers/app.js'
@@ -12,6 +14,20 @@ import {
 import { visitor } from '../helpers/session.js'
 
 const MOVEMENT = '/manage/data-assets/DA11111'
+
+const require = createRequire(import.meta.url)
+const GOVUK_FRONTEND_CSS = readFileSync(
+  require.resolve('govuk-frontend/dist/govuk/govuk-frontend.min.css'),
+  'utf8'
+)
+
+function highlightedBoxes(page, name) {
+  return ['day', 'month', 'year'].filter((part) =>
+    page.document
+      .querySelector(`#${name}-${part}`)
+      .classList.contains('govuk-input--error')
+  )
+}
 
 function errorsOn(page) {
   return textsOf(page, '.govuk-error-summary__list a')
@@ -36,6 +52,35 @@ describe('the other manage questions', () => {
   beforeEach(async () => {
     administrator = visitor(app)
     await administrator.becomes('catalogue-administrator')
+  })
+
+  test('every tag colour the manage pages use is in GOV.UK Frontend', async () => {
+    const draft = await createDraft(administrator)
+    await answer(administrator, `${draft}/about/type`, {
+      dataAssetTypeCode: 'MASTER_DATA'
+    })
+    await answer(administrator, `${draft}/distributions/add`, {
+      name: 'Unfinished',
+      description: ''
+    })
+    const pages = [
+      await administrator.get(draft),
+      await administrator.get(`${draft}/distributions`),
+      await administrator.get('/manage/data-assets'),
+      await administrator.get(MOVEMENT)
+    ]
+    const classes = new Set(
+      pages.flatMap((page) =>
+        [...page.document.querySelectorAll('.govuk-tag')].flatMap((tag) =>
+          [...tag.classList].filter((name) => name.startsWith('govuk-tag--'))
+        )
+      )
+    )
+
+    assert.ok(classes.size > 0)
+    for (const name of classes) {
+      assert.ok(GOVUK_FRONTEND_CSS.includes(`.${name}{`), name)
+    }
   })
 
   describe('information assets (Q32)', () => {
@@ -625,6 +670,32 @@ describe('the other manage questions', () => {
       assert.deepEqual(errorsOn(page), [
         'The date the data asset was created must be the same as or before the date the data was last changed'
       ])
+    })
+
+    test('highlights only the date boxes that are wrong, or all 3 when the date is not real', async () => {
+      const noYear = await administrator.post(`${MOVEMENT}/dates/created`, {
+        'creationDate-day': '1',
+        'creationDate-month': '2',
+        'creationDate-year': ''
+      })
+      const notReal = await administrator.post(
+        `${MOVEMENT}/dates/created`,
+        dateAnswer('creationDate', '2025-04-31')
+      )
+      const shortYear = await administrator.post(`${MOVEMENT}/dates/created`, {
+        'creationDate-day': '1',
+        'creationDate-month': '2',
+        'creationDate-year': '25'
+      })
+
+      assert.deepEqual(highlightedBoxes(noYear, 'creationDate'), ['year'])
+      assert.deepEqual(highlightedBoxes(notReal, 'creationDate'), [
+        'day',
+        'month',
+        'year'
+      ])
+      assert.deepEqual(errorsOn(shortYear), ['Year must include 4 numbers'])
+      assert.deepEqual(highlightedBoxes(shortYear, 'creationDate'), ['year'])
     })
 
     test('the period the data covers cannot end before it starts', async () => {

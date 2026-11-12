@@ -51,7 +51,7 @@
   {% set titleHtml %}{{ card.title }}{% if card.isIncomplete %} {{ govukTag({ text: "Incomplete", classes: "govuk-tag--yellow" }) }}{% endif %}{% endset %}
   {{ govukSummaryList({
     card: {
-      title: { html: titleHtml, headingLevel: card.headingLevel or 2 },
+      title: { html: titleHtml, headingLevel: 2 },
       actions: { items: actionItems } if actionItems | length
     },
     rows: summaryRows

@@ -472,20 +472,22 @@ function previousAssignments(context) {
   return [
     ...(dataAsset.governanceAssignments ?? [])
       .filter(notCurrent)
-      .map((assignment) => [
-        assignment.personName,
-        assignment.governanceRoleCode === 'DATA_OWNER'
-          ? 'Data owner'
-          : 'Data steward',
-        periodText(assignment.effectiveFromDate, assignment.effectiveToDate)
-      ]),
-    ...(dataAsset.custodians ?? [])
-      .filter(notCurrent)
-      .map((custodian) => [
-        custodian.organisationName,
-        'Data custodian',
-        periodText(custodian.effectiveFromDate, custodian.effectiveToDate)
-      ])
+      .map((assignment) => ({
+        who: assignment.personName,
+        role:
+          assignment.governanceRoleCode === 'DATA_OWNER'
+            ? 'Data owner'
+            : 'Data steward',
+        when: periodText(
+          assignment.effectiveFromDate,
+          assignment.effectiveToDate
+        )
+      })),
+    ...(dataAsset.custodians ?? []).filter(notCurrent).map((custodian) => ({
+      who: custodian.organisationName,
+      role: 'Data custodian',
+      when: periodText(custodian.effectiveFromDate, custodian.effectiveToDate)
+    }))
   ]
 }
 
@@ -668,10 +670,10 @@ function relatedSummary(context) {
         'relationshipTypes',
         relationship.relationshipTypeCode
       ),
-      text: relationshipTargetText(catalogue, relationship),
+      text: relationshipTargetText(context, relationship),
       items: relationship.description
         ? [
-            relationshipTargetText(catalogue, relationship),
+            relationshipTargetText(context, relationship),
             relationship.description
           ]
         : undefined,
@@ -684,7 +686,7 @@ function relatedSummary(context) {
           )
         : undefined,
       changeText: 'Remove',
-      hiddenText: relationshipTargetText(catalogue, relationship)
+      hiddenText: relationshipTargetText(context, relationship)
     })),
     buttons: isEditable(context)
       ? [

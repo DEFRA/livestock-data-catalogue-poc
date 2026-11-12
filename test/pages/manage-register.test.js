@@ -449,6 +449,70 @@ describe('registering a data asset (journey 2)', () => {
     assert.equal((await administrator.get(address)).status, 404)
   })
 
+  test('a draft another data asset links to cannot be deleted, and the page says why (Q26)', async () => {
+    const page = await administrator.get('/manage/data-assets/DA11112/delete')
+    const posted = await administrator.post(
+      '/manage/data-assets/DA11112/delete',
+      { confirm: 'yes' }
+    )
+
+    assert.equal(page.status, 200)
+    assert.equal(textsOf(page, 'h1')[0], 'You cannot delete Animal Identity')
+    assert.deepEqual(textsOf(page, 'main .govuk-list--bullet li'), [
+      'Livestock Holding'
+    ])
+    assert.equal(page.document.querySelector('main form'), null)
+    assert.ok(
+      page.document.querySelector(
+        'main a[href="/manage/data-assets/DA11112/retire"]'
+      )
+    )
+    assert.equal(posted.status, 404)
+    assert.equal(
+      (await administrator.get('/manage/data-assets/DA11112')).status,
+      200
+    )
+  })
+
+  test('a draft that replaces a deprecated data asset cannot be deleted', async () => {
+    await answer(administrator, '/manage/data-assets/DA11111/deprecate', {
+      replacement: 'DA11115'
+    })
+    await answer(administrator, '/manage/data-assets/DA11115/about/version', {
+      versionNumber: '9'
+    })
+    const page = await administrator.get('/manage/data-assets/DA11115/delete')
+
+    assert.ok(
+      textsOf(page, 'main .govuk-list--bullet li').includes('Animal Movement')
+    )
+  })
+
+  test('a data steward is not told the title of a linking data asset they cannot see', async () => {
+    await answer(administrator, `${address}/related-resources/add`, {
+      relationshipTypeCode: 'RELATED_TO',
+      target: 'DA11112'
+    })
+    await administrator.becomes('data-steward')
+    const page = await administrator.get('/manage/data-assets/DA11112/delete')
+
+    assert.deepEqual(textsOf(page, 'main .govuk-list--bullet li'), [
+      'Livestock Holding',
+      'a data asset you do not manage'
+    ])
+  })
+
+  test('the created notice only shows for a data asset created in this session', async () => {
+    const page = await administrator.get(
+      '/manage/data-assets/DA11112?created=yes'
+    )
+
+    assert.equal(
+      page.document.querySelector('.govuk-notification-banner'),
+      null
+    )
+  })
+
   test('a deleted notice only shows for a data asset deleted in this session', async () => {
     const page = await administrator.get('/manage/data-assets?deleted=DA11111')
 

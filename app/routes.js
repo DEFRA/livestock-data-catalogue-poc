@@ -40,7 +40,11 @@ import { createSignIn } from './lib/sign-in.js'
 import { csrfTokenFor } from './lib/working-copy.js'
 
 const router = govukPrototypeKit.requests.setupRouter()
-const signIn = createSignIn()
+// Signing out also ends the research session, so the next person on a
+// shared computer starts again
+const signIn = createSignIn({
+  onSignOut: (req) => req.prototypeSession?.end()
+})
 const prototypeSessions = createPrototypeSessions()
 const checkForm = requireValidForm(csrfTokenFor)
 

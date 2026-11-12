@@ -42,7 +42,7 @@
         {% set previousRows = [] %}
         {% for entry in previous %}
           {% set previousRows = previousRows.concat([[
-            { text: entry[0] }, { text: entry[1] }, { text: entry[2] }
+            { text: entry.who }, { text: entry.role }, { text: entry.when }
           ]]) %}
         {% endfor %}
         {% set previousHtml %}

@@ -140,18 +140,22 @@ const about = {
 // One keyword a line. Blank lines are ignored, and a repeat, ignoring case,
 // is kept once (S14, LDAT-235 question 19).
 export function keywordLines(text = '') {
+  const seen = new Set()
   const keywords = []
   for (const line of text.split(/\r?\n/)) {
     const keyword = line.trim()
-    if (
-      keyword !== '' &&
-      !keywords.some((known) => sameTextIgnoringCase(known, keyword))
-    ) {
+    const key = keyword.toLocaleLowerCase('en-GB')
+    if (keyword !== '' && !seen.has(key)) {
+      seen.add(key)
       keywords.push(keyword)
     }
   }
   return keywords
 }
+
+// Room for every keyword at its longest, each on its own line. Anything
+// longer is refused before it's split into lines.
+const LONGEST_KEYWORDS_TEXT = MOST_KEYWORDS * (LONGEST_KEYWORD + 2)
 
 function keywordsCheck(text) {
   const keywords = keywordLines(text)
@@ -192,6 +196,8 @@ function keywordsQuestion(context) {
         hint: 'Enter each keyword on a new line, for example cattle',
         rows: 6,
         required: 'Enter at least one keyword',
+        maxLength: LONGEST_KEYWORDS_TEXT,
+        tooLong: `Enter ${MOST_KEYWORDS} keywords or fewer, each 200 characters or fewer`,
         check: keywordsCheck
       }
     ],

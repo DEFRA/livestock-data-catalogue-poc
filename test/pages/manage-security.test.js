@@ -220,6 +220,43 @@ describe('forms are protected against cross-site requests and tampering (criteri
     assert.equal({}.publicationStateCode, undefined)
   })
 
+  test('refuses a JSON post with a __proto__ field, and saves nothing', async () => {
+    const participant = visitor(app)
+    await participant.becomes('catalogue-administrator')
+    const response = await fetch(
+      new URL(`${MOVEMENT}/about/title`, app.baseUrl),
+      {
+        method: 'POST',
+        redirect: 'manual',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `prototype-session=${participant.cookies.get('prototype-session')}`
+        },
+        body: `{"csrfToken": "${participant.csrfToken}", "titleName": "Changed", "__proto__": {"polluted": "yes"}}`
+      }
+    )
+
+    assert.equal(response.status, 404)
+    assert.equal(
+      await titleOf(participant),
+      'Title Animal Movement Change title'
+    )
+    assert.equal({}.polluted, undefined)
+  })
+
+  test('the related resource options leave out data assets the persona cannot see', async () => {
+    const steward = visitor(app)
+    await steward.becomes('data-steward')
+    const page = await steward.get(`${MOVEMENT}/related-resources/add`)
+    const targets = [
+      ...page.document.querySelectorAll('input[name="target"]')
+    ].map((input) => input.value)
+
+    assert.ok(targets.includes('DA11112'), 'a draft they manage')
+    assert.ok(targets.includes('DA11113'), 'a published data asset')
+    assert.equal(targets.includes('DA11116'), false, 'a retired data asset')
+  })
+
   test('refuses a list where the page sends text', async () => {
     const page = await administrator.post(`${MOVEMENT}/about/title`, [
       ['titleName', 'One'],
@@ -227,6 +264,122 @@ describe('forms are protected against cross-site requests and tampering (criteri
     ])
 
     assert.equal(page.status, 404)
+  })
+})
+
+describe('the session ends and renews safely', () => {
+  let app
+
+  before(async () => {
+    app = await startApp()
+  })
+
+  after(async () => {
+    await app.stop()
+  })
+
+  test('signing out ends the session, so the next person on the computer starts again', async () => {
+    const participant = visitor(app)
+    await participant.becomes('catalogue-administrator')
+    const oldCookie = `prototype-session=${participant.cookies.get('prototype-session')}`
+    const signedOut = await participant.get('/sign-out')
+
+    assert.match(
+      signedOut.headers.getSetCookie().join('\n'),
+      /prototype-session=;/
+    )
+    const page = await app.getPage('/manage/data-assets', { cookie: oldCookie })
+    assert.equal(page.status, 404)
+  })
+
+  test('a sign-out link on another site does not end the session', async () => {
+    const participant = visitor(app)
+    await participant.becomes('catalogue-administrator')
+    await participant.get('/sign-out', {
+      headers: { 'sec-fetch-site': 'cross-site' }
+    })
+
+    assert.equal((await participant.get('/manage/data-assets')).status, 200)
+  })
+
+  test('choosing a persona gives a new session ID and form token, so ones known before stop working', async () => {
+    const participant = visitor(app)
+    await participant.get('/prototype-settings')
+    const oldCookie = `prototype-session=${participant.cookies.get('prototype-session')}`
+    const oldToken = participant.csrfToken
+    await participant.becomes('catalogue-administrator')
+
+    assert.notEqual(
+      `prototype-session=${participant.cookies.get('prototype-session')}`,
+      oldCookie
+    )
+    assert.notEqual(participant.csrfToken, oldToken)
+    const withOldCookie = await app.getPage('/manage/data-assets', {
+      cookie: oldCookie
+    })
+    assert.equal(withOldCookie.status, 404)
+    const withOldToken = await participant.post(`${MOVEMENT}/about/title`, {
+      titleName: 'Changed',
+      csrfToken: oldToken
+    })
+    assert.equal(withOldToken.status, 403)
+  })
+})
+
+describe('limits on what a form or session can hold (D33)', () => {
+  let app
+
+  before(async () => {
+    app = await startApp()
+  })
+
+  after(async () => {
+    await app.stop()
+  })
+
+  test('refuses a very long keywords answer straight away', async () => {
+    const participant = visitor(app)
+    await participant.becomes('catalogue-administrator')
+    const keywords = Array.from(
+      { length: 12000 },
+      (_, index) => `k${index}`
+    ).join('\n')
+    const started = performance.now()
+    const page = await participant.post(`${MOVEMENT}/classification/keywords`, {
+      keywords
+    })
+
+    assert.ok(performance.now() - started < 1000)
+    assert.deepEqual(textsOf(page, '.govuk-error-summary__list a'), [
+      'Enter 30 keywords or fewer, each 200 characters or fewer'
+    ])
+  })
+
+  test('says when the session cannot hold any more, and saves nothing', async () => {
+    const participant = visitor(app)
+    await participant.becomes('catalogue-administrator')
+    const add = (count) =>
+      participant.post(`${MOVEMENT}/information-asset/add`, {
+        name: `Made-up information asset ${count}`,
+        securityClassificationCode: 'OFFICIAL',
+        retentionPeriodDescription: '7 years'
+      })
+    for (let count = 1; count <= 20; count += 1) {
+      assert.equal((await add(count)).status, 303)
+    }
+    const page = await add(21)
+
+    assert.equal(page.status, 200)
+    assert.deepEqual(textsOf(page, '.govuk-error-summary__list a'), [
+      'This prototype session cannot hold any more changes. Reset the prototype in Prototype settings to start again'
+    ])
+    const choose = await participant.get(`${MOVEMENT}/information-asset/choose`)
+    assert.equal(
+      textsOf(choose, '.govuk-radios__label').includes(
+        'Made-up information asset 21'
+      ),
+      false
+    )
   })
 })
 

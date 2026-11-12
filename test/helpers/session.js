@@ -50,13 +50,15 @@ export function visitor(app) {
     async follow(page) {
       return request(page.headers.get('location'))
     },
-    // Chooses who the visitor is on the prototype settings page
+    // Chooses who the visitor is on the prototype settings page, then
+    // loads the page it goes to, which has the session's new token
     async becomes(personaId) {
       await request('/prototype-settings')
       const saved = await this.post('/prototype-settings', { personaId })
       if (saved.status !== 303) {
         throw new Error(`Could not choose ${personaId}: ${saved.status}`)
       }
+      await this.follow(saved)
       return saved
     }
   }

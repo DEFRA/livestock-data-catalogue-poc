@@ -1,6 +1,12 @@
 import { isDataAssetIdentifier } from '../identifiers.js'
 import { nameFor } from '../reference-data.js'
-import { editChange, itemAt, manageHref, systemDateTime } from './context.js'
+import {
+  canSee,
+  editChange,
+  itemAt,
+  manageHref,
+  systemDateTime
+} from './context.js'
 import {
   OR_DIVIDER,
   YES_NO_OPTIONS,
@@ -137,7 +143,11 @@ function addInformationAsset(context) {
 function targetOptions(context) {
   return [
     ...context.catalogue.collections.dataAssets
-      .filter((dataAsset) => dataAsset.identifier !== context.identifier)
+      .filter(
+        (dataAsset) =>
+          dataAsset.identifier !== context.identifier &&
+          canSee(context, dataAsset)
+      )
       .map((dataAsset) => ({
         value: dataAsset.identifier,
         text: dataAsset.titleName,
@@ -229,11 +239,14 @@ function addRelatedResource(context) {
   }
 }
 
-export function relationshipTargetText(catalogue, relationship) {
+// A data asset's title, if the persona can see it, or else its identifier
+export function relationshipTargetText(context, relationship) {
   const target = relationship.targetResourceIdentifier
-  return isDataAssetIdentifier(target)
-    ? (catalogue.dataAssetsByIdentifier.get(target)?.titleName ?? target)
-    : target
+  if (!isDataAssetIdentifier(target)) {
+    return target
+  }
+  const dataAsset = context.catalogue.dataAssetsByIdentifier.get(target)
+  return dataAsset && canSee(context, dataAsset) ? dataAsset.titleName : target
 }
 
 function removeRelatedResource(context) {
@@ -241,7 +254,7 @@ function removeRelatedResource(context) {
     context.dataAsset.relationships,
     context.req.params.position
   )
-  const heading = `Are you sure you want to remove ${relationshipTargetText(context.catalogue, item)} from the related resources?`
+  const heading = `Are you sure you want to remove ${relationshipTargetText(context, item)} from the related resources?`
   return {
     heading,
     fields: [
@@ -250,6 +263,7 @@ function removeRelatedResource(context) {
         required: 'Select yes if you want to remove it'
       })
     ],
+    buttonText: 'Continue',
     values: {},
     backHref: relatedHref(context),
     save(answers) {

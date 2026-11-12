@@ -154,6 +154,56 @@ describe('the prototype session', () => {
     assert.deepEqual(exchange(sessions, ids[500]).session.data, { count: 500 })
   })
 
+  test('when full, deletes a session nobody has changed before one somebody has', () => {
+    const time = { now: 0 }
+    const sessions = sessionsAt(time)
+    const real = exchange(sessions, undefined)
+    real.session.save({ real: true })
+    for (let count = 0; count < 600; count += 1) {
+      time.now += 1
+      exchange(sessions, undefined).session.save({}, { isDisposable: true })
+    }
+
+    assert.deepEqual(exchange(sessions, real.cookies[0].value).session.data, {
+      real: true
+    })
+  })
+
+  test('renewing keeps the data under a new ID, and the old ID stops working', () => {
+    const sessions = sessionsAt({ now: 0 })
+    const first = exchange(sessions, undefined)
+    first.session.save({ personaId: 'catalogue-user' })
+    const later = exchange(sessions, first.cookies[0].value)
+    later.session.renew({ personaId: 'data-steward' })
+
+    assert.notEqual(later.cookies[0].value, first.cookies[0].value)
+    assert.deepEqual(exchange(sessions, later.cookies[0].value).session.data, {
+      personaId: 'data-steward'
+    })
+    assert.equal(
+      exchange(sessions, first.cookies[0].value).session.data,
+      undefined
+    )
+  })
+
+  test('ending deletes the data and clears the cookie', () => {
+    const sessions = sessionsAt({ now: 0 })
+    const first = exchange(sessions, undefined)
+    first.session.save({ personaId: 'data-steward' })
+    const req = { cookies: { [sessions.cookieName]: first.cookies[0].value } }
+    const cleared = []
+    const res = { clearCookie: (name) => cleared.push(name) }
+    sessions.middleware(req, res, () => {})
+    req.prototypeSession.end()
+
+    assert.equal(req.prototypeSession.data, undefined)
+    assert.deepEqual(cleared, ['prototype-session'])
+    assert.equal(
+      exchange(sessions, first.cookies[0].value).session.data,
+      undefined
+    )
+  })
+
   test('removes expired sessions when another is saved', () => {
     const time = { now: 0 }
     const sessions = sessionsAt(time)

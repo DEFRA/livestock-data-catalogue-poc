@@ -206,7 +206,8 @@ function isSignedCookie(key, cookie, now) {
 // app/config.json, and the passwords are CDP secrets.
 export function createSignIn({
   environment = process.env,
-  clock = Date.now
+  clock = Date.now,
+  onSignOut = () => {}
 } = {}) {
   const required = isSignInRequired(environment)
   const allPasswords = passwordsFrom(environment)
@@ -387,6 +388,7 @@ export function createSignIn({
       return
     }
     res.clearCookie(COOKIE_NAME, { ...COOKIE_OPTIONS })
+    onSignOut(req, res)
     logEvent({
       level: 'info',
       message: 'Signed out',

@@ -91,7 +91,8 @@ function overviewNotice(req) {
   const { dataAsset, identifier } = req.manage
   if (
     req.query.created === 'yes' &&
-    dataAsset.publicationStateCode === 'DRAFT'
+    dataAsset.publicationStateCode === 'DRAFT' &&
+    sessionChanges(req).issuedIdentifiers.includes(identifier)
   ) {
     return `Data asset created. Its identifier is ${identifier}`
   }
@@ -112,15 +113,8 @@ function taskItems(context, sections) {
     status:
       section.status === 'Completed'
         ? { text: 'Completed' }
-        : {
-            tag: {
-              text: section.status,
-              classes:
-                section.status === 'In progress'
-                  ? 'govuk-tag--light-blue'
-                  : 'govuk-tag--blue'
-            }
-          }
+        : // The default tag is blue: GOV.UK Frontend v6 has no blue modifier
+          { tag: { text: section.status } }
   }))
 }
 
@@ -131,7 +125,7 @@ function publishItem(context, tasks) {
     title: { text: 'Check and publish' },
     href: ready ? manageHref(context.identifier, 'publish') : undefined,
     status: ready
-      ? { tag: { text: 'Not yet started', classes: 'govuk-tag--blue' } }
+      ? { tag: { text: 'Not yet started' } }
       : {
           text: 'Cannot start yet',
           classes: 'govuk-task-list__status--cannot-start-yet'

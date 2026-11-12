@@ -93,7 +93,7 @@ describe('the support and error pages', () => {
 
     assert.match(
       text,
-      /your changes are kept in the prototype's memory, not saved to its data, and only your browser can see them\. They are deleted 4 hours after your last change, when you reset the prototype in Prototype settings, or when the prototype restarts\./
+      /your changes are kept in the prototype's memory, not saved to its data, and only your browser can see them\. They are deleted 4 hours after your last change, when you sign out, when you reset the prototype in Prototype settings, or when the prototype restarts\./
     )
   })
 
@@ -126,7 +126,7 @@ describe('the support and error pages', () => {
 
     assert.match(
       text,
-      /This prototype is partially compliant with the Web Content Accessibility Guidelines version 2\.2 AA standard, because we have not yet finished testing it\. We do not know of any part of it that fails the standard\. We check every page with automated tests\. We have not yet finished checking it by hand or with assistive technologies/
+      /This prototype is partially compliant with the Web Content Accessibility Guidelines version 2\.2 AA standard, because of the issue listed under Known issues, and because we have not yet finished testing it\. We check every page with automated tests\. We have not yet finished checking it by hand or with assistive technologies/
     )
     assert.match(
       text,
@@ -134,24 +134,15 @@ describe('the support and error pages', () => {
     )
   })
 
-  test('the accessibility statement says how long changes are kept, as there is no way to ask for more time', async () => {
-    const page = await app.getPage('/accessibility-statement')
-
-    assert.match(
-      page.document.querySelector('main').textContent,
-      /Changes you make to data assets are kept for 4 hours after your last change\. This is a research prototype, so there is no way to ask for more time\./
-    )
-  })
-
-  test('the accessibility statement has no known issues now that Welsh keywords are marked as Welsh', async () => {
+  test('the accessibility statement lists the 4-hour limit on changes as a known WCAG 2.2.1 failure', async () => {
     const page = await app.getPage('/accessibility-statement')
     const knownIssues = [...page.document.querySelectorAll('h2')].find(
       (heading) => heading.textContent.trim() === 'Known issues'
     ).nextElementSibling
 
-    assert.equal(
+    assert.match(
       knownIssues.textContent.trim(),
-      'We do not know of any problems at the moment. We will list any we find here.'
+      /^Changes you make to data assets are deleted 4 hours after your last change\. The prototype does not warn you first, and there is no way to ask for more time\. This fails WCAG 2\.2 success criterion 2\.2\.1 \(timing adjustable\)\./
     )
   })
 

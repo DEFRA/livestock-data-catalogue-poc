@@ -1,3 +1,4 @@
+import { TamperedFormError } from '../forms.js'
 import { logEvent } from '../log.js'
 
 export function pageNotFound(req, res) {
@@ -16,6 +17,14 @@ export function problemWithTheService(error, req, res, next) {
   if (res.headersSent) {
     next(error)
     return
+  }
+  if (error instanceof TamperedFormError) {
+    logEvent({
+      level: 'warn',
+      message: 'Form refused: it had fields the page does not send',
+      event: { category: ['web'], type: ['denied'], outcome: 'failure' },
+      req
+    })
   }
   if (isClientError(error)) {
     pageNotFound(req, res)

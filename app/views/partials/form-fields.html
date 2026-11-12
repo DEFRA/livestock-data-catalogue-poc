@@ -31,7 +31,8 @@
 
 {% macro appDateInput(field, values, errors, isPageHeading) %}
   {% set parts = values[field.name] or {} %}
-  {% set errorClass = " govuk-input--error" if errors[field.name] else "" %}
+  {# Only the boxes that are wrong, or all 3 for an error about the whole date #}
+  {% set errorParts = errors[field.name + "-parts"] or (["day", "month", "year"] if errors[field.name] else []) %}
   {{ govukDateInput({
     id: field.name,
     namePrefix: field.name,
@@ -45,9 +46,9 @@
     hint: { text: field.hint } if field.hint,
     errorMessage: { text: errors[field.name] } if errors[field.name],
     items: [
-      { name: "day", classes: "govuk-input--width-2" + errorClass, value: parts.day },
-      { name: "month", classes: "govuk-input--width-2" + errorClass, value: parts.month },
-      { name: "year", classes: "govuk-input--width-4" + errorClass, value: parts.year }
+      { name: "day", classes: "govuk-input--width-2" + (" govuk-input--error" if "day" in errorParts else ""), value: parts.day },
+      { name: "month", classes: "govuk-input--width-2" + (" govuk-input--error" if "month" in errorParts else ""), value: parts.month },
+      { name: "year", classes: "govuk-input--width-4" + (" govuk-input--error" if "year" in errorParts else ""), value: parts.year }
     ]
   }) }}
 {% endmacro %}
