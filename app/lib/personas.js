@@ -14,13 +14,13 @@ export const PERSONAS = Object.freeze([
     id: 'data-steward',
     roleName: 'data steward',
     entraObjectId: '7bff5498-dd64-4e3b-949b-e6c6e8b1c023',
-    hint: 'Sam Specimen, Animal and Plant Health Agency. Manages the data assets they are assigned to'
+    hint: 'Manages the data assets they are assigned to'
   }),
   Object.freeze({
     id: 'catalogue-administrator',
     roleName: 'catalogue administrator',
     entraObjectId: '40044d45-47b9-47bc-9e16-ab6cbf0baf31',
-    hint: 'Jamie Placeholder, Defra. Creates data assets and says who is responsible for them'
+    hint: 'Creates data assets and says who is responsible for them'
   })
 ])
 

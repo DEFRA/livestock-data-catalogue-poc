@@ -29,6 +29,11 @@ describe('the prototype settings page (D20)', () => {
       'Sam Specimen, data steward, Animal and Plant Health Agency',
       'Jamie Placeholder, catalogue administrator, Department for Environment, Food and Rural Affairs'
     ])
+    assert.deepEqual(textsOf(page, '.govuk-radios__hint'), [
+      'Can find and view published data assets only',
+      'Manages the data assets they are assigned to',
+      'Creates data assets and says who is responsible for them'
+    ])
     assert.equal(
       page.document.querySelector('input[name="personaId"]:checked').value,
       'catalogue-user'

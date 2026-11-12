@@ -74,6 +74,17 @@ describe('reading a form post', () => {
     )
   })
 
+  test("ignores the value the Kit's browser script adds to every group of checkboxes", () => {
+    assert.deepEqual(
+      readAnswers({ colours: ['red', '_unchecked'] }, [COLOURS]).colours,
+      ['red']
+    )
+    assert.deepEqual(
+      readAnswers({ colours: '_unchecked' }, [COLOURS]).colours,
+      []
+    )
+  })
+
   test('reads a date as its day, month and year, and a conditional question with its parent', () => {
     assert.deepEqual(
       readAnswers(

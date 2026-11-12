@@ -53,13 +53,18 @@ function textFrom(body, key) {
   return value?.trim() ?? ''
 }
 
+// The Kit's browser script adds this value to every group of checkboxes
+// when a form is sent, so the Kit can tell a box was unticked. It isn't
+// an answer.
+const KIT_UNCHECKED = '_unchecked'
+
 function listFrom(body, key) {
   const value = Object.hasOwn(body, key) ? body[key] : []
   const values = [value].flat()
   if (values.some((item) => typeof item !== 'string')) {
     throw new TamperedFormError(`The field ${key} is not a list of text`)
   }
-  return [...new Set(values)]
+  return [...new Set(values)].filter((item) => item !== KIT_UNCHECKED)
 }
 
 function rawAnswer(body, field) {

@@ -492,6 +492,25 @@ describe('the other manage questions', () => {
       )
     })
 
+    test('recommends a data custodian only when there is none', async () => {
+      const draft = await createDraft(administrator)
+      const without = await administrator.get(`${draft}/responsibility`)
+      await answer(
+        administrator,
+        `${draft}/responsibility/data-custodian/add`,
+        {
+          organisationName: 'Rural Payments Agency',
+          ...dateAnswer('effectiveFromDate', '2025-01-01')
+        }
+      )
+      const withOne = await administrator.get(`${draft}/responsibility`)
+
+      assert.deepEqual(textsOf(without, '.govuk-inset-text'), [
+        'A data custodian is recommended, but you can publish without one.'
+      ])
+      assert.deepEqual(textsOf(withOne, '.govuk-inset-text'), [])
+    })
+
     test('an ended data custodian moves to the previous assignments', async () => {
       await answer(
         administrator,
@@ -597,6 +616,32 @@ describe('the other manage questions', () => {
         ),
         null
       )
+    })
+  })
+
+  describe("checkboxes, as a browser running the Kit's script sends them", () => {
+    test('saves 2 categories sent with the Kit\'s "_unchecked" value', async () => {
+      await answer(administrator, `${MOVEMENT}/classification/categories`, [
+        ['categoryCodes', 'HOLDINGS'],
+        ['categoryCodes', 'SHEEP'],
+        ['categoryCodes', '_unchecked']
+      ])
+      const section = await administrator.get(`${MOVEMENT}/classification`)
+
+      assert.ok(
+        rowsOf(section).some((row) =>
+          row.startsWith('Categories Holdings Sheep')
+        )
+      )
+    })
+
+    test('asks for a category when only the Kit\'s "_unchecked" value is sent', async () => {
+      const page = await administrator.post(
+        `${MOVEMENT}/classification/categories`,
+        [['categoryCodes', '_unchecked']]
+      )
+
+      assert.deepEqual(errorsOn(page), ['Select at least one category'])
     })
   })
 

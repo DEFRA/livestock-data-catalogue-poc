@@ -491,6 +491,17 @@ function previousAssignments(context) {
   ]
 }
 
+function responsibilityInset(context) {
+  if (!canChangeResponsibility(context)) {
+    return 'Ask a catalogue administrator to change who is responsible for this data asset.'
+  }
+  const hasCustodian =
+    currentWithPositions(context.dataAsset.custodians, context.today).length > 0
+  return hasCustodian
+    ? undefined
+    : 'A data custodian is recommended, but you can publish without one.'
+}
+
 function responsibilitySummary(context) {
   const owners = assignmentsWithRole(context, 'DATA_OWNER')
   const ownerAction = owners.some(
@@ -541,9 +552,7 @@ function responsibilitySummary(context) {
       ),
       custodiansCard(context)
     ],
-    inset: canChangeResponsibility(context)
-      ? 'A data custodian is recommended, but you can publish without one.'
-      : 'Ask a catalogue administrator to change who is responsible for this data asset.',
+    inset: responsibilityInset(context),
     previous: previousAssignments(context)
   }
 }
