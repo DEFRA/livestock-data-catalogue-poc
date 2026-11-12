@@ -59,7 +59,9 @@
         {% endif %}
         {% if state == "DRAFT" %}
           <li><a class="govuk-link" href="{{ links.retire }}">Retire this draft</a></li>
-          <li><a class="govuk-link" href="{{ links.delete }}">Delete this draft</a></li>
+          {% if canDelete %}
+            <li><a class="govuk-link" href="{{ links.delete }}">Delete this draft</a></li>
+          {% endif %}
         {% elif state != "RETIRED" %}
           <li><a class="govuk-link" href="{{ links.retire }}">Retire this data asset</a></li>
         {% endif %}

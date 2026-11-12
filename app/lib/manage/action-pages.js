@@ -312,10 +312,18 @@ function deleteBlocked(context, linking) {
   }
 }
 
-// Drafts can be deleted (LDAT-252, question 26). Their identifier is never
-// issued again (S05).
+// Drafts can be deleted, but once published, an entry can only be retired
+// or deprecated, even after a change takes it back to Draft (LDAT-252,
+// question 26). A deleted identifier is never issued again (S05).
+export function canDelete(dataAsset) {
+  return (
+    dataAsset.publicationStateCode === 'DRAFT' &&
+    dataAsset.acceptanceDate === undefined
+  )
+}
+
 function deleteDraft(context) {
-  if (context.dataAsset.publicationStateCode !== 'DRAFT') {
+  if (!canDelete(context.dataAsset)) {
     throw new NotFoundError()
   }
   const linking = linkingDataAssets(context)

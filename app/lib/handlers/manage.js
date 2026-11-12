@@ -1,5 +1,6 @@
 import { dataAssetPage } from '../data-asset-view.js'
 import { formatDate, formatDateTime } from '../formatting.js'
+import { canDelete } from '../manage/action-pages.js'
 import { readAnswers } from '../forms.js'
 import {
   NotFoundError,
@@ -14,6 +15,7 @@ import {
   sectionWithId,
   taskList
 } from '../manage/sections.js'
+import { isCurrentOn } from '../periods.js'
 import { managedDataAssets, personaDescription } from '../personas.js'
 import { commitChange, historyFor, sessionChanges } from '../working-copy.js'
 
@@ -27,7 +29,7 @@ const STATE_ORDER = Object.freeze([
 const STATE_TAG_CLASSES = Object.freeze({
   DRAFT: 'govuk-tag--grey',
   PUBLISHED: 'govuk-tag--green',
-  DEPRECATED: 'govuk-tag--yellow',
+  DEPRECATED: 'govuk-tag--grey',
   RETIRED: 'govuk-tag--red'
 })
 
@@ -167,6 +169,7 @@ export function showOverview(req, res) {
       items: groupItems
     })),
     isEditable: isEditable(context),
+    canDelete: canDelete(dataAsset),
     links: {
       review: manageHref(dataAsset.identifier, 'review', 'record'),
       deprecate: manageHref(dataAsset.identifier, 'deprecate'),
@@ -214,7 +217,9 @@ function renderPublishPage(res, context, checks) {
     overviewHref: manageHref(context.identifier),
     actions: publicationActions(context, checks),
     sections: checks.length ? [] : checkAnswerSections(context),
-    hasCustodian: (context.dataAsset.custodians ?? []).length > 0
+    hasCustodian: (context.dataAsset.custodians ?? []).some((custodian) =>
+      isCurrentOn(custodian, context.today)
+    )
   })
 }
 

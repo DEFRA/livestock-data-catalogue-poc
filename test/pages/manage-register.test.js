@@ -474,17 +474,27 @@ describe('registering a data asset (journey 2)', () => {
     )
   })
 
-  test('a draft that replaces a deprecated data asset cannot be deleted', async () => {
-    await answer(administrator, '/manage/data-assets/DA11111/deprecate', {
-      replacement: 'DA11115'
-    })
+  test('a data asset published before cannot be deleted, even after a change takes it back to Draft (Q26)', async () => {
     await answer(administrator, '/manage/data-assets/DA11115/about/version', {
       versionNumber: '9'
     })
-    const page = await administrator.get('/manage/data-assets/DA11115/delete')
+    const overview = await administrator.get('/manage/data-assets/DA11115')
 
+    assert.ok(textsOf(overview, 'main p').includes('Catalogue entry: Draft'))
+    assert.equal(
+      overview.document.querySelector(
+        'a[href="/manage/data-assets/DA11115/delete"]'
+      ),
+      null
+    )
     assert.ok(
-      textsOf(page, 'main .govuk-list--bullet li').includes('Animal Movement')
+      overview.document.querySelector(
+        'a[href="/manage/data-assets/DA11115/retire"]'
+      )
+    )
+    assert.equal(
+      (await administrator.get('/manage/data-assets/DA11115/delete')).status,
+      404
     )
   })
 

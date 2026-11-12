@@ -30,6 +30,14 @@ function errorHref(page, error) {
   return field?.type === 'date' ? `#${error.name}-day` : `#${error.name}`
 }
 
+// Saving a change sends a published data asset back to Draft (D24), so
+// its question pages say so before the first change
+function publishedWarning(context) {
+  return context.dataAsset?.publicationStateCode === 'PUBLISHED'
+    ? 'Saving a change will take this data asset out of the catalogue until you publish it again.'
+    : undefined
+}
+
 function render(res, context, page, values, errors) {
   res.render('manage/question', {
     navigationItem: 'manage',
@@ -55,7 +63,7 @@ function render(res, context, page, values, errors) {
     caption: page.caption ?? context.dataAsset?.titleName,
     fields: page.fields,
     paragraphs: page.paragraphs ?? [],
-    warning: page.warning,
+    warning: page.warning ?? publishedWarning(context),
     inset: page.inset,
     buttonText: page.buttonText ?? 'Save and continue',
     buttonClasses: page.buttonClasses,

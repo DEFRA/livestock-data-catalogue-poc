@@ -136,7 +136,8 @@ export function editChange(context, update, extra = {}) {
   const after = structuredClone(context.dataAsset)
   update(after)
   withoutEmptyValues(after)
-  if (isDeepStrictEqual(before, after) && Object.keys(extra).length === 0) {
+  const addsRecords = Object.values(extra).some((records) => records.length > 0)
+  if (isDeepStrictEqual(before, after) && !addsRecords) {
     return undefined
   }
   return {

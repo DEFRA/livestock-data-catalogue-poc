@@ -70,6 +70,52 @@ describe('maintaining a data asset (journey 3)', () => {
     assert.ok(page.html.includes('A changed made-up description.'))
   })
 
+  test('saving the same keywords again changes nothing, so it stays published (D40)', async () => {
+    const page = await administrator.get(`${MOVEMENT}/classification/keywords`)
+    await answer(administrator, `${MOVEMENT}/classification/keywords`, {
+      keywords: page.document.querySelector('textarea[name="keywords"]').value
+    })
+
+    assert.equal(stateOf(await administrator.get(MOVEMENT)), 'Published')
+  })
+
+  test('a question page for a published data asset warns that saving takes it out of the catalogue (D24)', async () => {
+    const published = await administrator.get(`${MOVEMENT}/about/title`)
+    const draft = await administrator.get(
+      '/manage/data-assets/DA11112/about/title'
+    )
+    const deprecate = await administrator.get(`${MOVEMENT}/deprecate`)
+
+    assert.match(
+      textsOf(published, '.govuk-warning-text')[0],
+      /Saving a change will take this data asset out of the catalogue until you publish it again\./
+    )
+    assert.deepEqual(textsOf(draft, '.govuk-warning-text'), [])
+    assert.match(
+      textsOf(deprecate, '.govuk-warning-text')[0],
+      /Catalogue users will still see this data asset/
+    )
+  })
+
+  test('the Deprecated tag is the same colour on the manage pages as in the catalogue', async () => {
+    const overview = await administrator.get('/manage/data-assets/DA11114')
+    const catalogue = await administrator.get('/data-assets/DA11114')
+    const classesOf = (page) =>
+      [...page.document.querySelectorAll('main .govuk-tag')]
+        .find((tag) => tag.textContent.trim() === 'Deprecated')
+        .className.trim()
+
+    assert.equal(classesOf(overview), classesOf(catalogue))
+  })
+
+  test("a deprecated data asset's responsibility page asks nobody to change it", async () => {
+    const page = await administrator.get(
+      '/manage/data-assets/DA11114/responsibility'
+    )
+
+    assert.deepEqual(textsOf(page, '.govuk-inset-text'), [])
+  })
+
   test('saving the same answer again changes nothing, so it stays published', async () => {
     await answer(administrator, `${MOVEMENT}/about/title`, {
       titleName: 'Animal Movement'

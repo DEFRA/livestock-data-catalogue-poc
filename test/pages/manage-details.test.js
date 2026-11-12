@@ -7,6 +7,7 @@ import { startApp } from '../helpers/app.js'
 import {
   addDistribution,
   answer,
+  completeDraft,
   createDraft,
   dateAnswer,
   textsOf
@@ -490,6 +491,40 @@ describe('the other manage questions', () => {
         errorsOn(page)[0],
         /^The date Jo Bloggs stops must be the same as or after /
       )
+    })
+
+    test("shows each person's organisation, email address and start date", async () => {
+      const page = await administrator.get(`${MOVEMENT}/responsibility`)
+
+      assert.match(
+        textsOf(page, '.govuk-summary-card')[0],
+        /Jo Bloggs Animal and Plant Health Agency jo\.bloggs@example\.com From 1 April 2024/
+      )
+    })
+
+    test('the check page recommends a data custodian when none is current', async () => {
+      const draft = await createDraft(administrator)
+      await completeDraft(administrator, draft)
+      await answer(
+        administrator,
+        `${draft}/responsibility/data-custodian/add`,
+        {
+          organisationName: 'Rural Payments Agency',
+          ...dateAnswer('effectiveFromDate', '2025-01-01')
+        }
+      )
+      const withCurrent = await administrator.get(`${draft}/publish`)
+      await answer(
+        administrator,
+        `${draft}/responsibility/custodians/0/end`,
+        dateAnswer('effectiveToDate', '2025-06-30')
+      )
+      const withEnded = await administrator.get(`${draft}/publish`)
+
+      assert.deepEqual(textsOf(withCurrent, '.govuk-inset-text'), [])
+      assert.deepEqual(textsOf(withEnded, '.govuk-inset-text'), [
+        'A data custodian is recommended. You can still publish without one.'
+      ])
     })
 
     test('recommends a data custodian only when there is none', async () => {

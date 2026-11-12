@@ -397,7 +397,16 @@ function peopleCard(context, { title, roleName }, assignments, actions) {
     rows: assignments.length
       ? assignments.map(({ assignment, position }) => ({
           key: assignment.personName,
-          text: `${context.catalogue.peopleByKey.get(personKey(assignment.personName, assignment.personEmailAddressReference)).organisationName}, from ${formatDate(assignment.effectiveFromDate)}`,
+          items: [
+            context.catalogue.peopleByKey.get(
+              personKey(
+                assignment.personName,
+                assignment.personEmailAddressReference
+              )
+            ).organisationName,
+            assignment.personEmailAddressReference,
+            `From ${formatDate(assignment.effectiveFromDate)}`
+          ],
           changeHref: canChange
             ? manageHref(
                 context.identifier,
@@ -494,8 +503,13 @@ function previousAssignments(context) {
   ]
 }
 
+// Nobody can change who is responsible for a deprecated or retired data
+// asset, so there's nothing to recommend or ask for
 function responsibilityInset(context) {
-  if (!canChangeResponsibility(context)) {
+  if (!isEditable(context)) {
+    return undefined
+  }
+  if (!context.canAssignRoles) {
     return 'Ask a catalogue administrator to change who is responsible for this data asset.'
   }
   const hasCustodian =
