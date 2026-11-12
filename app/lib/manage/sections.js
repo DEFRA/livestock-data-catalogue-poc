@@ -319,7 +319,10 @@ function datesRows(context) {
       context,
       'Catalogue entry last changed',
       dateText(dataAsset.metadataDate)
-    )
+    ),
+    ...(dataAsset.deletionDate
+      ? [row(context, 'Data deleted', dateText(dataAsset.deletionDate))]
+      : [])
   ]
 }
 

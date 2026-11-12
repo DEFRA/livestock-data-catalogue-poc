@@ -345,7 +345,7 @@ describe('maintaining a data asset (journey 3)', () => {
   test('retiring a published data asset removes it from the catalogue, and records when its data was deleted (S11, Q22)', async () => {
     await answer(administrator, `${MOVEMENT}/retire`, {
       isDeleted: 'yes',
-      ...dateAnswer('deletionDate', '2026-11-02')
+      ...dateAnswer('deletionDate', '2026-10-05')
     })
     const overview = await administrator.get(`${MOVEMENT}?changed=retired`)
 
@@ -353,8 +353,13 @@ describe('maintaining a data asset (journey 3)', () => {
     assert.equal((await administrator.get('/data-assets/DA11111')).status, 404)
     const search = await administrator.get('/data-assets?q=animal+movement')
     assert.equal(search.html.includes('href="/data-assets/DA11111"'), false)
-    const preview = await administrator.get(`${MOVEMENT}/preview`)
-    assert.ok(preview.html.includes('2 November 2026'))
+    assert.ok(
+      textsOf(overview, 'main p').includes(
+        'Its data was deleted on 5 October 2026.'
+      )
+    )
+    const dates = await administrator.get(`${MOVEMENT}/dates`)
+    assert.ok(rowsOf(dates).includes('Data deleted 5 October 2026'))
   })
 
   test('a notice in the address only shows when it is true', async () => {

@@ -35,6 +35,9 @@
         <p class="govuk-body">This data asset is deprecated. You can retire it, but you cannot change it.</p>
       {% else %}
         <p class="govuk-body">This data asset is retired. It cannot be changed or published again.</p>
+        {% if deletionDate %}
+          <p class="govuk-body">Its data was deleted on {{ deletionDate }}.</p>
+        {% endif %}
       {% endif %}
 
       {% for group in taskGroups %}

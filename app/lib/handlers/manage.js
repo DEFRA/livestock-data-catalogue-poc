@@ -1,5 +1,5 @@
 import { dataAssetPage } from '../data-asset-view.js'
-import { formatDateTime } from '../formatting.js'
+import { formatDate, formatDateTime } from '../formatting.js'
 import { readAnswers } from '../forms.js'
 import {
   NotFoundError,
@@ -159,6 +159,7 @@ export function showOverview(req, res) {
           .get(dataAsset.lifecycleStateCode).name
       : 'Not provided',
     notice: overviewNotice(req),
+    deletionDate: dataAsset.deletionDate && formatDate(dataAsset.deletionDate),
     completedCount: tasks.completedCount,
     requiredCount: tasks.requiredCount,
     taskGroups: [...groupedTasks(items)].map(([heading, groupItems]) => ({

@@ -1,13 +1,13 @@
 import Joi from 'joi'
 
-import { anyAddress, code, text } from './common.js'
+import { anyAddress, code, name, text } from './common.js'
 
 const MEDIA_TYPE_PATTERN = /^[a-z]+\/[a-z0-9.+-]+$/
 
 function referenceSchema(extraFields = {}) {
   return Joi.object({
     code: code.required(),
-    name: text.required(),
+    name: name.required(),
     description: text,
     ...extraFields
   })
@@ -28,8 +28,8 @@ export const distributionFormatSchema = referenceSchema({
 // S23 gives Licence a version and a reference, but no description
 export const licenceSchema = Joi.object({
   code: code.required(),
-  name: text.required(),
-  versionNumber: text,
+  name: name.required(),
+  versionNumber: name,
   reference: anyAddress
 })
 

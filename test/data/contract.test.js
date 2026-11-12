@@ -431,6 +431,24 @@ describe('the data contract after the answers on LDAT-252', () => {
     assertRejected(errors, 'length must be less than or equal to 2048')
   })
 
+  test('rejects a reference value name or licence version longer than 200 characters (question 31)', () => {
+    const errors = errorsAfter((collections) => {
+      collections.domains[0].name = 'd'.repeat(201)
+      collections.licences[0].versionNumber = '3'.repeat(201)
+      collections.codeLists.updateFrequencies[0].name = 'u'.repeat(201)
+    })
+
+    assert.equal(
+      errors.filter((error) =>
+        error.endsWith(
+          'length must be less than or equal to 200 characters long'
+        )
+      ).length,
+      3,
+      errors.join('\n')
+    )
+  })
+
   test('rejects a keyword name longer than 200 characters (question 31)', () => {
     const errors = errorsAfter((collections) => {
       collections.keywords[0].name = 'k'.repeat(201)
