@@ -16,6 +16,7 @@ import {
 // back to the distributions summary.
 
 const MOST_DISTRIBUTIONS = 20
+const EVENT_STREAM = 'EVENT_STREAM'
 
 // The questions in the order they're asked when a distribution is added
 const ADDING_ORDER = Object.freeze([
@@ -232,7 +233,7 @@ function addressFields(distribution) {
     })
   ]
   // A broker and topic only apply to an event stream (S18)
-  if (distribution.distributionTypeCode === 'EVENT_STREAM') {
+  if (distribution.distributionTypeCode === EVENT_STREAM) {
     fields.push(
       addressField('brokerReference', 'Broker address (optional)', {
         errorName: 'Broker address',
@@ -284,14 +285,28 @@ const QUESTIONS = {
       description: answers.description
     })
   }),
-  type: codeQuestion('type', 'distributionTypeCode', ({ catalogue }) =>
-    radiosField(
-      'distributionTypeCode',
-      'What type of distribution is it?',
-      referenceOptions(catalogue, 'distributionTypes'),
-      { required: 'Select the type of distribution' }
-    )
-  ),
+  // Only an event stream has a broker and topic (S18). They're cleared for
+  // any other type, because the addresses page no longer shows them.
+  type: distributionQuestion('type', {
+    fields: ({ catalogue }) => [
+      radiosField(
+        'distributionTypeCode',
+        'What type of distribution is it?',
+        referenceOptions(catalogue, 'distributionTypes'),
+        { required: 'Select the type of distribution' }
+      )
+    ],
+    values: (distribution) => ({
+      distributionTypeCode: distribution.distributionTypeCode
+    }),
+    update: (distribution, answers) => ({
+      ...distribution,
+      distributionTypeCode: answers.distributionTypeCode,
+      ...(answers.distributionTypeCode === EVENT_STREAM
+        ? {}
+        : { brokerReference: undefined, topicName: undefined })
+    })
+  }),
   'access-method': codeQuestion(
     'access-method',
     'accessMethodCode',

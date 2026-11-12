@@ -289,6 +289,23 @@ describe('the other manage questions', () => {
       ])
     })
 
+    test('changing an event stream to another type removes its broker address and topic', async () => {
+      await answer(administrator, `${MOVEMENT}/distributions/1/type`, {
+        distributionTypeCode: 'FILE'
+      })
+      const section = await administrator.get(`${MOVEMENT}/distributions`)
+      const preview = await administrator.get(`${MOVEMENT}/preview`)
+
+      assert.doesNotMatch(
+        textsOf(section, '.govuk-summary-card')[1],
+        /Broker|Topic/
+      )
+      assert.doesNotMatch(
+        textsOf(preview, '.govuk-summary-card')[1],
+        /Broker|Topic/
+      )
+    })
+
     test('the size must be a whole number of bytes', async () => {
       const page = await administrator.post(
         `${MOVEMENT}/distributions/0/version-and-size`,
