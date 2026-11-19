@@ -20,7 +20,7 @@
     "@govuk-prototype-kit/common-templates": "3.0.1",
     "govuk-frontend": "6.6.0",
     "govuk-prototype-kit": "14.0.2",
-    "joi": "18.3.1"
+    "joi": "18.3.2"
   },
   "devDependencies": {
     "axe-core": "4.14.0",
