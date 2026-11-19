@@ -147,8 +147,9 @@ function matchesFilters(dataAsset, selected) {
 // How many data assets each filter option would find if it were chosen
 // alongside the search terms and the other filters. A filter's own choices
 // are left out of its counts, because options in one filter widen the
-// results rather than narrow them. The filters must come from filterOptions
-// for the same catalogue, so no option can reveal a hidden data asset.
+// results rather than narrow them. The filters must be the ones the page
+// shows (from filterOptions for the same catalogue), because the page looks
+// up each option's count by its value.
 export function countFilterOptions(catalogue, filters, search) {
   const words = wordsIn(search.terms)
   const matchingTerms = visibleDataAssets(catalogue).filter(
