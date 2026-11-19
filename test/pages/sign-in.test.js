@@ -148,6 +148,7 @@ describe('signing in to the prototype on CDP', () => {
       assert.equal(input.getAttribute('spellcheck'), 'false')
       assert.equal(input.getAttribute('autocapitalize'), 'none')
       assert.ok(input.classList.contains('govuk-password-input__input'))
+      assert.ok(input.classList.contains('govuk-!-width-two-thirds'))
       assert.equal(
         form.querySelector('label[for="password"]').textContent.trim(),
         'Password'
