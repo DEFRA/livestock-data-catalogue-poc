@@ -18,22 +18,23 @@ const PAGE_NAME = 'Search data assets'
 function filterGroups(filters, search, counts) {
   return filters.map((filter) => {
     const chosen = search.selected[filter.parameter]
-    const countOf = (option) => counts?.[filter.parameter][option.value]
+    const optionCount = (option) => counts?.[filter.parameter][option.value]
     return {
       parameter: filter.parameter,
       legend: filter.legend,
       items: filter.options
         .filter(
-          (option) => chosen.includes(option.value) || countOf(option) !== 0
+          (option) => chosen.includes(option.value) || optionCount(option) !== 0
         )
-        .map((option) => ({
-          value: option.value,
-          text:
-            countOf(option) === undefined
-              ? option.text
-              : `${option.text} (${countOf(option)})`,
-          checked: chosen.includes(option.value)
-        }))
+        .map((option) => {
+          const count = optionCount(option)
+          return {
+            value: option.value,
+            text:
+              count === undefined ? option.text : `${option.text} (${count})`,
+            checked: chosen.includes(option.value)
+          }
+        })
     }
   })
 }
