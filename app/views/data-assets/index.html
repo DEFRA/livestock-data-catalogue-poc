@@ -46,6 +46,11 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-one-third">
         <h2 class="govuk-heading-m">Filter</h2>
+        {% if results %}
+          <p class="govuk-body-s">
+            <a class="govuk-link" href="#results">Skip to results</a>
+          </p>
+        {% endif %}
         {% for group in filterGroups %}
           {% if group.items | length %}
             {{ govukCheckboxes({
@@ -73,8 +78,19 @@
         {% endif %}
       </div>
 
-      <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-grid-column-two-thirds" id="results">
         {% if results %}
+          {% if selectedFilters | length %}
+            <div id="selected-filters">
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Selected filters</h2>
+              <ul class="govuk-list">
+                {% for filter in selectedFilters %}
+                  <li>{{ filter.text }} <a class="govuk-link" href="{{ filter.removeHref }}">Remove<span class="govuk-visually-hidden"> filter {{ filter.text }}</span></a></li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
           <p class="govuk-body">{{ resultCount }}</p>
 
           {% if results | length %}

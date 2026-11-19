@@ -11,6 +11,7 @@ import {
 import {
   FILTERS,
   RESULTS_PER_PAGE,
+  countFilterOptions,
   filterOptions,
   findDataAssets,
   readSearchQuery,
@@ -375,6 +376,63 @@ describe('searching for data assets', () => {
         searchHref({ terms: 'a&b=c#d' }),
         '/data-assets?q=a%26b%3Dc%23d'
       )
+    })
+  })
+
+  describe('counting the data assets each filter option would find', () => {
+    function counts(query) {
+      return countFilterOptions(
+        catalogue,
+        readSearchQuery(query, FILTER_OPTIONS)
+      )
+    }
+
+    test('counts every visible data asset with each option when nothing is chosen', () => {
+      assert.deepEqual(counts({}).type, {
+        ANALYTICAL_DATA: 1,
+        MASTER_DATA: 4,
+        REFERENCE_DATA: 2,
+        TRANSACTIONAL_DATA: 5
+      })
+    })
+
+    test('counts only data assets that match the search terms', () => {
+      assert.deepEqual(counts({ q: 'movement' }).type, {
+        ANALYTICAL_DATA: 1,
+        MASTER_DATA: 0,
+        REFERENCE_DATA: 0,
+        TRANSACTIONAL_DATA: 2
+      })
+    })
+
+    test('counts the other filters within the options chosen in one filter', () => {
+      const found = counts({ domain: 'HOLDING' })
+
+      assert.equal(found.type.MASTER_DATA, 3)
+      assert.equal(found.type.TRANSACTIONAL_DATA, 0)
+      assert.equal(found.organisation['Rural Payments Agency'], 3)
+    })
+
+    test('counts the options of a filter without its own choices, so its other options stay offered', () => {
+      assert.deepEqual(counts({ domain: 'HOLDING' }).domain, counts({}).domain)
+    })
+
+    test('counts a chosen option that nothing matches as 0', () => {
+      assert.equal(
+        counts({ q: 'movement', domain: 'ADDRESS' }).domain.ADDRESS,
+        0
+      )
+    })
+
+    test('has a count for every option of every filter', () => {
+      const found = counts({})
+
+      for (const filter of FILTER_OPTIONS) {
+        assert.deepEqual(
+          Object.keys(found[filter.parameter]),
+          filter.options.map((option) => option.value)
+        )
+      }
     })
   })
 })

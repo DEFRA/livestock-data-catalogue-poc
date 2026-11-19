@@ -144,6 +144,32 @@ function matchesFilters(dataAsset, selected) {
   })
 }
 
+// How many data assets each filter option would find if it were chosen
+// alongside the search terms and the other filters. A filter's own choices
+// are left out of its counts, because options in one filter widen the
+// results rather than narrow them.
+export function countFilterOptions(catalogue, search) {
+  const words = wordsIn(search.terms)
+  const matchingTerms = visibleDataAssets(catalogue).filter(
+    (dataAsset) => relevance(dataAsset, words) !== undefined
+  )
+  return Object.fromEntries(
+    filterOptions(catalogue).map((filter) => {
+      const otherChoices = { ...search.selected, [filter.parameter]: [] }
+      const candidates = matchingTerms.filter((dataAsset) =>
+        matchesFilters(dataAsset, otherChoices)
+      )
+      const counts = filter.options.map((option) => [
+        option.value,
+        candidates.filter((dataAsset) =>
+          filter.valuesOf(dataAsset).includes(option.value)
+        ).length
+      ])
+      return [filter.parameter, Object.fromEntries(counts)]
+    })
+  )
+}
+
 export function findDataAssets(catalogue, search) {
   const words = wordsIn(search.terms)
   const matching = visibleDataAssets(catalogue)

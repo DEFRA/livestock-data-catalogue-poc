@@ -1,5 +1,6 @@
 import { countOf } from '../formatting.js'
 import {
+  countFilterOptions,
   filterOptions,
   findDataAssets,
   readSearchQuery,
@@ -10,16 +11,51 @@ import { catalogueFor } from '../working-copy.js'
 
 const PAGE_NAME = 'Search data assets'
 
-function filterGroups(filters, search) {
-  return filters.map((filter) => ({
-    parameter: filter.parameter,
-    legend: filter.legend,
-    items: filter.options.map((option) => ({
-      value: option.value,
-      text: option.text,
-      checked: search.selected[filter.parameter].includes(option.value)
-    }))
-  }))
+// Each option shows how many data assets it would find. Options that would
+// find nothing are hidden, unless chosen, so the filters stay short. Without
+// counts (when the search terms aren't valid) every option shows.
+function filterGroups(filters, search, counts) {
+  return filters.map((filter) => {
+    const items = filter.options.map((option) => {
+      const count = counts?.[filter.parameter][option.value]
+      return {
+        value: option.value,
+        text: count === undefined ? option.text : `${option.text} (${count})`,
+        checked: search.selected[filter.parameter].includes(option.value),
+        count
+      }
+    })
+    return {
+      parameter: filter.parameter,
+      legend: filter.legend,
+      items: items
+        .filter((item) => item.checked || item.count !== 0)
+        .map(({ count, ...item }) => item)
+    }
+  })
+}
+
+// The chosen filter options, each with the address of the same search
+// without it
+function selectedFilters(filters, search) {
+  return filters.flatMap((filter) =>
+    filter.options
+      .filter((option) =>
+        search.selected[filter.parameter].includes(option.value)
+      )
+      .map((option) => ({
+        text: `${filter.legend}: ${option.text}`,
+        removeHref: searchHref({
+          terms: search.terms,
+          selected: {
+            ...search.selected,
+            [filter.parameter]: search.selected[filter.parameter].filter(
+              (value) => value !== option.value
+            )
+          }
+        })
+      }))
+  )
 }
 
 function pagination(found, search) {
@@ -86,7 +122,13 @@ export function searchDataAssets(req, res) {
     hasErrors: search.error !== undefined,
     errorMessage: search.error,
     typedTerms: search.typedTerms,
-    filterGroups: filterGroups(filters, search),
+    filterGroups: filterGroups(
+      filters,
+      search,
+      found === undefined ? undefined : countFilterOptions(catalogue, search)
+    ),
+    selectedFilters:
+      found === undefined ? [] : selectedFilters(filters, search),
     clearFiltersHref: hasSelectedFilters
       ? searchHref({ terms: search.terms })
       : undefined,
