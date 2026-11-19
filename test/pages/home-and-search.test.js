@@ -50,6 +50,29 @@ describe('the home page', () => {
     )
   })
 
+  test('puts About the catalogue last, with a visible section break before Recently updated and before About the catalogue', () => {
+    const main = page.document.querySelector('main')
+    const sections = [
+      ...main.querySelectorAll('caption, h2, hr.govuk-section-break--visible')
+    ].map((element) =>
+      element.tagName === 'HR' ? '---' : element.textContent.trim()
+    )
+
+    assert.deepEqual(sections, [
+      'Browse by domain',
+      'Browse by organisation',
+      '---',
+      'Recently updated',
+      '---',
+      'About the catalogue'
+    ])
+    assert.ok(
+      [...main.querySelectorAll('h2')]
+        .find((heading) => heading.textContent.trim() === 'About the catalogue')
+        .closest('.govuk-grid-column-two-thirds')
+    )
+  })
+
   test('shows the number of visible data assets in each domain, linking to the filtered search', () => {
     const table = page.document.querySelectorAll('table')[0]
 
@@ -236,9 +259,9 @@ describe('the search page', () => {
     const page = await app.getPage('/data-assets?q=keeper')
     const results = [...page.document.querySelectorAll('main .govuk-list > li')]
 
-    assert.equal(results[0].querySelector('h2').textContent.trim(), 'Keeper')
+    assert.equal(results[0].querySelector('h2 a').textContent.trim(), 'Keeper')
     assert.equal(
-      results[0].querySelector('.govuk-tag').textContent.trim(),
+      results[0].querySelector('h2 .govuk-tag').textContent.trim(),
       'Deprecated'
     )
     assert.equal(results[1].querySelector('.govuk-tag'), null)

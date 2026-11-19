@@ -27,8 +27,8 @@
         {% endset %}
         {{ govukNotificationBanner({ html: previewHtml }) }}
       {% endif %}
-      <span class="govuk-caption-l">Data asset</span>
-      <h1 class="govuk-heading-l">{{ titleName }}</h1>
+      <span class="govuk-caption-xl">Data asset</span>
+      <h1 class="govuk-heading-xl">{{ titleName }}</h1>
       {% if manageHref %}
         <p class="govuk-body"><a class="govuk-link" href="{{ manageHref }}">Manage this data asset</a></p>
       {% endif %}
@@ -46,11 +46,25 @@
           iconFallbackText: "Warning"
         }) }}
       {% endif %}
+    </div>
+  </div>
 
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
       <p class="govuk-body-l">{{ description }}</p>
 
+      <nav class="app-contents-list" aria-label="Contents">
+        <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Contents</h2>
+        <ul class="govuk-list">
+          {% for section in sections %}
+            <li><a class="govuk-link" href="#section-{{ loop.index }}">{{ section.heading }}</a></li>
+          {% endfor %}
+          <li><a class="govuk-link" href="#ways-to-get-this-data">Ways to get this data</a></li>
+        </ul>
+      </nav>
+
       {% for section in sections %}
-        <h2 class="govuk-heading-m">{{ section.heading }}</h2>
+        <h2 class="govuk-heading-m" id="section-{{ loop.index }}">{{ section.heading }}</h2>
         {% set summaryRows = [] %}
         {% for row in section.rows %}
           {% set summaryRows = summaryRows.concat([{
@@ -61,7 +75,7 @@
         {{ govukSummaryList({ rows: summaryRows }) }}
       {% endfor %}
 
-      <h2 class="govuk-heading-m">Ways to get this data</h2>
+      <h2 class="govuk-heading-m" id="ways-to-get-this-data">Ways to get this data</h2>
       {% for distribution in distributions %}
         {% set distributionRows = [] %}
         {% for row in distribution.rows %}
@@ -77,18 +91,22 @@
           rows: distributionRows
         }) }}
       {% endfor %}
-
-      {% if relatedGroups | length %}
-        <h2 class="govuk-heading-m">Related data assets and resources</h2>
-        {% for group in relatedGroups %}
-          <h3 class="govuk-heading-s">{{ group.heading }}</h3>
-          <ul class="govuk-list">
-            {% for link in group.links %}
-              <li><a class="govuk-link" href="{{ link.href }}">{{ link.text }}</a></li>
-            {% endfor %}
-          </ul>
-        {% endfor %}
-      {% endif %}
     </div>
+
+    {% if relatedGroups | length %}
+      <div class="govuk-grid-column-one-third">
+        <aside class="app-related-items" aria-labelledby="related-heading">
+          <h2 class="govuk-heading-m" id="related-heading">Related data assets and resources</h2>
+          {% for group in relatedGroups %}
+            <h3 class="govuk-heading-s">{{ group.heading }}</h3>
+            <ul class="govuk-list">
+              {% for link in group.links %}
+                <li><a class="govuk-link" href="{{ link.href }}">{{ link.text }}</a></li>
+              {% endfor %}
+            </ul>
+          {% endfor %}
+        </aside>
+      </div>
+    {% endif %}
   </div>
 {% endblock %}

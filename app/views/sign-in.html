@@ -2,6 +2,7 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 {% from "govuk/components/password-input/macro.njk" import govukPasswordInput %}
 
 {% set pageName = "Sign in" %}
@@ -25,7 +26,9 @@
 
       <h1 class="govuk-heading-l">Sign in</h1>
       <p class="govuk-body">This is a prototype of the Livestock Data Catalogue, used for research. It is not a real service, and its data is made up.</p>
-      <p class="govuk-body">Only sign in if you have been invited to test the prototype. Use the password the research team gave you.</p>
+      {{ govukInsetText({
+        text: "Only sign in if you have been invited to test the prototype. Use the password the research team gave you."
+      }) }}
 
       <form method="post" action="/sign-in" novalidate>
         <input type="hidden" name="returnUrl" value="{{ returnUrl }}">
@@ -33,6 +36,7 @@
         {{ govukPasswordInput({
           id: "password",
           name: "password",
+          classes: "govuk-!-width-two-thirds",
           label: {
             text: "Password",
             classes: "govuk-label--s"

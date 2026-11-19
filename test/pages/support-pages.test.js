@@ -3,6 +3,18 @@ import { after, before, describe, test } from 'node:test'
 
 import { startApp } from '../helpers/app.js'
 
+function headings(page, selector) {
+  return [...page.document.querySelectorAll(selector)].map((heading) =>
+    heading.textContent.trim()
+  )
+}
+
+function returnLinks(page) {
+  return [...page.document.querySelectorAll('main a')]
+    .filter((link) => link.textContent.trim().startsWith('Return to'))
+    .map((link) => [link.textContent.trim(), link.getAttribute('href')])
+}
+
 describe('the support and error pages', () => {
   let app
 
@@ -97,6 +109,67 @@ describe('the support and error pages', () => {
     )
   })
 
+  test('report a problem puts the prototype notice in inset text, and links back to the catalogue', async () => {
+    const page = await app.getPage('/report-a-problem')
+
+    assert.match(
+      page.document.querySelector('main .govuk-inset-text').textContent,
+      /This is a prototype of the Livestock Data Catalogue\. We are using it in research sessions/
+    )
+    assert.deepEqual(returnLinks(page), [
+      ['Return to the Livestock Data Catalogue', '/']
+    ])
+  })
+
+  for (const path of ['/privacy', '/cookies', '/accessibility-statement']) {
+    test(`${path} is long-form content, so its main heading is extra large and it links back to the catalogue`, async () => {
+      const page = await app.getPage(path)
+
+      assert.ok(
+        page.document.querySelector('h1').classList.contains('govuk-heading-xl')
+      )
+      assert.deepEqual(returnLinks(page), [
+        ['Return to the Livestock Data Catalogue', '/']
+      ])
+    })
+  }
+
+  test('the privacy page groups its content under 4 headings', async () => {
+    const page = await app.getPage('/privacy')
+
+    assert.deepEqual(headings(page, 'main h2'), [
+      'What data we collect',
+      'How we keep the prototype secure',
+      'Cookies and user research',
+      'Your rights and how to contact Defra'
+    ])
+  })
+
+  test('the privacy and cookies pages link to each other', async () => {
+    const privacy = await app.getPage('/privacy')
+    const cookies = await app.getPage('/cookies')
+
+    assert.ok(privacy.document.querySelector('main a[href="/cookies"]'))
+    assert.ok(cookies.document.querySelector('main a[href="/privacy"]'))
+  })
+
+  test('the accessibility statement has the enforcement procedure, linking to the Equality Advisory and Support Service', async () => {
+    const page = await app.getPage('/accessibility-statement')
+    const heading = [...page.document.querySelectorAll('main h2')].find(
+      (candidate) => candidate.textContent.trim() === 'Enforcement procedure'
+    )
+    const text = heading.nextElementSibling.textContent.replace(/\s+/g, ' ')
+
+    assert.match(
+      text,
+      /The Equality and Human Rights Commission \(EHRC\) is responsible for enforcing the Public Sector Bodies \(Websites and Mobile Applications\) \(No\. 2\) Accessibility Regulations 2018 \(the 'accessibility regulations'\)\./
+    )
+    assert.equal(
+      heading.nextElementSibling.querySelector('a').getAttribute('href'),
+      'https://www.equalityadvisoryservice.com/'
+    )
+  })
+
   test("the privacy page says how wrong passwords are limited, and links to Defra's personal information charter", async () => {
     const page = await app.getPage('/privacy')
     const text = page.document
@@ -130,7 +203,7 @@ describe('the support and error pages', () => {
     )
     assert.match(
       text,
-      /This statement was prepared on 4 November 2026\. It was last reviewed on 12 November 2026\./
+      /This statement was prepared on 4 November 2026\. It was last reviewed on 19 November 2026\./
     )
   })
 
@@ -172,6 +245,17 @@ describe('the support and error pages', () => {
   test('shows Page not found, with status 404, for an address that does not exist', async () => {
     const page = await app.getPage('/no-such-page')
 
+    assert.deepEqual(
+      [...page.document.querySelectorAll('main a')].map((link) => [
+        link.textContent.trim(),
+        link.getAttribute('href')
+      ]),
+      [
+        ['report a problem', '/report-a-problem'],
+        ['browse all data assets', '/data-assets'],
+        ['return to the Livestock Data Catalogue', '/']
+      ]
+    )
     assert.equal(page.status, 404)
     assert.equal(
       page.document.querySelector('h1').textContent.trim(),

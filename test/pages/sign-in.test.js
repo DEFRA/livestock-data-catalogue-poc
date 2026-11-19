@@ -129,7 +129,9 @@ describe('signing in to the prototype on CDP', () => {
         'Sign in'
       )
       assert.deepEqual(texts(page.document, 'main p'), [
-        'This is a prototype of the Livestock Data Catalogue, used for research. It is not a real service, and its data is made up.',
+        'This is a prototype of the Livestock Data Catalogue, used for research. It is not a real service, and its data is made up.'
+      ])
+      assert.deepEqual(texts(page.document, 'main .govuk-inset-text'), [
         'Only sign in if you have been invited to test the prototype. Use the password the research team gave you.'
       ])
     })
@@ -146,6 +148,7 @@ describe('signing in to the prototype on CDP', () => {
       assert.equal(input.getAttribute('spellcheck'), 'false')
       assert.equal(input.getAttribute('autocapitalize'), 'none')
       assert.ok(input.classList.contains('govuk-password-input__input'))
+      assert.ok(input.classList.contains('govuk-!-width-two-thirds'))
       assert.equal(
         form.querySelector('label[for="password"]').textContent.trim(),
         'Password'

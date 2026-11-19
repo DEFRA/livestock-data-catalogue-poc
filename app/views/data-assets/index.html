@@ -83,12 +83,10 @@
                 <li>
                   <h2 class="govuk-heading-s govuk-!-margin-bottom-2">
                     <a class="govuk-link" href="{{ result.href }}">{{ result.titleName }}</a>
-                  </h2>
-                  {% if result.isDeprecated %}
-                    <p class="govuk-body govuk-!-margin-bottom-2">
+                    {%- if result.isDeprecated %}
                       {{ govukTag({ text: "Deprecated", classes: "govuk-tag--grey" }) }}
-                    </p>
-                  {% endif %}
+                    {%- endif %}
+                  </h2>
                   <p class="govuk-body govuk-!-margin-bottom-2">{{ result.summary }}</p>
                   <p class="govuk-body-s">{{ result.typeName }} owned by {{ result.organisationName }}, in the {{ result.domainName }} domain. Last updated {{ result.modificationDate | formatDate }}.</p>
                   {% if not loop.last %}

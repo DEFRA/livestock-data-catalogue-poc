@@ -46,9 +46,45 @@ describe('the data asset page', () => {
         'Animal Movement'
       )
       assert.equal(
-        page.document.querySelector('.govuk-caption-l').textContent.trim(),
+        page.document.querySelector('.govuk-caption-xl').textContent.trim(),
         'Data asset'
       )
+      assert.ok(
+        page.document.querySelector('h1').classList.contains('govuk-heading-xl')
+      )
+    })
+
+    test('has a contents list that links to each section heading on the page', () => {
+      const contents = page.document.querySelector('nav[aria-label="Contents"]')
+      const targets = [...contents.querySelectorAll('a')].map((link) => {
+        const target = page.document.getElementById(
+          link.getAttribute('href').slice(1)
+        )
+        return [
+          link.textContent.trim(),
+          target?.tagName,
+          target?.textContent.trim()
+        ]
+      })
+
+      assert.deepEqual(targets, [
+        ['About this data asset', 'H2', 'About this data asset'],
+        ['Coverage and dates', 'H2', 'Coverage and dates'],
+        ['Responsibility', 'H2', 'Responsibility'],
+        ['Access and use', 'H2', 'Access and use'],
+        ['Ways to get this data', 'H2', 'Ways to get this data']
+      ])
+    })
+
+    test('shows related data assets and resources beside the main content, in a one-third column', () => {
+      const related = page.document.querySelector('aside.app-related-items')
+
+      assert.ok(related.closest('.govuk-grid-column-one-third'))
+      assert.equal(
+        related.querySelector('h2').textContent.trim(),
+        'Related data assets and resources'
+      )
+      assert.ok(related.querySelector('a[href="/data-assets/DA11113"]'))
     })
 
     test('has breadcrumbs back to the home page and the search page', () => {
