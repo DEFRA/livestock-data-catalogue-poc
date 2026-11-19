@@ -148,13 +148,13 @@ function matchesFilters(dataAsset, selected) {
 // alongside the search terms and the other filters. A filter's own choices
 // are left out of its counts, because options in one filter widen the
 // results rather than narrow them.
-export function countFilterOptions(catalogue, search) {
+export function countFilterOptions(catalogue, filters, search) {
   const words = wordsIn(search.terms)
   const matchingTerms = visibleDataAssets(catalogue).filter(
     (dataAsset) => relevance(dataAsset, words) !== undefined
   )
   return Object.fromEntries(
-    filterOptions(catalogue).map((filter) => {
+    filters.map((filter) => {
       const otherChoices = { ...search.selected, [filter.parameter]: [] }
       const candidates = matchingTerms.filter((dataAsset) =>
         matchesFilters(dataAsset, otherChoices)
@@ -197,6 +197,29 @@ export function findDataAssets(catalogue, search) {
       page * RESULTS_PER_PAGE
     )
   }
+}
+
+// The chosen filter options, each with the address of the same search
+// without it, at page 1
+export function selectedFilterLinks(filters, search) {
+  return filters.flatMap((filter) =>
+    filter.options
+      .filter((option) =>
+        search.selected[filter.parameter].includes(option.value)
+      )
+      .map((option) => ({
+        text: `${filter.legend}: ${option.text}`,
+        removeHref: searchHref({
+          terms: search.terms,
+          selected: {
+            ...search.selected,
+            [filter.parameter]: search.selected[filter.parameter].filter(
+              (value) => value !== option.value
+            )
+          }
+        })
+      }))
+  )
 }
 
 // The address of a search, built only from validated values

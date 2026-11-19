@@ -4,7 +4,8 @@ import {
   filterOptions,
   findDataAssets,
   readSearchQuery,
-  searchHref
+  searchHref,
+  selectedFilterLinks
 } from '../search.js'
 import { dataAssetSummary } from '../summaries.js'
 import { catalogueFor } from '../working-copy.js'
@@ -16,46 +17,25 @@ const PAGE_NAME = 'Search data assets'
 // counts (when the search terms aren't valid) every option shows.
 function filterGroups(filters, search, counts) {
   return filters.map((filter) => {
-    const items = filter.options.map((option) => {
-      const count = counts?.[filter.parameter][option.value]
-      return {
-        value: option.value,
-        text: count === undefined ? option.text : `${option.text} (${count})`,
-        checked: search.selected[filter.parameter].includes(option.value),
-        count
-      }
-    })
+    const chosen = search.selected[filter.parameter]
+    const countOf = (option) => counts?.[filter.parameter][option.value]
     return {
       parameter: filter.parameter,
       legend: filter.legend,
-      items: items
-        .filter((item) => item.checked || item.count !== 0)
-        .map(({ count, ...item }) => item)
+      items: filter.options
+        .filter(
+          (option) => chosen.includes(option.value) || countOf(option) !== 0
+        )
+        .map((option) => ({
+          value: option.value,
+          text:
+            countOf(option) === undefined
+              ? option.text
+              : `${option.text} (${countOf(option)})`,
+          checked: chosen.includes(option.value)
+        }))
     }
   })
-}
-
-// The chosen filter options, each with the address of the same search
-// without it
-function selectedFilters(filters, search) {
-  return filters.flatMap((filter) =>
-    filter.options
-      .filter((option) =>
-        search.selected[filter.parameter].includes(option.value)
-      )
-      .map((option) => ({
-        text: `${filter.legend}: ${option.text}`,
-        removeHref: searchHref({
-          terms: search.terms,
-          selected: {
-            ...search.selected,
-            [filter.parameter]: search.selected[filter.parameter].filter(
-              (value) => value !== option.value
-            )
-          }
-        })
-      }))
-  )
 }
 
 function pagination(found, search) {
@@ -102,8 +82,9 @@ export function searchDataAssets(req, res) {
   const catalogue = catalogueFor(req)
   const filters = filterOptions(catalogue)
   const search = readSearchQuery(req.query, filters)
-  const found = search.error ? undefined : findDataAssets(catalogue, search)
-  if (found !== undefined && isPageToCorrect(req.query, found)) {
+  const isValidSearch = search.error === undefined
+  const found = isValidSearch ? findDataAssets(catalogue, search) : undefined
+  if (isValidSearch && isPageToCorrect(req.query, found)) {
     res.redirect(
       searchHref({
         terms: search.terms,
@@ -116,7 +97,7 @@ export function searchDataAssets(req, res) {
   const groups = filterGroups(
     filters,
     search,
-    found === undefined ? undefined : countFilterOptions(catalogue, search)
+    isValidSearch ? countFilterOptions(catalogue, filters, search) : undefined
   )
   const hasSelectedFilters = Object.values(search.selected).some(
     (values) => values.length > 0
@@ -124,16 +105,15 @@ export function searchDataAssets(req, res) {
   res.render('data-assets/index', {
     navigationItem: 'data-assets',
     pageName: PAGE_NAME,
-    hasErrors: search.error !== undefined,
+    hasErrors: !isValidSearch,
     errorMessage: search.error,
     typedTerms: search.typedTerms,
     filterGroups: groups,
     hasFilterOptions: groups.some((group) => group.items.length > 0),
-    selectedFilters:
-      found === undefined ? [] : selectedFilters(filters, search),
+    selectedFilters: isValidSearch ? selectedFilterLinks(filters, search) : [],
     clearFiltersHref: hasSelectedFilters
       ? searchHref({ terms: search.terms })
       : undefined,
-    ...(found === undefined ? {} : resultsFor(catalogue, found, search))
+    ...(isValidSearch ? resultsFor(catalogue, found, search) : {})
   })
 }

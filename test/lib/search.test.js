@@ -15,7 +15,8 @@ import {
   filterOptions,
   findDataAssets,
   readSearchQuery,
-  searchHref
+  searchHref,
+  selectedFilterLinks
 } from '../../app/lib/search.js'
 import { catalogueCopy, dataAssetIn } from '../helpers/catalogue.js'
 
@@ -379,10 +380,62 @@ describe('searching for data assets', () => {
     })
   })
 
+  describe('the links that remove a chosen filter', () => {
+    function links(query) {
+      return selectedFilterLinks(
+        FILTER_OPTIONS,
+        readSearchQuery(query, FILTER_OPTIONS)
+      )
+    }
+
+    test('list each chosen option by filter and name, in filter order', () => {
+      assert.deepEqual(
+        links({ domain: 'HOLDING', type: 'MASTER_DATA' }).map(
+          (link) => link.text
+        ),
+        ['Data asset type: Master Data', 'Domain: Holding']
+      )
+    })
+
+    test('remove only that option, keep the search words and go back to page 1', () => {
+      assert.deepEqual(
+        links({
+          q: 'cattle',
+          domain: ['ANIMAL', 'HOLDING'],
+          page: '2'
+        }).map((link) => link.removeHref),
+        [
+          '/data-assets?q=cattle&domain=HOLDING',
+          '/data-assets?q=cattle&domain=ANIMAL'
+        ]
+      )
+    })
+
+    test('leave only the search words when the last option is removed', () => {
+      assert.deepEqual(links({ q: 'cattle', type: 'MASTER_DATA' }), [
+        {
+          text: 'Data asset type: Master Data',
+          removeHref: '/data-assets?q=cattle'
+        }
+      ])
+    })
+
+    test('encode the search words, so they cannot break out of the address', () => {
+      const [link] = links({ q: 'a"><b&x', type: 'MASTER_DATA' })
+
+      assert.equal(link.removeHref, '/data-assets?q=a%22%3E%3Cb%26x')
+    })
+
+    test('are empty when nothing is chosen', () => {
+      assert.deepEqual(links({ q: 'cattle' }), [])
+    })
+  })
+
   describe('counting the data assets each filter option would find', () => {
     function counts(query) {
       return countFilterOptions(
         catalogue,
+        FILTER_OPTIONS,
         readSearchQuery(query, FILTER_OPTIONS)
       )
     }
@@ -422,6 +475,18 @@ describe('searching for data assets', () => {
         counts({ q: 'movement', domain: 'ADDRESS' }).domain.ADDRESS,
         0
       )
+    })
+
+    test('leaves draft and retired data assets out of every count', () => {
+      const total = (counts) =>
+        Object.values(counts).reduce((sum, count) => sum + count, 0)
+
+      assert.equal(total(counts({}).type), 12)
+      for (const terms of ['Animal Identity', 'Old Holdings']) {
+        for (const filter of Object.values(counts({ q: terms }))) {
+          assert.equal(total(filter), 0, terms)
+        }
+      }
     })
 
     test('has a count for every option of every filter', () => {

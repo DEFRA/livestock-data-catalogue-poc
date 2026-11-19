@@ -408,7 +408,12 @@ describe('the search page', () => {
     const page = await app.getPage('/data-assets?q=movement&domain=ADDRESS')
 
     assert.ok(texts(page.document, 'main p').includes('0 data assets'))
-    assert.ok(page.document.querySelector('#selected-filters li a'))
+    assert.equal(
+      page.document
+        .querySelector('#selected-filters li a')
+        .getAttribute('href'),
+      '/data-assets?q=movement'
+    )
   })
 
   test('does not list chosen filters when none are chosen', async () => {
@@ -446,6 +451,16 @@ describe('the search page', () => {
         'There are no matching data assets.'
       )
     )
+    assert.deepEqual(texts(page.document, 'main .govuk-list--bullet li'), [
+      'checking your spelling',
+      'using fewer words',
+      'searching for something less specific'
+    ])
+  })
+
+  test('suggests removing filters first when nothing matches and a filter is chosen', async () => {
+    const page = await app.getPage('/data-assets?q=movement&domain=ADDRESS')
+
     assert.deepEqual(texts(page.document, 'main .govuk-list--bullet li'), [
       'removing filters',
       'checking your spelling',
