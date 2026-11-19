@@ -9,6 +9,10 @@ const PAGE_STATES = [
   ['search results', '/data-assets?q=movement&type=TRANSACTIONAL_DATA'],
   ['the second page of results', '/data-assets?page=2'],
   ['no results', '/data-assets?q=unicorn'],
+  [
+    'chosen filters that find nothing',
+    '/data-assets?q=movement&domain=ADDRESS'
+  ],
   ['a search error', `/data-assets?q=${'a'.repeat(101)}`]
 ]
 

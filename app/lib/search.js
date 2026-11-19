@@ -144,6 +144,34 @@ function matchesFilters(dataAsset, selected) {
   })
 }
 
+// How many data assets each filter option would find if it were chosen
+// alongside the search terms and the other filters. A filter's own choices
+// are left out of its counts, because options in one filter widen the
+// results rather than narrow them. The filters must be the ones the page
+// shows (from filterOptions for the same catalogue), because the page looks
+// up each option's count by its value.
+export function countFilterOptions(catalogue, filters, search) {
+  const words = wordsIn(search.terms)
+  const matchingTerms = visibleDataAssets(catalogue).filter(
+    (dataAsset) => relevance(dataAsset, words) !== undefined
+  )
+  return Object.fromEntries(
+    filters.map((filter) => {
+      const otherChoices = { ...search.selected, [filter.parameter]: [] }
+      const candidates = matchingTerms.filter((dataAsset) =>
+        matchesFilters(dataAsset, otherChoices)
+      )
+      const counts = filter.options.map((option) => [
+        option.value,
+        candidates.filter((dataAsset) =>
+          filter.valuesOf(dataAsset).includes(option.value)
+        ).length
+      ])
+      return [filter.parameter, Object.fromEntries(counts)]
+    })
+  )
+}
+
 export function findDataAssets(catalogue, search) {
   const words = wordsIn(search.terms)
   const matching = visibleDataAssets(catalogue)
@@ -171,6 +199,29 @@ export function findDataAssets(catalogue, search) {
       page * RESULTS_PER_PAGE
     )
   }
+}
+
+// The chosen filter options, each with the address of the same search
+// without it, at page 1
+export function selectedFilterLinks(filters, search) {
+  return filters.flatMap((filter) =>
+    filter.options
+      .filter((option) =>
+        search.selected[filter.parameter].includes(option.value)
+      )
+      .map((option) => ({
+        text: `${filter.legend}: ${option.text}`,
+        removeHref: searchHref({
+          terms: search.terms,
+          selected: {
+            ...search.selected,
+            [filter.parameter]: search.selected[filter.parameter].filter(
+              (value) => value !== option.value
+            )
+          }
+        })
+      }))
+  )
 }
 
 // The address of a search, built only from validated values

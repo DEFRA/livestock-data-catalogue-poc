@@ -1,25 +1,42 @@
 import { countOf } from '../formatting.js'
 import {
+  countFilterOptions,
   filterOptions,
   findDataAssets,
   readSearchQuery,
-  searchHref
+  searchHref,
+  selectedFilterLinks
 } from '../search.js'
 import { dataAssetSummary } from '../summaries.js'
 import { catalogueFor } from '../working-copy.js'
 
 const PAGE_NAME = 'Search data assets'
 
-function filterGroups(filters, search) {
-  return filters.map((filter) => ({
-    parameter: filter.parameter,
-    legend: filter.legend,
-    items: filter.options.map((option) => ({
-      value: option.value,
-      text: option.text,
-      checked: search.selected[filter.parameter].includes(option.value)
-    }))
-  }))
+// Each option shows how many data assets it would find. Options that would
+// find nothing are hidden, unless chosen, so the filters stay short. Without
+// counts (when the search terms aren't valid) every option shows.
+function filterGroups(filters, search, counts) {
+  return filters.map((filter) => {
+    const chosen = search.selected[filter.parameter]
+    const optionCount = (option) => counts?.[filter.parameter][option.value]
+    return {
+      parameter: filter.parameter,
+      legend: filter.legend,
+      items: filter.options
+        .filter(
+          (option) => chosen.includes(option.value) || optionCount(option) !== 0
+        )
+        .map((option) => {
+          const count = optionCount(option)
+          return {
+            value: option.value,
+            text:
+              count === undefined ? option.text : `${option.text} (${count})`,
+            checked: chosen.includes(option.value)
+          }
+        })
+    }
+  })
 }
 
 function pagination(found, search) {
@@ -66,8 +83,9 @@ export function searchDataAssets(req, res) {
   const catalogue = catalogueFor(req)
   const filters = filterOptions(catalogue)
   const search = readSearchQuery(req.query, filters)
-  const found = search.error ? undefined : findDataAssets(catalogue, search)
-  if (found !== undefined && isPageToCorrect(req.query, found)) {
+  const isValidSearch = search.error === undefined
+  const found = isValidSearch ? findDataAssets(catalogue, search) : undefined
+  if (isValidSearch && isPageToCorrect(req.query, found)) {
     res.redirect(
       searchHref({
         terms: search.terms,
@@ -77,19 +95,26 @@ export function searchDataAssets(req, res) {
     )
     return
   }
+  const groups = filterGroups(
+    filters,
+    search,
+    isValidSearch ? countFilterOptions(catalogue, filters, search) : undefined
+  )
   const hasSelectedFilters = Object.values(search.selected).some(
     (values) => values.length > 0
   )
   res.render('data-assets/index', {
     navigationItem: 'data-assets',
     pageName: PAGE_NAME,
-    hasErrors: search.error !== undefined,
+    hasErrors: !isValidSearch,
     errorMessage: search.error,
     typedTerms: search.typedTerms,
-    filterGroups: filterGroups(filters, search),
+    filterGroups: groups,
+    hasFilterOptions: groups.some((group) => group.items.length > 0),
+    selectedFilters: isValidSearch ? selectedFilterLinks(filters, search) : [],
     clearFiltersHref: hasSelectedFilters
       ? searchHref({ terms: search.terms })
       : undefined,
-    ...(found === undefined ? {} : resultsFor(catalogue, found, search))
+    ...(isValidSearch ? resultsFor(catalogue, found, search) : {})
   })
 }

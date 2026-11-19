@@ -45,36 +45,54 @@
 
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-one-third">
-        <h2 class="govuk-heading-m">Filter</h2>
-        {% for group in filterGroups %}
-          {% if group.items | length %}
-            {{ govukCheckboxes({
-              idPrefix: group.parameter,
-              name: group.parameter,
-              classes: "govuk-checkboxes--small",
-              fieldset: {
-                legend: {
-                  text: group.legend,
-                  classes: "govuk-fieldset__legend--s"
-                }
-              },
-              items: group.items
-            }) }}
+        {% if hasFilterOptions %}
+          <h2 class="govuk-heading-m">Filter</h2>
+          {% if results %}
+            <p class="govuk-body-s">
+              <a class="govuk-link" href="#results">Skip to results</a>
+            </p>
           {% endif %}
-        {% endfor %}
-        {{ govukButton({
-          text: "Apply filters",
-          classes: "govuk-button--secondary"
-        }) }}
-        {% if clearFiltersHref %}
-          <p class="govuk-body">
-            <a class="govuk-link" href="{{ clearFiltersHref }}">Clear filters</a>
-          </p>
+          {% for group in filterGroups %}
+            {% if group.items | length %}
+              {{ govukCheckboxes({
+                idPrefix: group.parameter,
+                name: group.parameter,
+                classes: "govuk-checkboxes--small",
+                fieldset: {
+                  legend: {
+                    text: group.legend,
+                    classes: "govuk-fieldset__legend--s"
+                  }
+                },
+                items: group.items
+              }) }}
+            {% endif %}
+          {% endfor %}
+          {{ govukButton({
+            text: "Apply filters",
+            classes: "govuk-button--secondary"
+          }) }}
+          {% if clearFiltersHref %}
+            <p class="govuk-body">
+              <a class="govuk-link" href="{{ clearFiltersHref }}">Clear filters</a>
+            </p>
+          {% endif %}
         {% endif %}
       </div>
 
-      <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-grid-column-two-thirds" id="results">
         {% if results %}
+          {% if selectedFilters | length %}
+            <div id="selected-filters">
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-2">Selected filters</h2>
+              <ul class="govuk-list">
+                {% for filter in selectedFilters %}
+                  <li>{{ filter.text }} <a class="govuk-link" href="{{ filter.removeHref }}">Remove<span class="govuk-visually-hidden"> filter {{ filter.text }}</span></a></li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
           <p class="govuk-body">{{ resultCount }}</p>
 
           {% if results | length %}
@@ -103,7 +121,9 @@
             <p class="govuk-body">There are no matching data assets.</p>
             <p class="govuk-body">Improve your results by:</p>
             <ul class="govuk-list govuk-list--bullet">
-              <li>removing filters</li>
+              {% if selectedFilters | length %}
+                <li>removing filters</li>
+              {% endif %}
               <li>checking your spelling</li>
               <li>using fewer words</li>
               <li>searching for something less specific</li>

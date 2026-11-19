@@ -302,6 +302,126 @@ describe('the search page', () => {
     assert.ok(!texts(page.document, 'main a').includes('Clear filters'))
   })
 
+  test('shows how many data assets each filter option would find', async () => {
+    const page = await app.getPage('/data-assets')
+
+    assert.deepEqual(texts(page.document, '[name="type"] + label'), [
+      'Analytical Data (1)',
+      'Master Data (4)',
+      'Reference Data (2)',
+      'Transactional Data (5)'
+    ])
+  })
+
+  test('hides filter options that would find nothing, but keeps a chosen one', async () => {
+    const page = await app.getPage('/data-assets?q=movement&type=MASTER_DATA')
+    const typeLabels = texts(page.document, '[name="type"] + label')
+
+    assert.deepEqual(typeLabels, [
+      'Analytical Data (1)',
+      'Master Data (0)',
+      'Transactional Data (2)'
+    ])
+    assert.equal(
+      page.document.querySelector('[name="type"][value="MASTER_DATA"]').checked,
+      true
+    )
+  })
+
+  test('hides a filter when none of its options would find anything', async () => {
+    const page = await app.getPage('/data-assets?q=movement&domain=ADDRESS')
+
+    assert.ok(!texts(page.document, 'main legend').includes('Data asset type'))
+    assert.ok(texts(page.document, 'main legend').includes('Domain'))
+  })
+
+  test('shows no filter at all when nothing matches and no filter is chosen', async () => {
+    const page = await app.getPage('/data-assets?q=zebra')
+
+    assert.ok(texts(page.document, 'main p').includes('0 data assets'))
+    assert.ok(!texts(page.document, 'main h2').includes('Filter'))
+    assert.equal(page.document.querySelectorAll('main fieldset').length, 0)
+    assert.ok(!texts(page.document, 'main button').includes('Apply filters'))
+    assert.ok(!texts(page.document, 'main a').includes('Skip to results'))
+  })
+
+  test('offers a link to skip the filters to the results', async () => {
+    const page = await app.getPage('/data-assets')
+    const skip = [...page.document.querySelectorAll('main a')].find(
+      (link) => link.textContent.trim() === 'Skip to results'
+    )
+
+    assert.equal(skip.getAttribute('href'), '#results')
+    assert.equal(
+      page.document.querySelector('#results > p').textContent.trim(),
+      '12 data assets'
+    )
+    assert.ok(
+      skip.compareDocumentPosition(
+        page.document.querySelector('main fieldset')
+      ) & page.document.defaultView.Node.DOCUMENT_POSITION_FOLLOWING
+    )
+  })
+
+  test('lists the chosen filters above the results, each with a link that removes only that one', async () => {
+    const page = await app.getPage(
+      '/data-assets?q=movement&type=TRANSACTIONAL_DATA&domain=ANIMAL&domain=RESTRICTIONS_AND_MARKERS'
+    )
+    const chosen = page.document.querySelector('#selected-filters')
+
+    assert.equal(
+      chosen.querySelector('h2').textContent.trim(),
+      'Selected filters'
+    )
+    const items = [...chosen.querySelectorAll('li')]
+    assert.deepEqual(
+      items.map((item) => item.firstChild.textContent.trim()),
+      [
+        'Data asset type: Transactional Data',
+        'Domain: Animal',
+        'Domain: Restrictions & Markers'
+      ]
+    )
+    assert.deepEqual(
+      items.map((item) => item.querySelector('a').textContent.trim()),
+      [
+        'Remove filter Data asset type: Transactional Data',
+        'Remove filter Domain: Animal',
+        'Remove filter Domain: Restrictions & Markers'
+      ]
+    )
+    assert.deepEqual(
+      items.map((item) => item.querySelector('a').getAttribute('href')),
+      [
+        '/data-assets?q=movement&domain=ANIMAL&domain=RESTRICTIONS_AND_MARKERS',
+        '/data-assets?q=movement&type=TRANSACTIONAL_DATA&domain=RESTRICTIONS_AND_MARKERS',
+        '/data-assets?q=movement&type=TRANSACTIONAL_DATA&domain=ANIMAL'
+      ]
+    )
+    assert.equal(
+      page.document.querySelector('#results').firstElementChild,
+      chosen
+    )
+  })
+
+  test('lists the chosen filters even when nothing matches, so they can be removed', async () => {
+    const page = await app.getPage('/data-assets?q=movement&domain=ADDRESS')
+
+    assert.ok(texts(page.document, 'main p').includes('0 data assets'))
+    assert.equal(
+      page.document
+        .querySelector('#selected-filters li a')
+        .getAttribute('href'),
+      '/data-assets?q=movement'
+    )
+  })
+
+  test('does not list chosen filters when none are chosen', async () => {
+    const page = await app.getPage('/data-assets?q=movement')
+
+    assert.equal(page.document.querySelector('#selected-filters'), null)
+  })
+
   test('has a small checkbox filter for each attribute, with no option chosen by default', async () => {
     const page = await app.getPage('/data-assets')
 
@@ -331,6 +451,16 @@ describe('the search page', () => {
         'There are no matching data assets.'
       )
     )
+    assert.deepEqual(texts(page.document, 'main .govuk-list--bullet li'), [
+      'checking your spelling',
+      'using fewer words',
+      'searching for something less specific'
+    ])
+  })
+
+  test('suggests removing filters first when nothing matches and a filter is chosen', async () => {
+    const page = await app.getPage('/data-assets?q=movement&domain=ADDRESS')
+
     assert.deepEqual(texts(page.document, 'main .govuk-list--bullet li'), [
       'removing filters',
       'checking your spelling',
@@ -368,6 +498,11 @@ describe('the search page', () => {
     )
     assert.equal(page.document.querySelector('input#q').value, terms)
     assert.equal(page.document.querySelectorAll('main h2 a').length, 0)
+    assert.equal(page.document.querySelector('#results').children.length, 0)
+    assert.ok(!texts(page.document, 'main a').includes('Skip to results'))
+    assert.ok(
+      texts(page.document, '[name="type"] + label').includes('Master Data')
+    )
   })
 
   test('shows search terms as text, not as HTML', async () => {
