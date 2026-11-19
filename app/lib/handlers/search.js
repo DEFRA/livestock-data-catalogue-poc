@@ -113,6 +113,11 @@ export function searchDataAssets(req, res) {
     )
     return
   }
+  const groups = filterGroups(
+    filters,
+    search,
+    found === undefined ? undefined : countFilterOptions(catalogue, search)
+  )
   const hasSelectedFilters = Object.values(search.selected).some(
     (values) => values.length > 0
   )
@@ -122,11 +127,8 @@ export function searchDataAssets(req, res) {
     hasErrors: search.error !== undefined,
     errorMessage: search.error,
     typedTerms: search.typedTerms,
-    filterGroups: filterGroups(
-      filters,
-      search,
-      found === undefined ? undefined : countFilterOptions(catalogue, search)
-    ),
+    filterGroups: groups,
+    hasFilterOptions: groups.some((group) => group.items.length > 0),
     selectedFilters:
       found === undefined ? [] : selectedFilters(filters, search),
     clearFiltersHref: hasSelectedFilters

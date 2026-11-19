@@ -335,6 +335,16 @@ describe('the search page', () => {
     assert.ok(texts(page.document, 'main legend').includes('Domain'))
   })
 
+  test('shows no filter at all when nothing matches and no filter is chosen', async () => {
+    const page = await app.getPage('/data-assets?q=zebra')
+
+    assert.ok(texts(page.document, 'main p').includes('0 data assets'))
+    assert.ok(!texts(page.document, 'main h2').includes('Filter'))
+    assert.equal(page.document.querySelectorAll('main fieldset').length, 0)
+    assert.ok(!texts(page.document, 'main button').includes('Apply filters'))
+    assert.ok(!texts(page.document, 'main a').includes('Skip to results'))
+  })
+
   test('offers a link to skip the filters to the results', async () => {
     const page = await app.getPage('/data-assets')
     const skip = [...page.document.querySelectorAll('main a')].find(

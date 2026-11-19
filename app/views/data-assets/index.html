@@ -45,36 +45,38 @@
 
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-one-third">
-        <h2 class="govuk-heading-m">Filter</h2>
-        {% if results %}
-          <p class="govuk-body-s">
-            <a class="govuk-link" href="#results">Skip to results</a>
-          </p>
-        {% endif %}
-        {% for group in filterGroups %}
-          {% if group.items | length %}
-            {{ govukCheckboxes({
-              idPrefix: group.parameter,
-              name: group.parameter,
-              classes: "govuk-checkboxes--small",
-              fieldset: {
-                legend: {
-                  text: group.legend,
-                  classes: "govuk-fieldset__legend--s"
-                }
-              },
-              items: group.items
-            }) }}
+        {% if hasFilterOptions %}
+          <h2 class="govuk-heading-m">Filter</h2>
+          {% if results %}
+            <p class="govuk-body-s">
+              <a class="govuk-link" href="#results">Skip to results</a>
+            </p>
           {% endif %}
-        {% endfor %}
-        {{ govukButton({
-          text: "Apply filters",
-          classes: "govuk-button--secondary"
-        }) }}
-        {% if clearFiltersHref %}
-          <p class="govuk-body">
-            <a class="govuk-link" href="{{ clearFiltersHref }}">Clear filters</a>
-          </p>
+          {% for group in filterGroups %}
+            {% if group.items | length %}
+              {{ govukCheckboxes({
+                idPrefix: group.parameter,
+                name: group.parameter,
+                classes: "govuk-checkboxes--small",
+                fieldset: {
+                  legend: {
+                    text: group.legend,
+                    classes: "govuk-fieldset__legend--s"
+                  }
+                },
+                items: group.items
+              }) }}
+            {% endif %}
+          {% endfor %}
+          {{ govukButton({
+            text: "Apply filters",
+            classes: "govuk-button--secondary"
+          }) }}
+          {% if clearFiltersHref %}
+            <p class="govuk-body">
+              <a class="govuk-link" href="{{ clearFiltersHref }}">Clear filters</a>
+            </p>
+          {% endif %}
         {% endif %}
       </div>
 
