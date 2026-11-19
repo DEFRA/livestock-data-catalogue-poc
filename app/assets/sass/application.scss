@@ -3,7 +3,7 @@
 // green. GOV.UK's guidance on using GOV.UK Frontend without GOV.UK branding
 // allows changing the Generic header's colour with a class of our own.
 .app-generic-header--defra {
-  background-color: govuk-colour("white");
+  background-color: govuk-colour('white');
 }
 
 // The logo is taller than the header link's text, so the link's own focus
@@ -44,8 +44,8 @@
 // own, because there's no generic footer component.
 .app-footer {
   @include govuk-font($size: 16);
-  @include govuk-responsive-padding(7, "top");
-  @include govuk-responsive-padding(5, "bottom");
+  @include govuk-responsive-padding(7, 'top');
+  @include govuk-responsive-padding(5, 'bottom');
   border-top: $govuk-border-width-wide solid govuk-functional-colour(brand);
   color: govuk-functional-colour(surface-text);
   background-color: govuk-functional-colour(template-background);
@@ -62,4 +62,11 @@
   display: inline-block;
   margin-right: govuk-spacing(4);
   margin-bottom: govuk-spacing(2);
+}
+
+// A thin Defra green rule above the data asset page's related items, as
+// Defra's branding guidance allows its colour for borders
+.app-related-items {
+  @include govuk-responsive-padding(2, 'top');
+  border-top: $govuk-border-width-narrow solid govuk-functional-colour(brand);
 }
