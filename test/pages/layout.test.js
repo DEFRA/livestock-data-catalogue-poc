@@ -105,6 +105,11 @@ describe('the layout of every page', () => {
           banner.querySelector('.govuk-tag').textContent.trim(),
           'Alpha'
         )
+        assert.ok(
+          banner
+            .querySelector('.govuk-tag')
+            .classList.contains('govuk-tag--green')
+        )
         assert.match(
           banner.textContent,
           /This is a prototype with made-up data\./
