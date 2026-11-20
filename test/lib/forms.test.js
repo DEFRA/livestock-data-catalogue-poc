@@ -273,6 +273,12 @@ describe('dates (the GOV.UK Dates pattern)', () => {
     }
   })
 
+  test('keeps a year before 1000 as 4 numbers, so dates still compare in order', () => {
+    assert.deepEqual(parseDate(parts('1', '2', '0999'), STARTED), {
+      value: '0999-02-01'
+    })
+  })
+
   test('asks for a required date, and allows an optional one to be empty', () => {
     assert.deepEqual(parseDate(parts('', '', ''), STARTED), {
       error: 'Enter the start date',

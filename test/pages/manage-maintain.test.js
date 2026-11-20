@@ -332,6 +332,26 @@ describe('maintaining a data asset (journey 3)', () => {
     )
   })
 
+  test('a published data asset can have a gap between data owners, because the change takes it back to Draft', async () => {
+    await answer(
+      administrator,
+      `${MOVEMENT}/responsibility/change-data-owner`,
+      {
+        ...dateAnswer('ownerEndDate', '2026-11-30'),
+        person: ALEX_EXAMPLE,
+        ...dateAnswer('effectiveFromDate', '2027-01-01')
+      }
+    )
+    const responsibility = await administrator.get(`${MOVEMENT}/responsibility`)
+
+    assert.equal(stateOf(await administrator.get(MOVEMENT)), 'Draft')
+    assert.ok(
+      textsOf(responsibility, '.govuk-details tbody tr').includes(
+        'Alex Example Data owner From 1 January 2027'
+      )
+    )
+  })
+
   test('the new data owner must start after the current one stops', async () => {
     const page = await administrator.post(
       `${MOVEMENT}/responsibility/change-data-owner`,
