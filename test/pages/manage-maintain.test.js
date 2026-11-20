@@ -523,13 +523,29 @@ describe('maintaining a data asset (journey 3)', () => {
     assert.equal(stateOf(await administrator.get(MOVEMENT)), 'Deprecated')
   })
 
-  test('changing the data owner of a deprecated data asset cannot leave it without one today (answer 42)', async () => {
+  test('changing the data owner of a deprecated data asset cannot leave a day without one (answer 42)', async () => {
     const gap = await administrator.post(
       `${KEEPER}/responsibility/change-data-owner`,
       {
         ...dateAnswer('ownerEndDate', '2026-01-31'),
         person: JO_BLOGGS,
         ...dateAnswer('effectiveFromDate', '2099-01-01')
+      }
+    )
+    const futureGap = await administrator.post(
+      `${KEEPER}/responsibility/change-data-owner`,
+      {
+        ...dateAnswer('ownerEndDate', '2098-12-31'),
+        person: JO_BLOGGS,
+        ...dateAnswer('effectiveFromDate', '2099-03-01')
+      }
+    )
+    const pastGap = await administrator.post(
+      `${KEEPER}/responsibility/change-data-owner`,
+      {
+        ...dateAnswer('ownerEndDate', '2024-02-28'),
+        person: JO_BLOGGS,
+        ...dateAnswer('effectiveFromDate', '2024-03-01')
       }
     )
     await answer(administrator, `${KEEPER}/responsibility/change-data-owner`, {
@@ -539,9 +555,11 @@ describe('maintaining a data asset (journey 3)', () => {
     })
     const responsibility = await administrator.get(`${KEEPER}/responsibility`)
 
-    assert.deepEqual(textsOf(gap, '.govuk-error-summary__list a'), [
-      'The new data owner must start the day after Alex Example stops, because catalogue users can still see this data asset'
-    ])
+    for (const page of [gap, futureGap, pastGap]) {
+      assert.deepEqual(textsOf(page, '.govuk-error-summary__list a'), [
+        'The new data owner must start the day after Alex Example stops, because catalogue users can still see this data asset'
+      ])
+    }
     assert.equal(
       gap.document
         .querySelector('.govuk-error-summary__list a')

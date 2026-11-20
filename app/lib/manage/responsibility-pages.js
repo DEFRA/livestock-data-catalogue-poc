@@ -261,13 +261,18 @@ function currentOwner(context) {
   )
 }
 
+function dayAfter(isoDate) {
+  const next = new Date(`${isoDate}T00:00:00Z`)
+  next.setUTCDate(next.getUTCDate() + 1)
+  return next.toISOString().slice(0, 10)
+}
+
 // A deprecated data asset stays in the catalogue (LDAT-252, answer 42), so
-// it must have a data owner today
-function leavesNoOwnerToday(context, answers) {
+// its data owners follow on with no day between them without one
+function leavesOwnerGap(context, answers) {
   return (
     context.dataAsset.publicationStateCode === 'DEPRECATED' &&
-    answers.ownerEndDate < context.today &&
-    answers.effectiveFromDate > context.today
+    answers.effectiveFromDate !== dayAfter(answers.ownerEndDate)
   )
 }
 
@@ -288,7 +293,7 @@ function changeOwnerProblems(context, owner, answers) {
   if (problems.length > 0) {
     return problems
   }
-  if (leavesNoOwnerToday(context, answers)) {
+  if (leavesOwnerGap(context, answers)) {
     return [
       {
         name: 'effectiveFromDate',
