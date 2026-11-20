@@ -87,8 +87,8 @@ function isAssigned(person, dataAsset, today) {
 // Anyone but a catalogue administrator manages a data asset only while
 // they're its current Data Steward (LDAT-252, answer 40). A catalogue
 // administrator manages every data asset, to say who is responsible for it
-// and change its details. That is provisional: whether an administrator
-// should change the details too is an open question to the data architect.
+// and change its details (LDAT-252, follow-up question (c), confirmed on
+// 20 November 2026).
 export function canManage(catalogue, persona, dataAsset, today) {
   if (persona.id === ADMINISTRATOR_ID) {
     return true
