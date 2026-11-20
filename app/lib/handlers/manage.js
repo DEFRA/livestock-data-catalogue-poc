@@ -12,6 +12,7 @@ import { publicationActions } from '../manage/publish.js'
 import {
   SECTIONS,
   sectionSummary,
+  sectionWarning,
   sectionWithId,
   taskList
 } from '../manage/sections.js'
@@ -139,6 +140,18 @@ function groupedTasks(items) {
   return Map.groupBy(items, (item) => item.group)
 }
 
+// A draft needs a Data Owner to be published, but only a catalogue
+// administrator can add one (LDAT-252, answers 24 and 39), so anyone else
+// is told who to ask
+function needsOwnerFromAdministrator(context, checks) {
+  return (
+    !context.canAssignRoles &&
+    checks.some(
+      (check) => check.kind === 'governance' && check.field === 'DATA_OWNER'
+    )
+  )
+}
+
 export function showOverview(req, res) {
   const context = req.manage
   const { catalogue, dataAsset, today } = context
@@ -164,6 +177,7 @@ export function showOverview(req, res) {
     deletionDate: dataAsset.deletionDate && formatDate(dataAsset.deletionDate),
     completedCount: tasks.completedCount,
     requiredCount: tasks.requiredCount,
+    needsOwner: needsOwnerFromAdministrator(context, tasks.checks),
     taskGroups: [...groupedTasks(items)].map(([heading, groupItems]) => ({
       heading,
       items: groupItems
@@ -194,7 +208,7 @@ export function showSection(req, res) {
     caption: context.dataAsset.titleName,
     heading: section.title,
     overviewHref: manageHref(context.identifier),
-    isPublished: context.dataAsset.publicationStateCode === 'PUBLISHED',
+    warning: sectionWarning(context, section),
     ...sectionSummary(context, section)
   })
 }
@@ -254,14 +268,10 @@ export function publishDataAsset(req, res) {
   commitChange(req, {
     action: 'publish',
     identifier: context.identifier,
-    dataAsset: editedDataAsset(
-      context,
-      (dataAsset) => {
-        dataAsset.publicationStateCode = 'PUBLISHED'
-        dataAsset.acceptanceDate ??= context.today
-      },
-      { backToDraft: false }
-    )
+    dataAsset: editedDataAsset(context, (dataAsset) => {
+      dataAsset.publicationStateCode = 'PUBLISHED'
+      dataAsset.acceptanceDate ??= context.today
+    })
   })
   res.redirect(303, manageHref(context.identifier, 'published'))
 }

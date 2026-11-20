@@ -3,7 +3,7 @@ import { findRuleBreaches } from '../schemas/catalogue/rules.js'
 import { buildCatalogue, catalogue as baseCatalogue } from './catalogue-data.js'
 import { today as todayInLondon } from './clock.js'
 import { newCsrfToken } from './csrf.js'
-import { describeChanges } from './history.js'
+import { describeChanges, describeCreation } from './history.js'
 import { logEvent } from './log.js'
 import { DEFAULT_PERSONA_ID, personFor, personaFor } from './personas.js'
 
@@ -196,7 +196,7 @@ function historyEntries(req, change, before, after) {
   const dateTime = new Date().toISOString()
   const descriptions =
     change.action === 'create'
-      ? ['Data asset created']
+      ? describeCreation(change.dataAsset)
       : describeChanges(
           after,
           before.dataAssetsByIdentifier.get(change.identifier),

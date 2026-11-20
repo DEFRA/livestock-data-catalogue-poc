@@ -3,10 +3,12 @@ import { formatDate } from './formatting.js'
 const LONGEST_VALUE = 100
 const NOT_PROVIDED = 'Not provided'
 
-// Material changes (LDAT-252, question 28): a field needed to publish, a
+// Material changes (LDAT-252, answer 28): a field needed to publish, a
 // governance or custodian assignment, the publication or lifecycle state,
-// or a distribution. Optional fields, the delivery group and
-// relationships aren't material, so they aren't listed.
+// or a distribution. Optional fields, the delivery group, relationships
+// and reviews aren't material, so they aren't listed. The same list says
+// which changes send a published data asset back to Draft (answer 41), so
+// the history and the publication state can't disagree.
 const DATA_ASSET_FIELDS = [
   { field: 'titleName', label: 'Title' },
   { field: 'description', label: 'Description' },
@@ -207,13 +209,42 @@ function distributionChanges(catalogue, before, after) {
   })
 }
 
+// The lists in a data asset whose every change is material
+const LIST_CHANGES = Object.freeze({
+  governanceAssignments: (catalogue, before, after) =>
+    assignmentChanges(before, after),
+  custodians: (catalogue, before, after) => custodianChanges(before, after),
+  distributions: distributionChanges
+})
+
+const MATERIAL_ATTRIBUTES = new Set([
+  ...DATA_ASSET_FIELDS.map((spec) => spec.field),
+  ...Object.keys(LIST_CHANGES)
+])
+
+// Whether changing this data asset attribute is a material change
+export function isMaterialAttribute(name) {
+  return MATERIAL_ATTRIBUTES.has(name)
+}
+
 // What changed in a data asset, in words, for its change history. The
 // catalogue gives names for codes and people.
 export function describeChanges(catalogue, before, after) {
   return [
     ...fieldChanges(catalogue, DATA_ASSET_FIELDS, before, after),
-    ...assignmentChanges(before, after),
-    ...custodianChanges(before, after),
-    ...distributionChanges(catalogue, before, after)
+    ...Object.values(LIST_CHANGES).flatMap((changes) =>
+      changes(catalogue, before, after)
+    )
   ]
+}
+
+// A change is material when the change history would record it
+export function isMaterialChange(catalogue, before, after) {
+  return describeChanges(catalogue, before, after).length > 0
+}
+
+// A new data asset's history says it was created, and who was assigned to
+// it, such as the data steward who created it (LDAT-252, answer 39)
+export function describeCreation(dataAsset) {
+  return ['Data asset created', ...assignmentChanges({}, dataAsset)]
 }

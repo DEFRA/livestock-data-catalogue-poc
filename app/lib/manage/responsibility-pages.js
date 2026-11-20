@@ -16,8 +16,8 @@ import {
 } from './fields.js'
 
 // Who is responsible for a data asset (S07, S17). Only a catalogue
-// administrator assigns governance roles; a data steward can change the
-// delivery group, which isn't a governance role.
+// administrator assigns governance roles (LDAT-252, answer 24); a data
+// steward can change the delivery group, which isn't a governance role.
 
 const LATEST_DATE = '9999-12-31'
 const MOST_ASSIGNMENTS = 30
@@ -102,6 +102,7 @@ function addAssignment(roleSlug) {
   return (context) => ({
     heading: `Add a ${role.name}`,
     allowed: canChangeResponsibility,
+    changes: ['governanceAssignments'],
     paragraphs: [
       'If the person is not listed, they need to be added to the catalogue first.'
     ],
@@ -150,6 +151,7 @@ function addCustodian(context) {
   return {
     heading: 'Add a data custodian',
     allowed: canChangeResponsibility,
+    changes: ['custodians'],
     fields: [
       radiosField(
         'organisationName',
@@ -214,6 +216,7 @@ function endPeriod({ listName, describe }) {
     return {
       heading,
       allowed: canChangeResponsibility,
+      changes: [listName],
       fields: [
         dateField('effectiveToDate', heading, {
           required: 'Enter the end date',
@@ -295,6 +298,7 @@ function changeDataOwner(context) {
   return {
     heading: 'Change the data owner',
     allowed: canChangeResponsibility,
+    changes: ['governanceAssignments'],
     fields: [
       dateField(
         'ownerEndDate',
@@ -343,6 +347,7 @@ function deliveryGroup(context) {
   }))
   return {
     heading: 'Which delivery group supports this data asset?',
+    changes: ['deliveryGroupName'],
     fields: [
       radiosField(
         'deliveryGroupName',

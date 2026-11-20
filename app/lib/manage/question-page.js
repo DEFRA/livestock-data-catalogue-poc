@@ -1,4 +1,5 @@
 import { checkAnswers, readAnswers } from '../forms.js'
+import { isMaterialAttribute } from '../history.js'
 import { SessionFullError, commitChange } from '../working-copy.js'
 import { NotFoundError, isEditable } from './context.js'
 
@@ -7,9 +8,11 @@ import { NotFoundError, isEditable } from './context.js'
 // - heading, fields, values (the answers to show first), backHref
 // - save(values): what to change, and where to go next
 // - optionally caption, paragraphs, warning, inset, buttonText, validate
-//   (checks that need more than one answer or other records), and allowed
+//   (checks that need more than one answer or other records), allowed
 //   (whether the page exists for this data asset and persona; by default
-//   only drafts and published data assets can be changed)
+//   only draft, published and deprecated data assets can be changed), and
+//   changes (the data asset attributes the page changes, which say whether
+//   saving it is a material change)
 // - or readOnly, with a list, more paragraphs after it and links, for a
 //   page that explains why something can't be done. It has no form.
 
@@ -30,11 +33,17 @@ function errorHref(page, error) {
   return field?.type === 'date' ? `#${error.name}-day` : `#${error.name}`
 }
 
-// Saving a change sends a published data asset back to Draft (D24), so
-// its question pages say so before the first change
-function publishedWarning(context) {
-  return context.dataAsset?.publicationStateCode === 'PUBLISHED'
-    ? 'Saving a change will take this data asset out of the catalogue until you publish it again.'
+export const BACK_TO_DRAFT_WARNING =
+  'Saving a change will take this data asset out of the catalogue until you publish it again.'
+
+// Only a material change sends a published data asset back to Draft
+// (LDAT-252, answer 41), so only a page that makes one says so before the
+// first change. A page that doesn't say what it changes warns, to be safe.
+function publishedWarning(context, page) {
+  const isMaterial =
+    page.changes === undefined || page.changes.some(isMaterialAttribute)
+  return context.dataAsset?.publicationStateCode === 'PUBLISHED' && isMaterial
+    ? BACK_TO_DRAFT_WARNING
     : undefined
 }
 
@@ -63,7 +72,7 @@ function render(res, context, page, values, errors) {
     caption: page.caption ?? context.dataAsset?.titleName,
     fields: page.fields,
     paragraphs: page.paragraphs ?? [],
-    warning: page.warning ?? publishedWarning(context),
+    warning: page.warning ?? publishedWarning(context, page),
     inset: page.inset,
     buttonText: page.buttonText ?? 'Save and continue',
     buttonClasses: page.buttonClasses,

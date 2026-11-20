@@ -87,20 +87,22 @@ describe('forms are protected against cross-site requests and tampering (criteri
   })
 
   test("every form carries this browser's token", async () => {
-    for (const path of [
-      '/prototype-settings',
-      '/manage/data-assets/create',
-      `${MOVEMENT}/about/title`,
-      `${MOVEMENT}/deprecate`
+    const steward = visitor(app)
+    await steward.becomes('data-steward')
+    for (const [participant, path] of [
+      [administrator, '/prototype-settings'],
+      [steward, '/manage/data-assets/create'],
+      [administrator, `${MOVEMENT}/about/title`],
+      [administrator, `${MOVEMENT}/deprecate`]
     ]) {
-      const page = await administrator.get(path)
+      const page = await participant.get(path)
       const tokens = [
         ...page.document.querySelectorAll('main form input[name="csrfToken"]')
       ].map((input) => input.value)
 
       assert.ok(tokens.length > 0, path)
       assert.ok(
-        tokens.every((token) => token === administrator.csrfToken),
+        tokens.every((token) => token === participant.csrfToken),
         path
       )
     }

@@ -1,9 +1,11 @@
 import { publicationChecks } from '../../schemas/catalogue/publication.js'
 import { personKey } from '../catalogue-data.js'
 import { formatDate } from '../formatting.js'
+import { isMaterialAttribute } from '../history.js'
 import { isCurrentOn } from '../periods.js'
 import { referenceValue } from '../reference-data.js'
 import { canChangeResponsibility, isEditable, manageHref } from './context.js'
+import { BACK_TO_DRAFT_WARNING } from './question-page.js'
 import { relationshipTargetText } from './relation-pages.js'
 
 // The sections of the overview's task list (decision D23). A required
@@ -503,8 +505,10 @@ function previousAssignments(context) {
   ]
 }
 
-// Nobody can change who is responsible for a deprecated or retired data
-// asset, so there's nothing to recommend or ask for
+// Nobody can change who is responsible for a retired data asset, so
+// there's nothing to recommend or ask for. A deprecated one can't be
+// published again (LDAT-252, answers 26 and 42), so publishing without a
+// data custodian isn't mentioned.
 function responsibilityInset(context) {
   if (!isEditable(context)) {
     return undefined
@@ -514,7 +518,7 @@ function responsibilityInset(context) {
   }
   const hasCustodian =
     currentWithPositions(context.dataAsset.custodians, context.today).length > 0
-  return hasCustodian
+  return hasCustodian || context.dataAsset.publicationStateCode === 'DEPRECATED'
     ? undefined
     : 'A data custodian is recommended, but you can publish without one.'
 }
@@ -724,6 +728,34 @@ function relatedSummary(context) {
       : [],
     emptyText: 'There are no related resources.'
   }
+}
+
+export const SOME_CHANGES_WARNING =
+  'Changing some of these answers will take this data asset out of the catalogue until you publish it again. Each question tells you if it will.'
+
+// The attributes this persona can change in a section. A section's
+// attributes are the ones that start it. Only a catalogue administrator
+// changes who is responsible, apart from the delivery group.
+function changeableAttributes(context, section) {
+  return section.id === 'responsibility' && !canChangeResponsibility(context)
+    ? ['deliveryGroupName']
+    : section.startedBy
+}
+
+// Only a material change sends a published data asset back to Draft
+// (LDAT-252, answer 41), so a section warns only about the changes in it
+// that would
+export function sectionWarning(context, section) {
+  if (context.dataAsset.publicationStateCode !== 'PUBLISHED') {
+    return undefined
+  }
+  const material = changeableAttributes(context, section).map((attribute) =>
+    isMaterialAttribute(attribute)
+  )
+  if (material.every(Boolean)) {
+    return BACK_TO_DRAFT_WARNING
+  }
+  return material.some(Boolean) ? SOME_CHANGES_WARNING : undefined
 }
 
 // Everything a section's summary page shows

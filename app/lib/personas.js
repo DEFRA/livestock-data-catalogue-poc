@@ -14,23 +14,25 @@ export const PERSONAS = Object.freeze([
     id: 'data-steward',
     roleName: 'data steward',
     entraObjectId: '7bff5498-dd64-4e3b-949b-e6c6e8b1c023',
-    hint: 'Manages the data assets they are assigned to'
+    hint: 'Creates data assets, and manages the ones they are a data steward of'
   }),
   Object.freeze({
     id: 'catalogue-administrator',
     roleName: 'catalogue administrator',
     entraObjectId: '40044d45-47b9-47bc-9e16-ab6cbf0baf31',
-    hint: 'Creates data assets and says who is responsible for them'
+    hint: 'Manages every data asset and says who is responsible for them'
   })
 ])
 
 export const DEFAULT_PERSONA_ID = 'catalogue-user'
 
+const STEWARD_ID = 'data-steward'
 const ADMINISTRATOR_ID = 'catalogue-administrator'
 
-// Roles that make a data steward one of the people assigned to a data
-// asset (LDAT-252, question 24; who counts is question 40)
-const MANAGING_ROLE_CODES = new Set(['DATA_OWNER', 'DATA_STEWARD'])
+// Only a current Data Steward manages a data asset. Being its Data Owner,
+// or working for one of its data custodians, isn't enough (LDAT-252,
+// answer 40).
+const MANAGING_ROLE_CODE = 'DATA_STEWARD'
 
 export function personaFor(id) {
   return (
@@ -57,12 +59,14 @@ export function managesDataAssets(persona) {
   return persona.entraObjectId !== undefined
 }
 
-// Only a catalogue administrator creates data assets and assigns governance
-// roles (LDAT-252, question 24; who creates is question 39)
+// Only a data steward creates a data asset, and becomes its first Data
+// Steward (LDAT-252, answer 39)
 export function canCreate(persona) {
-  return persona.id === ADMINISTRATOR_ID
+  return persona.id === STEWARD_ID
 }
 
+// Only a catalogue administrator assigns governance roles (LDAT-252,
+// answer 24)
 export function canAssignRoles(persona) {
   return persona.id === ADMINISTRATOR_ID
 }
@@ -71,7 +75,7 @@ function isAssigned(person, dataAsset, today) {
   const key = personKey(person.name, person.emailAddressReference)
   return (dataAsset.governanceAssignments ?? []).some(
     (assignment) =>
-      MANAGING_ROLE_CODES.has(assignment.governanceRoleCode) &&
+      assignment.governanceRoleCode === MANAGING_ROLE_CODE &&
       personKey(
         assignment.personName,
         assignment.personEmailAddressReference
@@ -80,8 +84,11 @@ function isAssigned(person, dataAsset, today) {
   )
 }
 
-// A catalogue administrator manages every data asset. Anyone else manages
-// a data asset only while they're its current Data Owner or Data Steward.
+// Anyone but a catalogue administrator manages a data asset only while
+// they're its current Data Steward (LDAT-252, answer 40). A catalogue
+// administrator manages every data asset, to say who is responsible for it
+// and change its details. That is provisional: whether an administrator
+// should change the details too is an open question to the data architect.
 export function canManage(catalogue, persona, dataAsset, today) {
   if (persona.id === ADMINISTRATOR_ID) {
     return true

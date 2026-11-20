@@ -20,7 +20,10 @@ export const NEW_DATA_ASSET = Object.freeze({
   organisationName: 'Animal and Plant Health Agency'
 })
 
-// Every answer S26 needs to publish, in the order the checks list them
+// Every answer S26 needs to publish, in the order the checks list them.
+// The data steward who creates a data asset is already its data steward
+// (LDAT-252, answer 39), and only a catalogue administrator can add the
+// data owner (answer 24).
 export const REQUIRED_ANSWERS = Object.freeze([
   [
     'access-and-provenance/access-rights',
@@ -47,10 +50,6 @@ export const REQUIRED_ANSWERS = Object.freeze([
   [
     'responsibility/data-owner/add',
     { person: JO_BLOGGS, ...dateAnswer('effectiveFromDate', '2025-01-01') }
-  ],
-  [
-    'responsibility/data-steward/add',
-    { person: SAM_SPECIMEN, ...dateAnswer('effectiveFromDate', '2025-01-01') }
   ],
   [
     'information-asset/choose',
@@ -84,10 +83,22 @@ export async function answer(visitor, path, answers) {
   return page
 }
 
-// Creates a draft as a catalogue administrator, and gives its address
+// Creates a draft as the data steward the visitor already is, and gives
+// its address. Only a data steward creates data assets (LDAT-252, answer
+// 39).
 export async function createDraft(visitor, answers = NEW_DATA_ASSET) {
   const page = await answer(visitor, '/manage/data-assets/create', answers)
   return page.headers.get('location').split('?')[0]
+}
+
+// The data steward creates a draft, then the participant becomes the
+// catalogue administrator in the same browser, so the draft is still
+// there, to say who is responsible for it
+export async function draftForAdministrator(visitor, answers) {
+  await visitor.becomes('data-steward')
+  const address = await createDraft(visitor, answers)
+  await visitor.becomes('catalogue-administrator')
+  return address
 }
 
 export async function addDistribution(visitor, address, name = 'Cattle API') {
@@ -113,7 +124,7 @@ export async function completeDraft(visitor, address) {
 }
 
 export async function publishedDataAsset(visitor) {
-  const address = await createDraft(visitor)
+  const address = await draftForAdministrator(visitor)
   await completeDraft(visitor, address)
   await answer(visitor, `${address}/publish`, {})
   return address

@@ -3,10 +3,17 @@ import { after, before, describe, test } from 'node:test'
 
 import { findAccessibilityViolations } from '../helpers/accessibility.js'
 import { startApp } from '../helpers/app.js'
-import { completeDraft, createDraft, dateAnswer } from '../helpers/manage.js'
+import {
+  completeDraft,
+  createDraft,
+  dateAnswer,
+  draftForAdministrator
+} from '../helpers/manage.js'
 import { visitor } from '../helpers/session.js'
 
 const MOVEMENT = '/manage/data-assets/DA11111'
+const ADDRESS = '/manage/data-assets/DA11119'
+const KEEPER = '/manage/data-assets/DA11114'
 
 describe('accessibility of the manage pages', () => {
   let app
@@ -14,6 +21,7 @@ describe('accessibility of the manage pages', () => {
   let steward
   let draft
   let complete
+  let stewardDraft
 
   before(async () => {
     app = await startApp()
@@ -21,8 +29,9 @@ describe('accessibility of the manage pages', () => {
     await administrator.becomes('catalogue-administrator')
     steward = visitor(app)
     await steward.becomes('data-steward')
-    draft = await createDraft(administrator)
-    complete = await createDraft(administrator, {
+    stewardDraft = await createDraft(steward)
+    draft = await draftForAdministrator(administrator)
+    complete = await draftForAdministrator(administrator, {
       titleName: 'Complete made-up asset',
       description: 'Ready to publish.',
       organisationName: 'Rural Payments Agency'
@@ -30,6 +39,9 @@ describe('accessibility of the manage pages', () => {
     await completeDraft(administrator, complete)
     await administrator.post(`${MOVEMENT}/about/version`, {
       versionNumber: '3'
+    })
+    await administrator.post(`${ADDRESS}/about/description`, {
+      description: 'A changed made-up description.'
     })
   })
 
@@ -52,15 +64,19 @@ describe('accessibility of the manage pages', () => {
     ['your data assets', get(asSteward, fixed('/manage/data-assets'))],
     [
       'create a data asset',
-      get(asAdministrator, fixed('/manage/data-assets/create'))
+      get(asSteward, fixed('/manage/data-assets/create'))
     ],
     [
       'create a data asset with errors',
-      post(asAdministrator, fixed('/manage/data-assets/create'), {})
+      post(asSteward, fixed('/manage/data-assets/create'), {})
     ],
     [
       'a new draft overview',
       get(asAdministrator, () => `${draft}?created=yes`)
+    ],
+    [
+      'a new draft overview, asking for a data owner',
+      get(asSteward, () => `${stewardDraft}?created=yes`)
     ],
     [
       'a published overview',
@@ -75,6 +91,26 @@ describe('accessibility of the manage pages', () => {
       get(asAdministrator, fixed('/manage/data-assets/DA11116'))
     ],
     ['the about section', get(asAdministrator, fixed(`${MOVEMENT}/about`))],
+    [
+      'a section where every change is material',
+      get(asAdministrator, fixed(`${MOVEMENT}/classification`))
+    ],
+    [
+      'a published question that is not material',
+      get(asAdministrator, fixed(`${MOVEMENT}/about/version`))
+    ],
+    [
+      'a deprecated section that can be changed',
+      get(asAdministrator, fixed(`${KEEPER}/about`))
+    ],
+    [
+      'a deprecated question',
+      get(asAdministrator, fixed(`${KEEPER}/about/title`))
+    ],
+    [
+      'who is responsible for a deprecated data asset',
+      get(asAdministrator, fixed(`${KEEPER}/responsibility`))
+    ],
     ['the dates section', get(asAdministrator, fixed(`${MOVEMENT}/dates`))],
     [
       'who is responsible',
@@ -190,7 +226,8 @@ describe('accessibility of the manage pages', () => {
       'check before publishing',
       get(asAdministrator, () => `${complete}/publish`)
     ],
-    ['change history', get(asAdministrator, fixed(`${MOVEMENT}/history`))],
+    ['change history', get(asAdministrator, fixed(`${ADDRESS}/history`))],
+    ['a new change history', get(asSteward, () => `${stewardDraft}/history`)],
     [
       'an empty change history',
       get(asAdministrator, fixed('/manage/data-assets/DA11113/history'))
