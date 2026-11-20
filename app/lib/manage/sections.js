@@ -7,6 +7,7 @@ import { referenceValue } from '../reference-data.js'
 import {
   canAddDistribution,
   canChangeResponsibility,
+  canRemoveDistribution,
   isEditable,
   manageHref
 } from './context.js'
@@ -659,6 +660,16 @@ function distributionRows(context, distribution, position) {
   ]
 }
 
+// Why a deprecated data asset's distributions can't be added or removed
+function deprecatedDistributionsInset(context) {
+  if (!isEditable(context) || canAddDistribution(context)) {
+    return undefined
+  }
+  return canRemoveDistribution(context)
+    ? 'You cannot add a distribution to a deprecated data asset.'
+    : 'You cannot add a distribution to a deprecated data asset, or remove its only distribution.'
+}
+
 function distributionsSummary(context) {
   const checks = publicationChecks(context.dataAsset, { today: context.today })
   return {
@@ -666,7 +677,7 @@ function distributionsSummary(context) {
       (distribution, position) => ({
         title: distribution.name,
         isIncomplete: checks.some((check) => check.position === position),
-        actions: isEditable(context)
+        actions: canRemoveDistribution(context)
           ? [
               {
                 href: manageHref(
@@ -691,10 +702,7 @@ function distributionsSummary(context) {
           }
         ]
       : [],
-    inset:
-      isEditable(context) && !canAddDistribution(context)
-        ? 'You cannot add a distribution to a deprecated data asset.'
-        : undefined,
+    inset: deprecatedDistributionsInset(context),
     emptyText:
       'There are no distributions for this data asset. You need at least 1 to publish it.'
   }

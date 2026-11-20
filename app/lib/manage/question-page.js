@@ -1,12 +1,8 @@
-import {
-  outstandingForPublication,
-  publicationChecks
-} from '../../schemas/catalogue/publication.js'
 import { checkAnswers, readAnswers } from '../forms.js'
 import { isMaterialAttribute } from '../history.js'
 import { isVisible } from '../visibility.js'
 import { SessionFullError, commitChange } from '../working-copy.js'
-import { NotFoundError, isEditable } from './context.js'
+import { NotFoundError, isEditable, newPublicationProblems } from './context.js'
 
 // A question page is defined by a function of the page's context, which
 // returns:
@@ -50,7 +46,7 @@ const STILL_VISIBLE = 'Catalogue users can still see this data asset, so'
 const STILL_NEEDED = new Map([
   [
     'DATA_OWNER',
-    `${STILL_VISIBLE} it must have a data owner. To change who it is, use Change the data owner`
+    `${STILL_VISIBLE} it must have a data owner. To change who it is, use “Change the data owner”`
   ],
   [
     'DATA_STEWARD',
@@ -94,29 +90,29 @@ function liveChangeInset(context) {
     : undefined
 }
 
+// An error about the whole page goes on its first field, or on the page
+// itself if it has none
+function pageError(page, text) {
+  const name = page.fields[0]?.name
+  return name === undefined
+    ? { name: 'page', href: '#main-content', text }
+    : { name, text }
+}
+
 // A data asset that catalogue users can still see after a change must
-// still pass the S26 checks it passed before, as the working copy's rules
-// require, so the page says what it needs instead of saving the change.
-// Checks it already failed don't count, as in the working copy.
+// still pass the S26 checks, as the working copy's rules require, so the
+// page says what it needs instead of saving the change
 function stillCompleteProblems(context, page, change) {
-  const after = change?.dataAsset
-  if (after === undefined || !isVisible(after)) {
+  if (change?.dataAsset === undefined) {
     return []
   }
-  const { today } = context
-  const known = new Set(outstandingForPublication(context.dataAsset, { today }))
-  const texts = publicationChecks(after, { today })
-    .filter((check) => !known.has(check.message))
-    .map(
-      (check) =>
-        STILL_NEEDED.get(check.field) ??
-        STILL_NEEDED.get(check.kind) ??
-        STILL_COMPLETE
-    )
-  return [...new Set(texts)].map((text) => ({
-    name: page.fields[0].name,
-    text
-  }))
+  const texts = newPublicationProblems(context, change.dataAsset).map(
+    (check) =>
+      STILL_NEEDED.get(check.field) ??
+      STILL_NEEDED.get(check.kind) ??
+      STILL_COMPLETE
+  )
+  return [...new Set(texts)].map((text) => pageError(page, text))
 }
 
 function render(res, context, page, values, errors) {
@@ -190,9 +186,7 @@ export function questionPage(definePage) {
         if (!(error instanceof SessionFullError)) {
           throw error
         }
-        render(res, req.manage, page, raw, [
-          { name: page.fields[0].name, text: SESSION_FULL }
-        ])
+        render(res, req.manage, page, raw, [pageError(page, SESSION_FULL)])
         return
       }
       res.redirect(303, redirect)

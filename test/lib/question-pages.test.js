@@ -4,7 +4,10 @@ import { describe, test } from 'node:test'
 import { buildCatalogue } from '../../app/lib/catalogue-data.js'
 import { isMaterialAttribute } from '../../app/lib/history.js'
 import { ACTION_ROUTES } from '../../app/lib/manage/action-pages.js'
-import { editChange } from '../../app/lib/manage/context.js'
+import {
+  editChange,
+  newPublicationProblems
+} from '../../app/lib/manage/context.js'
 import { DETAIL_QUESTIONS } from '../../app/lib/manage/detail-pages.js'
 import { DISTRIBUTION_ROUTES } from '../../app/lib/manage/distribution-pages.js'
 import { textField } from '../../app/lib/manage/fields.js'
@@ -181,6 +184,74 @@ describe('saving a change that would leave a data asset in the catalogue incompl
       {
         text: 'Catalogue users can still see this data asset, so it must keep everything it needs to be published',
         href: '#note'
+      }
+    ])
+  })
+})
+
+describe('the checks a change would newly fail on a data asset catalogue users can see', () => {
+  const withoutKeywords = (dataAsset) => ({ ...dataAsset, keywordNames: [] })
+  const withoutDistributions = (dataAsset) => ({
+    ...dataAsset,
+    distributions: []
+  })
+
+  test('are none for a draft, which catalogue users cannot see', () => {
+    const context = contextFor('DA11111', 'DRAFT')
+
+    assert.deepEqual(
+      newPublicationProblems(context, withoutKeywords(context.dataAsset)),
+      []
+    )
+  })
+
+  test('leave out checks it already failed while catalogue users could see it', () => {
+    const context = contextFor('DA11114')
+    context.dataAsset = withoutKeywords(context.dataAsset)
+
+    assert.deepEqual(
+      newPublicationProblems(
+        context,
+        withoutDistributions(context.dataAsset)
+      ).map((check) => check.message),
+      ['At least one Distribution is required']
+    )
+  })
+
+  test('include every check, if catalogue users could not see it before', () => {
+    const context = contextFor('DA11114', 'DRAFT')
+    const after = withoutKeywords({
+      ...context.dataAsset,
+      publicationStateCode: 'DEPRECATED'
+    })
+    context.dataAsset = withoutKeywords(context.dataAsset)
+
+    assert.deepEqual(
+      newPublicationProblems(context, after).map((check) => check.message),
+      ['At least one Keyword is required']
+    )
+  })
+
+  test('are shown on the page itself when the page has no fields', () => {
+    const context = contextFor('DA11114')
+    const definePage = () => ({
+      heading: 'A made-up question',
+      fields: [],
+      values: {},
+      save: () => ({
+        change: editChange(context, (dataAsset) => {
+          dataAsset.keywordNames = []
+        }),
+        redirect: '/somewhere'
+      })
+    })
+    const shown = useQuestionPage(definePage, context, 'save')
+
+    assert.equal(shown.location, undefined, 'nothing is saved')
+    assert.deepEqual(shown.errorList, [
+      {
+        text: 'Catalogue users can still see this data asset, so it must keep everything it needs to be published',
+        href: '#main-content'
       }
     ])
   })

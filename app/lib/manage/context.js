@@ -1,5 +1,9 @@
 import { isDeepStrictEqual } from 'node:util'
 
+import {
+  outstandingForPublication,
+  publicationChecks
+} from '../../schemas/catalogue/publication.js'
 import { today as todayInLondon } from '../clock.js'
 import { isMaterialChange } from '../history.js'
 import { isDataAssetIdentifier } from '../identifiers.js'
@@ -181,12 +185,41 @@ export function canChangeResponsibility(context) {
   return context.canAssignRoles && isEditable(context)
 }
 
+function isDeprecated(context) {
+  return context.dataAsset.publicationStateCode === 'DEPRECATED'
+}
+
 // A new distribution is saved after its name, before it's complete. A
 // deprecated data asset stays in the catalogue (LDAT-252, answer 42), so
 // it must stay complete, and can't have a distribution added that way.
 export function canAddDistribution(context) {
+  return isEditable(context) && !isDeprecated(context)
+}
+
+// For the same reason, a deprecated data asset keeps at least 1
+// distribution
+export function canRemoveDistribution(context) {
   return (
     isEditable(context) &&
-    context.dataAsset.publicationStateCode !== 'DEPRECATED'
+    (!isDeprecated(context) || context.dataAsset.distributions.length > 1)
+  )
+}
+
+// The S26 checks a data asset that catalogue users can see after a change,
+// such as a deprecated one (LDAT-252, answer 42), would newly fail. The
+// working copy refuses such a change. As there, checks it failed while
+// catalogue users could already see it don't count.
+export function newPublicationProblems(context, after) {
+  if (!isVisible(after)) {
+    return []
+  }
+  const { today } = context
+  const known = new Set(
+    isVisible(context.dataAsset)
+      ? outstandingForPublication(context.dataAsset, { today })
+      : []
+  )
+  return publicationChecks(after, { today }).filter(
+    (check) => !known.has(check.message)
   )
 }

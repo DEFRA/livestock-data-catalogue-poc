@@ -261,6 +261,16 @@ function currentOwner(context) {
   )
 }
 
+// A deprecated data asset stays in the catalogue (LDAT-252, answer 42), so
+// it must have a data owner today
+function leavesNoOwnerToday(context, answers) {
+  return (
+    context.dataAsset.publicationStateCode === 'DEPRECATED' &&
+    answers.ownerEndDate < context.today &&
+    answers.effectiveFromDate > context.today
+  )
+}
+
 function changeOwnerProblems(context, owner, answers) {
   const problems = []
   if (answers.ownerEndDate < owner.effectiveFromDate) {
@@ -277,6 +287,14 @@ function changeOwnerProblems(context, owner, answers) {
   }
   if (problems.length > 0) {
     return problems
+  }
+  if (leavesNoOwnerToday(context, answers)) {
+    return [
+      {
+        name: 'effectiveFromDate',
+        text: `The new data owner must start the day after ${owner.personName} stops, because catalogue users can still see this data asset`
+      }
+    ]
   }
   const person = personWithId(context.catalogue, answers.person)
   return assignmentProblems(

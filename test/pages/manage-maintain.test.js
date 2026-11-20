@@ -493,6 +493,68 @@ describe('maintaining a data asset (journey 3)', () => {
     }
   })
 
+  test('a deprecated data asset with more than 1 distribution can have one removed, and stays deprecated (answer 42)', async () => {
+    await answer(administrator, `${MOVEMENT}/deprecate`, {
+      replacement: 'none'
+    })
+    const before = await administrator.get(`${MOVEMENT}/distributions`)
+    await answer(administrator, `${MOVEMENT}/distributions/1/remove`, {
+      confirm: 'yes'
+    })
+    const after = await administrator.get(`${MOVEMENT}/distributions`)
+
+    assert.deepEqual(textsOf(before, '.govuk-inset-text'), [
+      'You cannot add a distribution to a deprecated data asset.'
+    ])
+    assert.ok(
+      before.document.querySelector(
+        `a[href="${MOVEMENT}/distributions/1/remove"]`
+      )
+    )
+    assert.deepEqual(textsOf(after, '.govuk-summary-card__title'), [
+      'Movements API'
+    ])
+    assert.equal(
+      after.document.querySelector(
+        `a[href="${MOVEMENT}/distributions/0/remove"]`
+      ),
+      null
+    )
+    assert.equal(stateOf(await administrator.get(MOVEMENT)), 'Deprecated')
+  })
+
+  test('changing the data owner of a deprecated data asset cannot leave it without one today (answer 42)', async () => {
+    const gap = await administrator.post(
+      `${KEEPER}/responsibility/change-data-owner`,
+      {
+        ...dateAnswer('ownerEndDate', '2026-01-31'),
+        person: JO_BLOGGS,
+        ...dateAnswer('effectiveFromDate', '2099-01-01')
+      }
+    )
+    await answer(administrator, `${KEEPER}/responsibility/change-data-owner`, {
+      ...dateAnswer('ownerEndDate', '2026-01-31'),
+      person: JO_BLOGGS,
+      ...dateAnswer('effectiveFromDate', '2026-02-01')
+    })
+    const responsibility = await administrator.get(`${KEEPER}/responsibility`)
+
+    assert.deepEqual(textsOf(gap, '.govuk-error-summary__list a'), [
+      'The new data owner must start the day after Alex Example stops, because catalogue users can still see this data asset'
+    ])
+    assert.equal(
+      gap.document
+        .querySelector('.govuk-error-summary__list a')
+        .getAttribute('href'),
+      '#effectiveFromDate-day'
+    )
+    assert.match(
+      textsOf(responsibility, '.govuk-summary-card')[0],
+      /^Data owner .*Jo Bloggs/
+    )
+    assert.equal(stateOf(await administrator.get(KEEPER)), 'Deprecated')
+  })
+
   test('a question page for a deprecated data asset says the change is seen straight away (answer 42)', async () => {
     const page = await administrator.get(`${KEEPER}/about/description`)
 
@@ -507,7 +569,7 @@ describe('maintaining a data asset (journey 3)', () => {
       [
         'responsibility/assignments/0/end',
         dateAnswer('effectiveToDate', '2026-01-31'),
-        'Catalogue users can still see this data asset, so it must have a data owner. To change who it is, use Change the data owner'
+        'Catalogue users can still see this data asset, so it must have a data owner. To change who it is, use “Change the data owner”'
       ],
       [
         'responsibility/assignments/1/end',
@@ -534,7 +596,7 @@ describe('maintaining a data asset (journey 3)', () => {
     assert.equal(stateOf(await administrator.get(KEEPER)), 'Deprecated')
   })
 
-  test('a distribution cannot be added to a deprecated data asset, because it is saved before it is complete', async () => {
+  test('a distribution cannot be added to a deprecated data asset, because it is saved before it is complete, nor its only one removed', async () => {
     const distributions = await administrator.get(`${KEEPER}/distributions`)
 
     assert.equal(
@@ -543,8 +605,14 @@ describe('maintaining a data asset (journey 3)', () => {
       ),
       null
     )
+    assert.equal(
+      distributions.document.querySelector(
+        `a[href="${KEEPER}/distributions/0/remove"]`
+      ),
+      null
+    )
     assert.deepEqual(textsOf(distributions, '.govuk-inset-text'), [
-      'You cannot add a distribution to a deprecated data asset.'
+      'You cannot add a distribution to a deprecated data asset, or remove its only distribution.'
     ])
     assert.ok(
       distributions.document.querySelector(
