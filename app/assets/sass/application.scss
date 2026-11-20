@@ -70,3 +70,13 @@
   @include govuk-responsive-padding(2, 'top');
   border-top: $govuk-border-width-narrow solid govuk-functional-colour(brand);
 }
+
+// On small screens the search filter comes before the results, so Skip to
+// results helps people past it. From tablet width the filter is beside the
+// results, so the link only shows when it has keyboard focus, like the
+// GOV.UK skip link.
+.app-skip-to-results {
+  @include govuk-media-query($from: tablet) {
+    @include govuk-visually-hidden-focusable;
+  }
+}
