@@ -180,3 +180,13 @@ export function itemAt(list, positionText) {
 export function canChangeResponsibility(context) {
   return context.canAssignRoles && isEditable(context)
 }
+
+// A new distribution is saved after its name, before it's complete. A
+// deprecated data asset stays in the catalogue (LDAT-252, answer 42), so
+// it must stay complete, and can't have a distribution added that way.
+export function canAddDistribution(context) {
+  return (
+    isEditable(context) &&
+    context.dataAsset.publicationStateCode !== 'DEPRECATED'
+  )
+}

@@ -4,7 +4,12 @@ import { formatDate } from '../formatting.js'
 import { isMaterialAttribute } from '../history.js'
 import { isCurrentOn } from '../periods.js'
 import { referenceValue } from '../reference-data.js'
-import { canChangeResponsibility, isEditable, manageHref } from './context.js'
+import {
+  canAddDistribution,
+  canChangeResponsibility,
+  isEditable,
+  manageHref
+} from './context.js'
 import { BACK_TO_DRAFT_WARNING } from './question-page.js'
 import { relationshipTargetText } from './relation-pages.js'
 
@@ -678,7 +683,7 @@ function distributionsSummary(context) {
         rows: distributionRows(context, distribution, position)
       })
     ),
-    buttons: isEditable(context)
+    buttons: canAddDistribution(context)
       ? [
           {
             href: manageHref(context.identifier, 'distributions', 'add'),
@@ -686,6 +691,10 @@ function distributionsSummary(context) {
           }
         ]
       : [],
+    inset:
+      isEditable(context) && !canAddDistribution(context)
+        ? 'You cannot add a distribution to a deprecated data asset.'
+        : undefined,
     emptyText:
       'There are no distributions for this data asset. You need at least 1 to publish it.'
   }
@@ -734,8 +743,9 @@ export const SOME_CHANGES_WARNING =
   'Changing some of these answers will take this data asset out of the catalogue until you publish it again. Each question tells you if it will.'
 
 // The attributes this persona can change in a section. A section's
-// attributes are the ones that start it. Only a catalogue administrator
-// changes who is responsible, apart from the delivery group.
+// attributes are the ones that start it; the tests check that its
+// questions' changes are material in the same way. Only a catalogue
+// administrator changes who is responsible, apart from the delivery group.
 function changeableAttributes(context, section) {
   return section.id === 'responsibility' && !canChangeResponsibility(context)
     ? ['deliveryGroupName']

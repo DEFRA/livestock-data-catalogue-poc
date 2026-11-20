@@ -1,5 +1,11 @@
 import { referenceValue } from '../reference-data.js'
-import { editChange, itemAt, manageHref, systemDateTime } from './context.js'
+import {
+  canAddDistribution,
+  editChange,
+  itemAt,
+  manageHref,
+  systemDateTime
+} from './context.js'
 import {
   OR_DIVIDER,
   YES_NO_OPTIONS,
@@ -97,6 +103,7 @@ function addDistribution(context) {
   const distributions = context.dataAsset.distributions ?? []
   return {
     heading: 'What is the distribution called?',
+    allowed: canAddDistribution,
     changes: ['distributions'],
     fields: nameFields(),
     values: {},

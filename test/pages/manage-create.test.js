@@ -191,6 +191,7 @@ describe('creating a data asset (S05)', () => {
   })
 
   test('makes the data steward who creates it its first data steward, from today with no end date, and records it (answer 39)', async () => {
+    const createdOn = formatDate(today())
     const address = await createDraft(steward, {
       ...NEW_DATA_ASSET,
       titleName: 'Steward made-up asset'
@@ -201,7 +202,7 @@ describe('creating a data asset (S05)', () => {
 
     assert.match(
       textsOf(responsibility, '.govuk-summary-card')[1],
-      new RegExp(`^Data stewards Sam Specimen .* From ${formatDate(today())}$`)
+      new RegExp(`^Data stewards Sam Specimen .* From ${createdOn}$`)
     )
     assert.equal(
       textsOf(responsibility, '.govuk-details').length,
@@ -210,7 +211,7 @@ describe('creating a data asset (S05)', () => {
     )
     assert.deepEqual(textsOf(history, 'tbody tr td:nth-child(2)'), [
       'Data asset created',
-      `Data steward Sam Specimen added, from ${formatDate(today())}`
+      `Data steward Sam Specimen added, from ${createdOn}`
     ])
     assert.deepEqual(
       [...new Set(textsOf(history, 'tbody tr td:nth-child(3)'))],

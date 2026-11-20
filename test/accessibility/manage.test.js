@@ -37,9 +37,6 @@ describe('accessibility of the manage pages', () => {
       organisationName: 'Rural Payments Agency'
     })
     await completeDraft(administrator, complete)
-    await administrator.post(`${MOVEMENT}/about/version`, {
-      versionNumber: '3'
-    })
     await administrator.post(`${ADDRESS}/about/description`, {
       description: 'A changed made-up description.'
     })
@@ -110,6 +107,18 @@ describe('accessibility of the manage pages', () => {
     [
       'who is responsible for a deprecated data asset',
       get(asAdministrator, fixed(`${KEEPER}/responsibility`))
+    ],
+    [
+      'the distributions of a deprecated data asset',
+      get(asAdministrator, fixed(`${KEEPER}/distributions`))
+    ],
+    [
+      'a change that would leave a deprecated data asset incomplete',
+      post(
+        asAdministrator,
+        fixed(`${KEEPER}/responsibility/assignments/0/end`),
+        dateAnswer('effectiveToDate', '2026-01-31')
+      )
     ],
     ['the dates section', get(asAdministrator, fixed(`${MOVEMENT}/dates`))],
     [

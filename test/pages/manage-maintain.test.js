@@ -98,7 +98,6 @@ describe('maintaining a data asset (journey 3)', () => {
       'about/title',
       'about/description',
       'classification/keywords',
-      'dates/valid',
       'responsibility/data-steward/add',
       'responsibility/assignments/0/end',
       'distributions/add',
@@ -124,8 +123,19 @@ describe('maintaining a data asset (journey 3)', () => {
     ]) {
       const page = await administrator.get(`${MOVEMENT}/${path}`)
       assert.deepEqual(textsOf(page, '.govuk-warning-text'), [], path)
+      assert.deepEqual(
+        textsOf(page, '.govuk-inset-text'),
+        ['Catalogue users will see this change as soon as you save it.'],
+        path
+      )
     }
+    const valid = await administrator.get(`${MOVEMENT}/dates/valid`)
+    assert.match(
+      textsOf(valid, '.govuk-warning-text')[0],
+      /Changing your answer to “Valid from” will take this data asset out of the catalogue until you publish it again\.$/
+    )
     assert.deepEqual(textsOf(draft, '.govuk-warning-text'), [])
+    assert.deepEqual(textsOf(draft, '.govuk-inset-text'), [])
     assert.match(
       textsOf(deprecate, '.govuk-warning-text')[0],
       /Catalogue users will still see this data asset/
@@ -147,6 +157,10 @@ describe('maintaining a data asset (journey 3)', () => {
       lastReviewedByName: JO_BLOGGS,
       ...dateAnswer('nextReviewDate', '2027-11-01'),
       approvedByName: 'nobody'
+    })
+    await answer(administrator, `${MOVEMENT}/dates/valid`, {
+      ...dateAnswer('validFromDate', '2024-04-01'),
+      ...dateAnswer('validToDate', '2030-12-31')
     })
     const catalogue = await administrator.get('/data-assets/DA11111')
     const history = await administrator.get(`${MOVEMENT}/history`)
@@ -471,7 +485,85 @@ describe('maintaining a data asset (journey 3)', () => {
         404,
         path
       )
+      assert.equal(
+        (await administrator.post(`${KEEPER}/${path}`, {})).status,
+        404,
+        path
+      )
     }
+  })
+
+  test('a question page for a deprecated data asset says the change is seen straight away (answer 42)', async () => {
+    const page = await administrator.get(`${KEEPER}/about/description`)
+
+    assert.deepEqual(textsOf(page, '.govuk-warning-text'), [])
+    assert.deepEqual(textsOf(page, '.govuk-inset-text'), [
+      'Catalogue users will see this change as soon as you save it.'
+    ])
+  })
+
+  test('a deprecated data asset cannot be left without what it needs to be published, and the page says why (answer 42)', async () => {
+    for (const [path, answers, error] of [
+      [
+        'responsibility/assignments/0/end',
+        dateAnswer('effectiveToDate', '2026-01-31'),
+        'Catalogue users can still see this data asset, so it must have a data owner. To change who it is, use Change the data owner'
+      ],
+      [
+        'responsibility/assignments/1/end',
+        dateAnswer('effectiveToDate', '2026-01-31'),
+        'Catalogue users can still see this data asset, so it must have a data steward. Add another data steward before you end this one'
+      ],
+      [
+        'distributions/0/remove',
+        { confirm: 'yes' },
+        'Catalogue users can still see this data asset, so it must have at least 1 distribution'
+      ]
+    ]) {
+      const page = await administrator.post(`${KEEPER}/${path}`, answers)
+
+      assert.equal(page.status, 200, path)
+      assert.deepEqual(
+        textsOf(page, '.govuk-error-summary__list a'),
+        [error],
+        path
+      )
+    }
+    const history = await administrator.get(`${KEEPER}/history`)
+    assert.equal(history.document.querySelectorAll('tbody tr').length, 0)
+    assert.equal(stateOf(await administrator.get(KEEPER)), 'Deprecated')
+  })
+
+  test('a distribution cannot be added to a deprecated data asset, because it is saved before it is complete', async () => {
+    const distributions = await administrator.get(`${KEEPER}/distributions`)
+
+    assert.equal(
+      distributions.document.querySelector(
+        `a[href="${KEEPER}/distributions/add"]`
+      ),
+      null
+    )
+    assert.deepEqual(textsOf(distributions, '.govuk-inset-text'), [
+      'You cannot add a distribution to a deprecated data asset.'
+    ])
+    assert.ok(
+      distributions.document.querySelector(
+        `a[href="${KEEPER}/distributions/0/type"]`
+      )
+    )
+    assert.equal(
+      (await administrator.get(`${KEEPER}/distributions/add`)).status,
+      404
+    )
+    assert.equal(
+      (
+        await administrator.post(`${KEEPER}/distributions/add`, {
+          name: 'Keeper file',
+          description: ''
+        })
+      ).status,
+      404
+    )
   })
 
   test('changing a deprecated data asset keeps it deprecated and in the catalogue, and records the change (answer 42)', async () => {
@@ -740,6 +832,17 @@ describe('a data steward maintaining their data assets', () => {
         'Changed by the data steward after deprecating it.'
       )
     )
+    for (const path of [
+      'responsibility/data-owner/add',
+      'responsibility/data-custodian/add',
+      'responsibility/assignments/0/end'
+    ]) {
+      assert.equal(
+        (await steward.post(`${results}/${path}`, {})).status,
+        404,
+        path
+      )
+    }
     assert.deepEqual(
       textsOf(
         await steward.get(`${results}/responsibility`),

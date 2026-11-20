@@ -77,6 +77,7 @@ describe('registering a data asset (journey 2)', () => {
   let app
   let administrator
   let address
+  let createdOn
 
   before(async () => {
     app = await startApp()
@@ -89,6 +90,7 @@ describe('registering a data asset (journey 2)', () => {
   beforeEach(async () => {
     administrator = visitor(app)
     await administrator.becomes('catalogue-administrator')
+    createdOn = formatDate(today())
     address = await draftForAdministrator(administrator)
   })
 
@@ -225,7 +227,7 @@ describe('registering a data asset (journey 2)', () => {
       assert.deepEqual(errorsOn(page), [error])
       assert.deepEqual(textsOf(history, 'tbody tr td:nth-child(2)'), [
         'Data asset created',
-        `Data steward Sam Specimen added, from ${formatDate(today())}`
+        `Data steward Sam Specimen added, from ${createdOn}`
       ])
     })
   }
