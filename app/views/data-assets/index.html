@@ -48,9 +48,7 @@
         {% if hasFilterOptions %}
           <h2 class="govuk-heading-m">Filter</h2>
           {% if results %}
-            <p class="govuk-body-s">
-              <a class="govuk-link" href="#results">Skip to results</a>
-            </p>
+            <a class="govuk-link govuk-body-s govuk-!-display-block app-skip-to-results" href="#results">Skip to results</a>
           {% endif %}
           {% for group in filterGroups %}
             {% if group.items | length %}

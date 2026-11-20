@@ -60,6 +60,16 @@ describe('the stylesheet', () => {
     assert.ok(css.includes(`--govuk-brand-colour: ${DEFRA_COLOUR};`))
   })
 
+  test('hides Skip to results from tablet width until it has keyboard focus, because the filter is then beside the results', () => {
+    const rule = css.match(
+      /@media \(min-width: 40\.0625em\) \{\s*\.app-skip-to-results:not\(:active\):not\(:focus\)[^{]*\{([^}]*)\}/
+    )
+
+    assert.ok(rule, 'no tablet rule for .app-skip-to-results')
+    assert.match(rule[1], /position: absolute !important/)
+    assert.match(rule[1], /width: 1px !important/)
+  })
+
   test('includes the catalogue footer styles', () => {
     assert.match(css, /\.app-footer \{/)
   })
