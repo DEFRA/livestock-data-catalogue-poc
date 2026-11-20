@@ -31,8 +31,8 @@ describe('the prototype settings page (D20)', () => {
     ])
     assert.deepEqual(textsOf(page, '.govuk-radios__hint'), [
       'Can find and view published data assets only',
-      'Manages the data assets they are assigned to',
-      'Creates data assets and says who is responsible for them'
+      'Creates data assets, and manages the ones they are a data steward of',
+      'Manages every data asset and says who is responsible for them'
     ])
     assert.equal(
       page.document.querySelector('input[name="personaId"]:checked').value,
@@ -121,7 +121,7 @@ describe('the prototype settings page (D20)', () => {
 
   test('resetting removes every change but keeps who the participant is', async () => {
     const participant = visitor(app)
-    await participant.becomes('catalogue-administrator')
+    await participant.becomes('data-steward')
     const address = await createDraft(participant)
     await participant.get('/prototype-settings')
     const reset = await participant.post('/prototype-settings/reset', {})

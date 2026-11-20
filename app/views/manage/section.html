@@ -18,10 +18,8 @@
       <span class="govuk-caption-l">{{ caption }}</span>
       <h1 class="govuk-heading-l">{{ heading }}</h1>
 
-      {% if isPublished %}
-        {{ govukWarningText({
-          text: "Saving a change will take this data asset out of the catalogue until you publish it again."
-        }) }}
+      {% if warning %}
+        {{ govukWarningText({ text: warning }) }}
       {% endif %}
 
       {% if rows | length %}

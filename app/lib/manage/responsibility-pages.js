@@ -16,8 +16,8 @@ import {
 } from './fields.js'
 
 // Who is responsible for a data asset (S07, S17). Only a catalogue
-// administrator assigns governance roles; a data steward can change the
-// delivery group, which isn't a governance role.
+// administrator assigns governance roles (LDAT-252, answer 24); a data
+// steward can change the delivery group, which isn't a governance role.
 
 const LATEST_DATE = '9999-12-31'
 const MOST_ASSIGNMENTS = 30
@@ -102,6 +102,7 @@ function addAssignment(roleSlug) {
   return (context) => ({
     heading: `Add a ${role.name}`,
     allowed: canChangeResponsibility,
+    changes: ['governanceAssignments'],
     paragraphs: [
       'If the person is not listed, they need to be added to the catalogue first.'
     ],
@@ -150,6 +151,7 @@ function addCustodian(context) {
   return {
     heading: 'Add a data custodian',
     allowed: canChangeResponsibility,
+    changes: ['custodians'],
     fields: [
       radiosField(
         'organisationName',
@@ -214,6 +216,7 @@ function endPeriod({ listName, describe }) {
     return {
       heading,
       allowed: canChangeResponsibility,
+      changes: [listName],
       fields: [
         dateField('effectiveToDate', heading, {
           required: 'Enter the end date',
@@ -258,6 +261,21 @@ function currentOwner(context) {
   )
 }
 
+function dayAfter(isoDate) {
+  const next = new Date(`${isoDate}T00:00:00Z`)
+  next.setUTCDate(next.getUTCDate() + 1)
+  return next.toISOString().slice(0, 10)
+}
+
+// A deprecated data asset stays in the catalogue (LDAT-252, answer 42), so
+// its data owners follow on with no day between them without one
+function leavesOwnerGap(context, answers) {
+  return (
+    context.dataAsset.publicationStateCode === 'DEPRECATED' &&
+    answers.effectiveFromDate !== dayAfter(answers.ownerEndDate)
+  )
+}
+
 function changeOwnerProblems(context, owner, answers) {
   const problems = []
   if (answers.ownerEndDate < owner.effectiveFromDate) {
@@ -274,6 +292,14 @@ function changeOwnerProblems(context, owner, answers) {
   }
   if (problems.length > 0) {
     return problems
+  }
+  if (leavesOwnerGap(context, answers)) {
+    return [
+      {
+        name: 'effectiveFromDate',
+        text: `The new data owner must start the day after ${owner.personName} stops, because catalogue users can still see this data asset`
+      }
+    ]
   }
   const person = personWithId(context.catalogue, answers.person)
   return assignmentProblems(
@@ -295,6 +321,7 @@ function changeDataOwner(context) {
   return {
     heading: 'Change the data owner',
     allowed: canChangeResponsibility,
+    changes: ['governanceAssignments'],
     fields: [
       dateField(
         'ownerEndDate',
@@ -343,6 +370,7 @@ function deliveryGroup(context) {
   }))
   return {
     heading: 'Which delivery group supports this data asset?',
+    changes: ['deliveryGroupName'],
     fields: [
       radiosField(
         'deliveryGroupName',

@@ -48,7 +48,7 @@ describe('personas', () => {
     assert.equal(personaDescription(catalogue, USER), 'A catalogue user')
   })
 
-  test('only a catalogue administrator creates data assets and says who is responsible (question 24)', () => {
+  test('only a data steward creates data assets, and only a catalogue administrator says who is responsible (answers 24 and 39)', () => {
     assert.deepEqual(
       PERSONAS.map((persona) => [
         persona.id,
@@ -58,8 +58,8 @@ describe('personas', () => {
       ]),
       [
         ['catalogue-user', false, false, false],
-        ['data-steward', true, false, false],
-        ['catalogue-administrator', true, true, true]
+        ['data-steward', true, true, false],
+        ['catalogue-administrator', true, false, true]
       ]
     )
   })
@@ -75,13 +75,48 @@ describe('who manages a data asset', () => {
     )
   })
 
-  test('a data steward manages the data assets where they are a current data owner or data steward', () => {
+  test('a data steward manages the data assets where they are a current data steward', () => {
     const catalogue = buildCatalogue(catalogueCopy())
 
     assert.deepEqual(identifiersManagedBy(STEWARD, catalogue), [
       'DA11111',
       'DA11112',
       'DA11117',
+      'DA11118'
+    ])
+  })
+
+  test('being the data owner of a data asset is not enough to manage it (answer 40)', () => {
+    const collections = catalogueCopy()
+    const dataAsset = dataAssetIn(collections, 'DA11117')
+    dataAsset.governanceAssignments = dataAsset.governanceAssignments.filter(
+      (assignment) =>
+        !(
+          assignment.personName === 'Sam Specimen' &&
+          assignment.governanceRoleCode === 'DATA_STEWARD'
+        )
+    )
+    const catalogue = buildCatalogue(collections)
+
+    assert.ok(
+      dataAsset.governanceAssignments.some(
+        (assignment) =>
+          assignment.personName === 'Sam Specimen' &&
+          assignment.governanceRoleCode === 'DATA_OWNER'
+      )
+    )
+    assert.equal(
+      canManage(
+        catalogue,
+        STEWARD,
+        catalogue.dataAssetsByIdentifier.get('DA11117'),
+        TODAY
+      ),
+      false
+    )
+    assert.deepEqual(identifiersManagedBy(STEWARD, catalogue), [
+      'DA11111',
+      'DA11112',
       'DA11118'
     ])
   })
@@ -98,7 +133,9 @@ describe('who manages a data asset', () => {
       collections,
       'DA11117'
     ).governanceAssignments.filter(
-      (candidate) => candidate.personName === 'Sam Specimen'
+      (candidate) =>
+        candidate.personName === 'Sam Specimen' &&
+        candidate.governanceRoleCode === 'DATA_STEWARD'
     )
     assignment.effectiveFromDate = '2026-11-05'
     const catalogue = buildCatalogue(collections)
@@ -114,7 +151,9 @@ describe('who manages a data asset', () => {
       collections,
       'DA11118'
     ).governanceAssignments.filter(
-      (candidate) => candidate.personName === 'Sam Specimen'
+      (candidate) =>
+        candidate.personName === 'Sam Specimen' &&
+        candidate.governanceRoleCode === 'DATA_STEWARD'
     )
     assignment.effectiveToDate = '2026-11-03'
     const catalogue = buildCatalogue(collections)

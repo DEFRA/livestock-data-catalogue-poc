@@ -11,8 +11,8 @@ import {
   addDistribution,
   answer,
   completeDraft,
-  createDraft,
   dateAnswer,
+  draftForAdministrator,
   textsOf
 } from '../helpers/manage.js'
 import { visitor } from '../helpers/session.js'
@@ -77,6 +77,7 @@ describe('registering a data asset (journey 2)', () => {
   let app
   let administrator
   let address
+  let createdOn
 
   before(async () => {
     app = await startApp()
@@ -89,7 +90,8 @@ describe('registering a data asset (journey 2)', () => {
   beforeEach(async () => {
     administrator = visitor(app)
     await administrator.becomes('catalogue-administrator')
-    address = await createDraft(administrator)
+    createdOn = formatDate(today())
+    address = await draftForAdministrator(administrator)
   })
 
   test('the overview lists each section with its status, and publishing cannot start yet', async () => {
@@ -101,7 +103,7 @@ describe('registering a data asset (journey 2)', () => {
       'Status and updates': 'Not yet started',
       'Access rights and provenance': 'Not yet started',
       'Dates and coverage': 'Not yet started',
-      'Who is responsible': 'Not yet started',
+      'Who is responsible': 'In progress',
       Distributions: 'Not yet started',
       'Information asset': 'Not yet started',
       'Related resources': 'Not yet started',
@@ -223,7 +225,10 @@ describe('registering a data asset (journey 2)', () => {
 
       assert.equal(page.status, 200)
       assert.deepEqual(errorsOn(page), [error])
-      assert.equal(history.document.querySelectorAll('tbody tr').length, 1)
+      assert.deepEqual(textsOf(history, 'tbody tr td:nth-child(2)'), [
+        'Data asset created',
+        `Data steward Sam Specimen added, from ${createdOn}`
+      ])
     })
   }
 
@@ -334,7 +339,12 @@ describe('registering a data asset (journey 2)', () => {
       textsOf(page, 'h1')[0],
       `You cannot publish ${NEW_DATA_ASSET.titleName} yet`
     )
-    assert.equal(links.length, 17)
+    // The data steward who created it is already its data steward
+    assert.equal(links.length, 16)
+    assert.equal(
+      links.some(([text]) => text.includes('data steward')),
+      false
+    )
     assert.deepEqual(links[0], [
       'say who can access and use the data',
       `${address}/access-and-provenance/access-rights`
@@ -475,9 +485,11 @@ describe('registering a data asset (journey 2)', () => {
   })
 
   test('a data asset published before cannot be deleted, even after a change takes it back to Draft (Q26)', async () => {
-    await answer(administrator, '/manage/data-assets/DA11115/about/version', {
-      versionNumber: '9'
-    })
+    await answer(
+      administrator,
+      '/manage/data-assets/DA11115/about/description',
+      { description: 'A changed made-up description.' }
+    )
     const overview = await administrator.get('/manage/data-assets/DA11115')
 
     assert.ok(textsOf(overview, 'main p').includes('Catalogue entry: Draft'))
@@ -499,10 +511,18 @@ describe('registering a data asset (journey 2)', () => {
   })
 
   test('a data steward is not told the title of a linking data asset they cannot see', async () => {
-    await answer(administrator, `${address}/related-resources/add`, {
-      relationshipTypeCode: 'RELATED_TO',
-      target: 'DA11112'
-    })
+    // A material change takes Holding Address out of the catalogue, and the
+    // data steward doesn't manage it
+    await answer(
+      administrator,
+      '/manage/data-assets/DA11119/about/description',
+      { description: 'A changed made-up description.' }
+    )
+    await answer(
+      administrator,
+      '/manage/data-assets/DA11119/related-resources/add',
+      { relationshipTypeCode: 'RELATED_TO', target: 'DA11112' }
+    )
     await administrator.becomes('data-steward')
     const page = await administrator.get('/manage/data-assets/DA11112/delete')
 

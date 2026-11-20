@@ -392,6 +392,12 @@
         "effectiveFromDate": "2021-01-04"
       },
       {
+        "personName": "Sam Specimen",
+        "personEmailAddressReference": "sam.specimen@example.com",
+        "governanceRoleCode": "DATA_STEWARD",
+        "effectiveFromDate": "2021-01-04"
+      },
+      {
         "personName": "Jo Bloggs",
         "personEmailAddressReference": "jo.bloggs@example.com",
         "governanceRoleCode": "DATA_STEWARD",
@@ -458,6 +464,12 @@
         "personName": "Sam Specimen",
         "personEmailAddressReference": "sam.specimen@example.com",
         "governanceRoleCode": "DATA_OWNER",
+        "effectiveFromDate": "2026-06-01"
+      },
+      {
+        "personName": "Sam Specimen",
+        "personEmailAddressReference": "sam.specimen@example.com",
+        "governanceRoleCode": "DATA_STEWARD",
         "effectiveFromDate": "2026-06-01"
       },
       {

@@ -228,7 +228,7 @@ describe('the data asset page content', () => {
 
       assert.deepEqual(
         stewards.map((person) => person.name),
-        ['Taylor Test']
+        ['Sam Specimen', 'Taylor Test']
       )
     })
 

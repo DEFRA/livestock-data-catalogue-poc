@@ -49,6 +49,7 @@ function chooseInformationAsset(context) {
   const heading = 'Which information asset governs this data asset?'
   return {
     heading,
+    changes: ['informationAssetName'],
     fields: [
       radiosField(
         'informationAssetName',
@@ -85,6 +86,7 @@ function chooseInformationAsset(context) {
 function addInformationAsset(context) {
   return {
     heading: 'Add a new information asset',
+    changes: ['informationAssetName'],
     fields: [
       textField('name', 'Name', {
         hint: 'For example, Livestock Traceability Records',
@@ -201,6 +203,7 @@ function relationshipProblems(context, answers) {
 function addRelatedResource(context) {
   return {
     heading: 'Add a related resource',
+    changes: ['relationships'],
     fields: [
       radiosField(
         'relationshipTypeCode',
@@ -257,6 +260,7 @@ function removeRelatedResource(context) {
   const heading = `Are you sure you want to remove ${relationshipTargetText(context, item)} from the related resources?`
   return {
     heading,
+    changes: ['relationships'],
     fields: [
       radiosField('confirm', heading, YES_NO_OPTIONS, {
         classes: 'govuk-radios--inline',

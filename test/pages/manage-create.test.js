@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { after, before, describe, test } from 'node:test'
 
+import { today } from '../../app/lib/clock.js'
+import { formatDate } from '../../app/lib/formatting.js'
 import { startApp } from '../helpers/app.js'
 import { NEW_DATA_ASSET, createDraft, textsOf } from '../helpers/manage.js'
 import { visitor } from '../helpers/session.js'
@@ -42,21 +44,21 @@ describe('your data assets', () => {
       page.document.querySelector('tbody a').getAttribute('href'),
       '/manage/data-assets/DA11112'
     )
-    assert.equal(page.html.includes('Create a data asset'), false)
-  })
-
-  test('a catalogue administrator sees every data asset, and can create one', async () => {
-    const administrator = visitor(app)
-    await administrator.becomes('catalogue-administrator')
-    const page = await administrator.get('/manage/data-assets')
-
-    assert.equal(page.document.querySelectorAll('tbody tr').length, 14)
     assert.equal(
       page.document
         .querySelector('a.govuk-button[href="/manage/data-assets/create"]')
         .textContent.trim(),
       'Create a data asset'
     )
+  })
+
+  test('a catalogue administrator sees every data asset, but cannot create one (answer 39)', async () => {
+    const administrator = visitor(app)
+    await administrator.becomes('catalogue-administrator')
+    const page = await administrator.get('/manage/data-assets')
+
+    assert.equal(page.document.querySelectorAll('tbody tr').length, 14)
+    assert.equal(page.html.includes('Create a data asset'), false)
   })
 
   test('a catalogue user sees Page not found', async () => {
@@ -68,12 +70,12 @@ describe('your data assets', () => {
 
 describe('creating a data asset (S05)', () => {
   let app
-  let administrator
+  let steward
 
   before(async () => {
     app = await startApp()
-    administrator = visitor(app)
-    await administrator.becomes('catalogue-administrator')
+    steward = visitor(app)
+    await steward.becomes('data-steward')
   })
 
   after(async () => {
@@ -81,7 +83,7 @@ describe('creating a data asset (S05)', () => {
   })
 
   test('asks for the title, description and owning organisation on one page', async () => {
-    const page = await administrator.get('/manage/data-assets/create')
+    const page = await steward.get('/manage/data-assets/create')
 
     assert.equal(page.status, 200)
     assert.equal(textsOf(page, 'h1')[0], 'What is the data asset?')
@@ -94,8 +96,8 @@ describe('creating a data asset (S05)', () => {
   })
 
   test('saves a draft with the next identifier, a 12 month review frequency, and shows its overview', async () => {
-    const address = await createDraft(administrator)
-    const overview = await administrator.get(`${address}?created=yes`)
+    const address = await createDraft(steward)
+    const overview = await steward.get(`${address}?created=yes`)
 
     assert.equal(address, '/manage/data-assets/DA1111G')
     assert.deepEqual(textsOf(overview, '.govuk-notification-banner__content'), [
@@ -103,7 +105,7 @@ describe('creating a data asset (S05)', () => {
     ])
     assert.equal(textsOf(overview, 'h1')[0], NEW_DATA_ASSET.titleName)
     assert.ok(textsOf(overview, 'main p').includes('Catalogue entry: Draft'))
-    const review = await administrator.get(`${address}/review`)
+    const review = await steward.get(`${address}/review`)
     assert.ok(
       textsOf(review, '.govuk-summary-list__row').some((row) =>
         row.startsWith('Review frequency Every 12 months')
@@ -112,12 +114,12 @@ describe('creating a data asset (S05)', () => {
   })
 
   test('gives the next one DA1111H, and never reuses a deleted identifier', async () => {
-    const second = await createDraft(administrator, {
+    const second = await createDraft(steward, {
       ...NEW_DATA_ASSET,
       titleName: 'Second made-up asset'
     })
-    await administrator.post(`${second}/delete`, { confirm: 'yes' })
-    const third = await createDraft(administrator, {
+    await steward.post(`${second}/delete`, { confirm: 'yes' })
+    const third = await createDraft(steward, {
       ...NEW_DATA_ASSET,
       titleName: 'Third made-up asset'
     })
@@ -127,7 +129,7 @@ describe('creating a data asset (S05)', () => {
   })
 
   test('shows every missing answer at once', async () => {
-    const page = await administrator.post('/manage/data-assets/create', {})
+    const page = await steward.post('/manage/data-assets/create', {})
 
     assert.equal(page.status, 200)
     assert.deepEqual(textsOf(page, '.govuk-error-summary__list a'), [
@@ -138,7 +140,7 @@ describe('creating a data asset (S05)', () => {
   })
 
   test('refuses a title already in use, ignoring case and spaces at the ends', async () => {
-    const page = await administrator.post('/manage/data-assets/create', {
+    const page = await steward.post('/manage/data-assets/create', {
       ...NEW_DATA_ASSET,
       titleName: '  animal MOVEMENT '
     })
@@ -154,11 +156,11 @@ describe('creating a data asset (S05)', () => {
   })
 
   test('allows a title of 200 characters, and refuses 201', async () => {
-    const tooLong = await administrator.post('/manage/data-assets/create', {
+    const tooLong = await steward.post('/manage/data-assets/create', {
       ...NEW_DATA_ASSET,
       titleName: 'x'.repeat(201)
     })
-    const longest = await administrator.post('/manage/data-assets/create', {
+    const longest = await steward.post('/manage/data-assets/create', {
       ...NEW_DATA_ASSET,
       titleName: 'y'.repeat(200)
     })
@@ -170,13 +172,13 @@ describe('creating a data asset (S05)', () => {
   })
 
   test('refuses an organisation that is not an option, and saves nothing', async () => {
-    const before = await administrator.get('/manage/data-assets')
-    const page = await administrator.post('/manage/data-assets/create', {
+    const before = await steward.get('/manage/data-assets')
+    const page = await steward.post('/manage/data-assets/create', {
       ...NEW_DATA_ASSET,
       titleName: 'Unknown organisation asset',
       organisationName: 'Made-up Agency'
     })
-    const after = await administrator.get('/manage/data-assets')
+    const after = await steward.get('/manage/data-assets')
 
     assert.equal(page.status, 200)
     assert.deepEqual(textsOf(page, '.govuk-error-summary__list a'), [
@@ -188,15 +190,93 @@ describe('creating a data asset (S05)', () => {
     )
   })
 
-  test('a data steward cannot create a data asset (question 39)', async () => {
-    const steward = visitor(app)
-    await steward.becomes('data-steward')
+  test('makes the data steward who creates it its first data steward, from today with no end date, and records it (answer 39)', async () => {
+    const createdOn = formatDate(today())
+    const address = await createDraft(steward, {
+      ...NEW_DATA_ASSET,
+      titleName: 'Steward made-up asset'
+    })
+    const responsibility = await steward.get(`${address}/responsibility`)
+    const history = await steward.get(`${address}/history`)
+    const list = await steward.get('/manage/data-assets')
 
-    assert.equal((await steward.get('/manage/data-assets/create')).status, 404)
+    assert.match(
+      textsOf(responsibility, '.govuk-summary-card')[1],
+      new RegExp(`^Data stewards Sam Specimen .* From ${createdOn}$`)
+    )
     assert.equal(
-      (await steward.post('/manage/data-assets/create', NEW_DATA_ASSET)).status,
+      textsOf(responsibility, '.govuk-details').length,
+      0,
+      'no assignment has ended or not started yet'
+    )
+    assert.deepEqual(textsOf(history, 'tbody tr td:nth-child(2)'), [
+      'Data asset created',
+      `Data steward Sam Specimen added, from ${createdOn}`
+    ])
+    assert.deepEqual(
+      [...new Set(textsOf(history, 'tbody tr td:nth-child(3)'))],
+      ['Sam Specimen, data steward']
+    )
+    assert.ok(textsOf(list, 'tbody a').includes('Steward made-up asset'))
+  })
+
+  test('tells the data steward to ask a catalogue administrator for the data owner it needs to publish (answers 24 and 39)', async () => {
+    const address = await createDraft(steward, {
+      ...NEW_DATA_ASSET,
+      titleName: 'Owner needed made-up asset'
+    })
+    const overview = await steward.get(address)
+    const publish = await steward.get(`${address}/publish`)
+    const actions = textsOf(publish, 'main li a')
+
+    assert.deepEqual(textsOf(overview, '.govuk-inset-text'), [
+      'You need a data owner before you can publish this data asset. Ask a catalogue administrator to add one.'
+    ])
+    assert.ok(
+      actions.includes('ask a catalogue administrator to add a data owner')
+    )
+    assert.equal(
+      actions.some((action) => action.includes('data steward')),
+      false
+    )
+    assert.equal(
+      (await steward.get(`${address}/responsibility/data-owner/add`)).status,
       404
     )
+  })
+
+  test('a catalogue administrator cannot create a data asset (answer 39)', async () => {
+    const administrator = visitor(app)
+    await administrator.becomes('catalogue-administrator')
+    const before = await administrator.get('/manage/data-assets')
+
+    assert.equal(
+      (await administrator.get('/manage/data-assets/create')).status,
+      404
+    )
+    assert.equal(
+      (await administrator.post('/manage/data-assets/create', NEW_DATA_ASSET))
+        .status,
+      404
+    )
+    const after = await administrator.get('/manage/data-assets')
+    assert.equal(
+      after.document.querySelectorAll('tbody tr').length,
+      before.document.querySelectorAll('tbody tr').length
+    )
+  })
+
+  test('a catalogue administrator is not told to ask anyone for a data owner', async () => {
+    const participant = visitor(app)
+    await participant.becomes('data-steward')
+    const address = await createDraft(participant, {
+      ...NEW_DATA_ASSET,
+      titleName: 'Administrator made-up asset'
+    })
+    await participant.becomes('catalogue-administrator')
+    const overview = await participant.get(address)
+
+    assert.deepEqual(textsOf(overview, '.govuk-inset-text'), [])
   })
 })
 
@@ -212,15 +292,15 @@ describe('the limit on new data assets in a session (D33)', () => {
   })
 
   test('allows 20 new data assets, then says how to start again', async () => {
-    const administrator = visitor(app)
-    await administrator.becomes('catalogue-administrator')
+    const steward = visitor(app)
+    await steward.becomes('data-steward')
     for (let count = 1; count <= 20; count += 1) {
-      await createDraft(administrator, {
+      await createDraft(steward, {
         ...NEW_DATA_ASSET,
         titleName: `Made-up asset ${count}`
       })
     }
-    const page = await administrator.post('/manage/data-assets/create', {
+    const page = await steward.post('/manage/data-assets/create', {
       ...NEW_DATA_ASSET,
       titleName: 'Made-up asset 21'
     })

@@ -8,8 +8,8 @@ import {
   addDistribution,
   answer,
   completeDraft,
-  createDraft,
   dateAnswer,
+  draftForAdministrator,
   textsOf
 } from '../helpers/manage.js'
 import { visitor } from '../helpers/session.js'
@@ -56,7 +56,7 @@ describe('the other manage questions', () => {
   })
 
   test('every tag colour the manage pages use is in GOV.UK Frontend', async () => {
-    const draft = await createDraft(administrator)
+    const draft = await draftForAdministrator(administrator)
     await answer(administrator, `${draft}/about/type`, {
       dataAssetTypeCode: 'MASTER_DATA'
     })
@@ -215,7 +215,7 @@ describe('the other manage questions', () => {
     })
 
     test('a data asset can have up to 20 related resources', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
       const targets = ['DA11111', 'DA11113', 'DA11115', 'DA11117']
       const types = [
         'DERIVED_FROM',
@@ -385,7 +385,7 @@ describe('the other manage questions', () => {
     })
 
     test('the preview shows a distribution that is not complete yet', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
       await answer(administrator, `${draft}/distributions/add`, {
         name: 'Unfinished',
         description: ''
@@ -397,7 +397,7 @@ describe('the other manage questions', () => {
     })
 
     test('marks a distribution that is not complete as Incomplete', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
       await addDistribution(administrator, draft, 'Complete')
       await answer(administrator, `${draft}/distributions/add`, {
         name: 'Unfinished',
@@ -412,7 +412,7 @@ describe('the other manage questions', () => {
     })
 
     test('a data asset can have up to 20 distributions', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
       for (let count = 1; count <= 20; count += 1) {
         await answer(administrator, `${draft}/distributions/add`, {
           name: `Distribution ${count}`,
@@ -430,7 +430,7 @@ describe('the other manage questions', () => {
     })
 
     test('the adding flow goes back to the previous question', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
       await addDistribution(administrator, draft)
       const added = await answer(administrator, `${draft}/distributions/add`, {
         name: 'Second',
@@ -453,7 +453,7 @@ describe('the other manage questions', () => {
 
   describe('who is responsible (S07, S17)', () => {
     test('an organisation can be a data custodian only once from a date, and up to 10 data custodians', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
       const add = (organisationName, date) =>
         administrator.post(`${draft}/responsibility/data-custodian/add`, {
           organisationName,
@@ -520,7 +520,7 @@ describe('the other manage questions', () => {
     })
 
     test('the check page recommends a data custodian when none is current', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
       await completeDraft(administrator, draft)
       await answer(
         administrator,
@@ -545,7 +545,7 @@ describe('the other manage questions', () => {
     })
 
     test('recommends a data custodian only when there is none', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
       const without = await administrator.get(`${draft}/responsibility`)
       await answer(
         administrator,
@@ -599,7 +599,7 @@ describe('the other manage questions', () => {
     })
 
     test('there is no "Change the data owner" page without a current data owner', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
 
       assert.equal(
         (await administrator.get(`${draft}/responsibility/change-data-owner`))
@@ -609,8 +609,9 @@ describe('the other manage questions', () => {
     })
 
     test('a data asset can have up to 30 governance assignments', async () => {
-      const draft = await createDraft(administrator)
-      for (let day = 1; day <= 30; day += 1) {
+      // The data steward who created it is its first assignment
+      const draft = await draftForAdministrator(administrator)
+      for (let day = 1; day <= 29; day += 1) {
         const from = `2025-01-${String(day).padStart(2, '0')}`
         await answer(
           administrator,
@@ -622,7 +623,7 @@ describe('the other manage questions', () => {
         )
         await answer(
           administrator,
-          `${draft}/responsibility/assignments/${day - 1}/end`,
+          `${draft}/responsibility/assignments/${day}/end`,
           dateAnswer('effectiveToDate', from)
         )
       }
@@ -753,7 +754,7 @@ describe('the other manage questions', () => {
     })
 
     test('the creation date cannot be after the date the data last changed, on a draft not yet accepted', async () => {
-      const draft = await createDraft(administrator)
+      const draft = await draftForAdministrator(administrator)
       await answer(
         administrator,
         `${draft}/dates/last-changed`,

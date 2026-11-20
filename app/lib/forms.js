@@ -159,7 +159,8 @@ export function parseDate(parts, field) {
   if (!isRealDate(year, month, day)) {
     return { error: `${field.dateName} must be a real date`, parts: DATE_PARTS }
   }
-  return { value: `${year}-${twoDigits(month)}-${twoDigits(day)}` }
+  // The year keeps its 4 numbers, so dates compare in order as text
+  return { value: `${parts.year}-${twoDigits(month)}-${twoDigits(day)}` }
 }
 
 function optionValues(field) {

@@ -1,5 +1,11 @@
 import { referenceValue } from '../reference-data.js'
-import { editChange, itemAt, manageHref, systemDateTime } from './context.js'
+import {
+  canAddDistribution,
+  editChange,
+  itemAt,
+  manageHref,
+  systemDateTime
+} from './context.js'
 import {
   OR_DIVIDER,
   YES_NO_OPTIONS,
@@ -97,6 +103,8 @@ function addDistribution(context) {
   const distributions = context.dataAsset.distributions ?? []
   return {
     heading: 'What is the distribution called?',
+    allowed: canAddDistribution,
+    changes: ['distributions'],
     fields: nameFields(),
     values: {},
     backHref: summaryHref(context),
@@ -148,6 +156,7 @@ function distributionQuestion(question, definition) {
     const fields = definition.fields(context, item)
     return {
       heading: definition.heading ?? fields[0].label,
+      changes: ['distributions'],
       caption: `${context.dataAsset.titleName}: ${item.name}`,
       fields,
       values: definition.values(item),
@@ -435,6 +444,7 @@ function addDataService(context) {
   )
   return {
     heading: 'Add a new data service',
+    changes: ['distributions'],
     caption: context.dataAsset.titleName,
     fields: [
       textField('titleName', 'Title', {
@@ -495,6 +505,7 @@ function removeDistribution(context) {
   const heading = `Are you sure you want to remove ${item.name}?`
   return {
     heading,
+    changes: ['distributions'],
     fields: [
       radiosField('confirm', heading, YES_NO_OPTIONS, {
         classes: 'govuk-radios--inline',

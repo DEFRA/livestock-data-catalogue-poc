@@ -1,4 +1,5 @@
 import { nextDataAssetIdentifier } from '../identifiers.js'
+import { personFor } from '../personas.js'
 import { isVisible } from '../visibility.js'
 import {
   MOST_NEW_DATA_ASSETS,
@@ -58,9 +59,21 @@ function createProblems(context, answers) {
     : []
 }
 
-// Only a catalogue administrator creates data assets (LDAT-252, question
-// 24). S05 needs a title, description and owner before anything is saved,
-// so they share one page.
+// The data steward who creates a data asset is its first Data Steward,
+// from today with no end date (LDAT-252, answer 39)
+function creatorAssignment(context) {
+  const person = personFor(context.catalogue, context.persona)
+  return {
+    personName: person.name,
+    personEmailAddressReference: person.emailAddressReference,
+    governanceRoleCode: 'DATA_STEWARD',
+    effectiveFromDate: context.today
+  }
+}
+
+// Only a data steward creates data assets (LDAT-252, answer 39). S05 needs
+// a title, description and owner before anything is saved, so they share
+// one page.
 export function createDataAsset(context) {
   return {
     heading: 'What is the data asset?',
@@ -94,6 +107,7 @@ export function createDataAsset(context) {
         publicationStateCode: 'DRAFT',
         metadataDate: context.today,
         reviewFrequencyMonthQuantity: DEFAULT_REVIEW_FREQUENCY,
+        governanceAssignments: [creatorAssignment(context)],
         systemCreatedDateTime: now,
         systemCreatedByUserId: context.persona.entraObjectId,
         systemUpdatedDateTime: now,
@@ -124,6 +138,12 @@ function recordReview(context) {
   const people = peopleOptions(context.catalogue)
   return {
     heading: 'Record a review',
+    changes: [
+      'lastReviewedDate',
+      'lastReviewedByName',
+      'nextReviewDate',
+      'approvedByName'
+    ],
     fields: [
       dateField('lastReviewedDate', 'When was it reviewed?', {
         required: 'Enter the date it was reviewed',
@@ -166,14 +186,10 @@ function stateChange(context, publicationStateCode, update) {
   return {
     action: publicationStateCode.toLowerCase(),
     identifier: context.identifier,
-    dataAsset: editedDataAsset(
-      context,
-      (dataAsset) => {
-        dataAsset.publicationStateCode = publicationStateCode
-        update(dataAsset)
-      },
-      { backToDraft: false }
-    )
+    dataAsset: editedDataAsset(context, (dataAsset) => {
+      dataAsset.publicationStateCode = publicationStateCode
+      update(dataAsset)
+    })
   }
 }
 

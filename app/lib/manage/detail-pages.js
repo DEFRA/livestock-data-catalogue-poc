@@ -19,13 +19,14 @@ const MOST_KEYWORDS = 30
 const LONGEST_KEYWORD = 200
 
 // A question page in a section: its fields, the answers it shows first,
-// any checks that need more than one answer, and how it changes the data
-// asset
+// any checks that need more than one answer, the data asset attributes it
+// changes, and how it changes them
 export function sectionQuestion(section, definition) {
   return (context) => {
     const fields = definition.fields(context)
     return {
       heading: definition.heading ?? fields[0].label,
+      changes: definition.changes,
       fields,
       values: definition.values(context.dataAsset),
       backHref: manageHref(context.identifier, section),
@@ -50,6 +51,7 @@ export function fieldQuestion(section, makeField, { validate } = {}) {
     const field = makeField(context)
     return sectionQuestion(section, {
       fields: () => [field],
+      changes: [field.name],
       values: (dataAsset) => ({ [field.name]: dataAsset[field.name] }),
       validate,
       update(dataAsset, answers) {
@@ -62,6 +64,7 @@ export function fieldQuestion(section, makeField, { validate } = {}) {
 function datesQuestion(section, definition) {
   return sectionQuestion(section, {
     ...definition,
+    changes: definition.dateFields,
     values: (dataAsset) =>
       Object.fromEntries(
         definition.dateFields.map((name) => [name, dateParts(dataAsset[name])])
@@ -188,6 +191,7 @@ export function resolveKeywords(catalogue, names) {
 function keywordsQuestion(context) {
   return {
     heading: 'Add keywords',
+    changes: ['keywordNames'],
     fields: [
       {
         type: 'textarea',
@@ -425,6 +429,7 @@ function reviewFrequencyCheck(text) {
 
 const review = {
   frequency: sectionQuestion('review', {
+    changes: ['reviewFrequencyMonthQuantity'],
     fields: () => [
       textField(
         'reviewFrequencyMonthQuantity',

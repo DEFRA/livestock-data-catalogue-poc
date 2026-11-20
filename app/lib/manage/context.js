@@ -1,6 +1,11 @@
 import { isDeepStrictEqual } from 'node:util'
 
+import {
+  outstandingForPublication,
+  publicationChecks
+} from '../../schemas/catalogue/publication.js'
 import { today as todayInLondon } from '../clock.js'
+import { isMaterialChange } from '../history.js'
 import { isDataAssetIdentifier } from '../identifiers.js'
 import {
   canAssignRoles,
@@ -21,7 +26,13 @@ export class NotFoundError extends Error {
   }
 }
 
-export const EDITABLE_STATES = Object.freeze(['DRAFT', 'PUBLISHED'])
+// A deprecated data asset can still be changed, and stays deprecated
+// (LDAT-252, answer 42). A retired one can't be changed.
+export const EDITABLE_STATES = Object.freeze([
+  'DRAFT',
+  'PUBLISHED',
+  'DEPRECATED'
+])
 
 export function manageHref(identifier, ...path) {
   return ['/manage/data-assets', identifier, ...path].join('/')
@@ -110,23 +121,32 @@ function withoutEmptyValues(document) {
 }
 
 // Every saved change sets the Metadata Date (S06) and the system
-// attributes. Changing a published data asset sends it back to Draft, so
-// it must pass the checks and be published again (LDAT-252, question 25).
-export function stamped(context, document, { backToDraft = true } = {}) {
+// attributes
+function stamped(context, document) {
   withoutEmptyValues(document)
   document.metadataDate = context.today
   document.systemUpdatedDateTime = systemDateTime()
   document.systemUpdatedByUserId = context.persona.entraObjectId
-  if (backToDraft && document.publicationStateCode === 'PUBLISHED') {
-    document.publicationStateCode = 'DRAFT'
-  }
   return document
 }
 
-export function editedDataAsset(context, update, options) {
+// Publishing and the other actions that set the publication state
+export function editedDataAsset(context, update) {
   const document = structuredClone(context.dataAsset)
   update(document)
-  return stamped(context, document, options)
+  return stamped(context, document)
+}
+
+// Only a material change sends a published data asset back to Draft, so
+// it must pass the checks and be published again (LDAT-252, answers 25 and
+// 41). Any other change is seen in the catalogue straight away. A
+// deprecated data asset stays deprecated, because a data asset that has
+// been published can't be published again (answers 26 and 42).
+function stateAfter(context, before, after) {
+  return after.publicationStateCode === 'PUBLISHED' &&
+    isMaterialChange(context.catalogue, before, after)
+    ? 'DRAFT'
+    : after.publicationStateCode
 }
 
 // Saving the same answers again changes nothing, so a published data
@@ -140,6 +160,7 @@ export function editChange(context, update, extra = {}) {
   if (isDeepStrictEqual(before, after) && !addsRecords) {
     return undefined
   }
+  after.publicationStateCode = stateAfter(context, before, after)
   return {
     action: 'edit',
     identifier: context.identifier,
@@ -159,7 +180,46 @@ export function itemAt(list, positionText) {
 }
 
 // Only a catalogue administrator assigns governance roles (LDAT-252,
-// question 24)
+// answer 24), including on a deprecated data asset (answer 42)
 export function canChangeResponsibility(context) {
   return context.canAssignRoles && isEditable(context)
+}
+
+function isDeprecated(context) {
+  return context.dataAsset.publicationStateCode === 'DEPRECATED'
+}
+
+// A new distribution is saved after its name, before it's complete. A
+// deprecated data asset stays in the catalogue (LDAT-252, answer 42), so
+// it must stay complete, and can't have a distribution added that way.
+export function canAddDistribution(context) {
+  return isEditable(context) && !isDeprecated(context)
+}
+
+// For the same reason, a deprecated data asset keeps at least 1
+// distribution
+export function canRemoveDistribution(context) {
+  return (
+    isEditable(context) &&
+    (!isDeprecated(context) || context.dataAsset.distributions.length > 1)
+  )
+}
+
+// The S26 checks a data asset that catalogue users can see after a change,
+// such as a deprecated one (LDAT-252, answer 42), would newly fail. The
+// working copy refuses such a change. As there, checks it failed while
+// catalogue users could already see it don't count.
+export function newPublicationProblems(context, after) {
+  if (!isVisible(after)) {
+    return []
+  }
+  const { today } = context
+  const known = new Set(
+    isVisible(context.dataAsset)
+      ? outstandingForPublication(context.dataAsset, { today })
+      : []
+  )
+  return publicationChecks(after, { today }).filter(
+    (check) => !known.has(check.message)
+  )
 }
