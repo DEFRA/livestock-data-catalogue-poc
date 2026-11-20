@@ -353,7 +353,7 @@ describe('the search page', () => {
 
     assert.equal(skip.getAttribute('href'), '#results')
     assert.ok(skip.classList.contains('app-skip-to-results'))
-    assert.equal(skip.parentElement.tagName, 'DIV')
+    assert.equal(skip.closest('p'), null)
     assert.equal(
       page.document.querySelector('#results > p').textContent.trim(),
       '12 data assets'

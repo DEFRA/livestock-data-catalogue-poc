@@ -70,6 +70,15 @@ describe('the stylesheet', () => {
     assert.match(rule[1], /width: 1px !important/)
   })
 
+  test('never hides Skip to results below tablet width, where the filter comes before the results', () => {
+    const outsideMediaQueries = css.replace(
+      /@media[^{]*\{(?:[^{}]*\{[^}]*\})*[^{}]*\}/g,
+      ''
+    )
+
+    assert.doesNotMatch(outsideMediaQueries, /\.app-skip-to-results/)
+  })
+
   test('includes the catalogue footer styles', () => {
     assert.match(css, /\.app-footer \{/)
   })
