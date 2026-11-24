@@ -28,7 +28,7 @@
     "jsdom": "30.1.3",
     "neostandard": "0.14.1",
     "prettier": "3.9.10",
-    "stylelint": "17.16.0",
+    "stylelint": "18.0.0",
     "stylelint-config-gds": "3.0.0"
   }
 }
